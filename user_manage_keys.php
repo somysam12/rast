@@ -132,7 +132,7 @@ try {
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
                                WHERE lk.sold_to IS NULL AND lk.mod_id = ?
-                               GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
+                               GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
                                ORDER BY m.name, lk.duration, lk.duration_type');
         $stmt->execute([$modId]);
     } else {
@@ -147,7 +147,7 @@ try {
                               FROM license_keys lk
                               LEFT JOIN mods m ON m.id = lk.mod_id
                               WHERE lk.sold_to IS NULL
-                             GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
+                             GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
                              ORDER BY m.name, lk.duration, lk.duration_type');
     }
     $availableKeys = $stmt->fetchAll();
