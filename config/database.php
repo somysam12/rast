@@ -1,5 +1,5 @@
 <?php
-$databaseUrl = getenv('DATABASE_URL');
+$databaseUrl = getenv('SUPABASE_DATABASE_URL') ?: getenv('DATABASE_URL');
 $parsedUrl = parse_url($databaseUrl);
 
 define('DB_HOST', $parsedUrl['host']);
