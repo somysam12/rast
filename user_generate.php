@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $pdo->beginTransaction();
 
             // Lock key row
-            $stmt = $pdo->prepare('SELECT id, mod_id, price FROM license_keys WHERE id = ? AND sold_to IS NULL LIMIT 1 FOR UPDATE');
+            $stmt = $pdo->prepare('SELECT id, mod_id, price FROM license_keys WHERE id = ? AND sold_to IS NULL AND status = \'available\' LIMIT 1 FOR UPDATE');
             $stmt->execute([$keyId]);
             $key = $stmt->fetch();
             if(!$key){
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $stmt = $pdo->prepare('UPDATE users SET balance = balance - ? WHERE id = ?');
             $stmt->execute([$price, $user['id']]);
 
-            $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = NOW() WHERE id = ?');
+            $stmt = $pdo->prepare('UPDATE license_keys SET status = \'sold\', sold_to = ?, sold_at = NOW() WHERE id = ?');
             $stmt->execute([$user['id'], $keyId]);
 
             // Optional: record transaction if table exists
@@ -107,14 +107,14 @@ try {
         $stmt = $pdo->prepare('SELECT lk.id, lk.mod_id, lk.duration, lk.duration_type, lk.price, m.name AS mod_name
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
-                               WHERE lk.sold_to IS NULL AND lk.mod_id = ?
+                               WHERE lk.sold_to IS NULL AND lk.status = \'available\' AND lk.mod_id = ?
                                ORDER BY lk.id DESC');
         $stmt->execute([$modId]);
     } else {
         $stmt = $pdo->query('SELECT lk.id, lk.mod_id, lk.duration, lk.duration_type, lk.price, m.name AS mod_name
                               FROM license_keys lk
                               LEFT JOIN mods m ON m.id = lk.mod_id
-                              WHERE lk.sold_to IS NULL
+                              WHERE lk.sold_to IS NULL AND lk.status = \'available\'
                               ORDER BY lk.id DESC');
     }
     $availableKeys = $stmt->fetchAll();
@@ -143,6 +143,7 @@ try {
     <title>Generate - Mod APK Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/mobile.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         

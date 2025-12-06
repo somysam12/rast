@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
 
             // Find an available key for this mod and duration
             $stmt = $pdo->prepare('SELECT id FROM license_keys 
-                                   WHERE mod_id = ? AND duration = ? AND duration_type = ? AND price = ? AND sold_to IS NULL 
+                                   WHERE mod_id = ? AND duration = ? AND duration_type = ? AND price = ? AND sold_to IS NULL AND status = \'available\'
                                    LIMIT 1 FOR UPDATE');
             $stmt->execute([$modId, $duration, $durationType, $price]);
             $key = $stmt->fetch();
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $stmt = $pdo->prepare('UPDATE users SET balance = balance - ? WHERE id = ?');
             $stmt->execute([$price, $user['id']]);
 
-            $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = NOW() WHERE id = ?');
+            $stmt = $pdo->prepare('UPDATE license_keys SET status = \'sold\', sold_to = ?, sold_at = NOW() WHERE id = ?');
             $stmt->execute([$user['id'], $key['id']]);
 
             // Optional: record transaction if table exists
@@ -131,7 +131,7 @@ try {
                                MIN(lk.id) as min_id
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
-                               WHERE lk.sold_to IS NULL AND lk.mod_id = ?
+                               WHERE lk.sold_to IS NULL AND lk.status = \'available\' AND lk.mod_id = ?
                                GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
                                ORDER BY m.name, lk.duration, lk.duration_type');
         $stmt->execute([$modId]);
@@ -146,7 +146,7 @@ try {
                              MIN(lk.id) as min_id
                               FROM license_keys lk
                               LEFT JOIN mods m ON m.id = lk.mod_id
-                              WHERE lk.sold_to IS NULL
+                              WHERE lk.sold_to IS NULL AND lk.status = \'available\'
                              GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
                              ORDER BY m.name, lk.duration, lk.duration_type');
     }
@@ -177,6 +177,7 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/mobile.css" rel="stylesheet">
     <style>
         /* Enhanced theme with modern colors */
         :root{
