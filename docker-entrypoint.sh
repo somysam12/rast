@@ -11,8 +11,8 @@ while [ $attempt -lt $max_attempts ]; do
         if (!\$url) exit(1);
         \$parsed = parse_url(\$url);
         try {
-            \$dsn = 'pgsql:host=' . \$parsed['host'] . ';port=' . (\$parsed['port'] ?? 5432) . ';dbname=' . ltrim(\$parsed['path'], '/');
-            \$pdo = new PDO(\$dsn, \$parsed['user'], \$parsed['pass']);
+            \$dsn = 'pgsql:host=' . \$parsed['host'] . ';port=' . (\$parsed['port'] ?? 5432) . ';dbname=' . ltrim(\$parsed['path'], '/') . ';sslmode=require';
+            \$pdo = new PDO(\$dsn, urldecode(\$parsed['user']), urldecode(\$parsed['pass']));
             \$pdo->query('SELECT 1');
             echo 'Database connected!';
             exit(0);
