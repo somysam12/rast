@@ -4,8 +4,8 @@ $parsedUrl = parse_url($databaseUrl);
 
 define('DB_HOST', $parsedUrl['host']);
 define('DB_PORT', $parsedUrl['port'] ?? 5432);
-define('DB_USER', $parsedUrl['user']);
-define('DB_PASS', $parsedUrl['pass']);
+define('DB_USER', urldecode($parsedUrl['user']));
+define('DB_PASS', urldecode($parsedUrl['pass']));
 define('DB_NAME', ltrim($parsedUrl['path'], '/'));
 
 function getDBConnection() {
