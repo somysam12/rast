@@ -1,4 +1,4 @@
-modules = ["php-8.2", "nodejs-20", "web"]
+modules = ["php-8.2", "nodejs-20", "web", "postgresql-16"]
 [nix]
 channel = "stable-25_05"
 packages = ["unzip"]
@@ -45,3 +45,7 @@ externalPort = 3001
 [[ports]]
 localPort = 45705
 externalPort = 3002
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["php", "-S", "0.0.0.0:5000"]
