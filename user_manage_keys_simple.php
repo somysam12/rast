@@ -127,7 +127,7 @@ function formatDate($date) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Keys - Mod APK Manager</title>
+    <title>Generate Keys - Mod APK Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -537,10 +537,10 @@ function formatDate($date) {
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
                     <a class="nav-link active" href="user_manage_keys_simple.php">
-                        <i class="fas fa-key"></i>Manage Keys
+                        <i class="fas fa-key"></i>Generate Keys
                     </a>
                     <a class="nav-link" href="user_generate_simple.php">
-                        <i class="fas fa-plus"></i>Generate
+                        <i class="fas fa-plus"></i>Manage Keys
                     </a>
                     <a class="nav-link" href="user_balance_simple.php">
                         <i class="fas fa-wallet"></i>Balance

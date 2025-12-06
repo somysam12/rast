@@ -351,10 +351,10 @@ function formatDate($date) {
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
                     <a class="nav-link" href="user_manage_keys.php">
-                        <i class="fas fa-key"></i>Manage Keys
+                        <i class="fas fa-key"></i>Generate Keys
                     </a>
                     <a class="nav-link" href="user_generate.php">
-                        <i class="fas fa-plus"></i>Generate
+                        <i class="fas fa-plus"></i>Manage Keys
                     </a>
                     <a class="nav-link active" href="user_balance.php">
                         <i class="fas fa-wallet"></i>Balance

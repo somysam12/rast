@@ -529,10 +529,10 @@ try {
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
                     <a class="nav-link" href="user_manage_keys.php">
-                        <i class="fas fa-key"></i>Manage Keys
+                        <i class="fas fa-key"></i>Generate Keys
                     </a>
                     <a class="nav-link active" href="user_generate.php">
-                        <i class="fas fa-plus"></i>Generate
+                        <i class="fas fa-plus"></i>Manage Keys
                     </a>
                     <a class="nav-link" href="user_balance.php">
                         <i class="fas fa-wallet"></i>Balance
@@ -558,7 +558,7 @@ try {
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2" style="color: var(--purple); font-weight: 600;">
-                                <i class="fas fa-plus me-2"></i>Generate
+                                <i class="fas fa-plus me-2"></i>Manage Keys
                             </h2>
                             <p class="text-muted mb-0">Manage and purchase license keys for mod applications.</p>
                         </div>
