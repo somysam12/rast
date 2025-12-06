@@ -16,7 +16,9 @@ RUN mkdir -p /var/www/html/uploads/apks \
     && chmod -R 777 /var/www/html/uploads
 
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["docker-entrypoint.sh"]

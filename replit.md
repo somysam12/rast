@@ -2,7 +2,7 @@
 
 ## Overview
 
-Mod APK Manager is a web-based distribution platform for modified Android applications (APK files). The system provides a dual-panel architecture with separate admin and user interfaces for managing mod distribution, license keys, user accounts, and financial transactions. Built with PHP and MySQL, it handles APK file uploads, license key generation and sales, user balance management, referral systems, and transaction tracking.
+Mod APK Manager is a web-based distribution platform for modified Android applications (APK files). The system provides a dual-panel architecture with separate admin and user interfaces for managing mod distribution, license keys, user accounts, and financial transactions. Built with PHP and PostgreSQL, it handles APK file uploads, license key generation and sales, user balance management, referral systems, and transaction tracking.
 
 ## User Preferences
 
@@ -47,9 +47,9 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage
 
-**Database**: MySQL (database name: `mod_apk_manager`)
+**Database**: PostgreSQL (database name: `mod_apk_manager`)
 
-**Configuration**: Database credentials stored in `config/database.php` (centralized configuration pattern).
+**Configuration**: Database connection configured via `DATABASE_URL` environment variable in `config/database.php`.
 
 **Data Model** (inferred from features):
 - **Users table**: Stores user accounts with balance, referral codes, roles (admin/user)
@@ -65,7 +65,7 @@ Preferred communication style: Simple, everyday language.
 - Mods have APK file references
 - License keys belong to mods and users (after purchase)
 
-**Rationale**: MySQL is a reliable choice for this transactional system requiring ACID compliance for financial operations. Storing APK files on the filesystem rather than in the database is appropriate given their large size, with only metadata/paths in the database.
+**Rationale**: PostgreSQL is a reliable choice for this transactional system requiring ACID compliance for financial operations. Storing APK files on the filesystem rather than in the database is appropriate given their large size, with only metadata/paths in the database.
 
 ### Authentication & Authorization
 
@@ -123,7 +123,7 @@ Preferred communication style: Simple, everyday language.
 ### Server Requirements
 
 **PHP Extensions Required**:
-- PDO MySQL extension for database connectivity
+- PDO PostgreSQL extension for database connectivity
 - File upload extensions (standard with PHP)
 
 **Web Server**: Any PHP-compatible web server (Apache, Nginx) with PHP 7.4+ support.
@@ -132,6 +132,29 @@ Preferred communication style: Simple, everyday language.
 
 ### Database
 
-**MySQL Database**: Requires MySQL server with database named `mod_apk_manager`. Connection configured via `config/database.php`.
+**PostgreSQL Database**: Requires PostgreSQL server with database named `mod_apk_manager`. Connection configured via `DATABASE_URL` environment variable in `config/database.php`.
 
-**No External Database Services**: Uses self-hosted MySQL rather than cloud database services.
+**No External Database Services**: Uses self-hosted PostgreSQL rather than cloud database services.
+
+## Render.com Deployment
+
+This project is configured for deployment on Render.com with Docker.
+
+### Deployment Files
+
+- `Dockerfile` - Docker build configuration with PHP 8.2 and Apache
+- `docker-entrypoint.sh` - Startup script that initializes database before Apache starts
+- `render.yaml` - Render Blueprint configuration (auto-creates database and web service)
+- `apache.conf` - Apache virtual host configuration
+- `health.php` - Health check endpoint for Render
+- `.htaccess` - URL rewriting and HTTPS redirect
+- `.dockerignore` - Files excluded from Docker build
+
+### Quick Deploy
+
+1. Push code to GitHub
+2. Go to Render.com -> New -> Blueprint
+3. Connect your GitHub repository
+4. Render will automatically detect `render.yaml` and deploy
+
+See `RENDER_DEPLOY.md` for detailed deployment instructions.
