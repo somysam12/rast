@@ -16,7 +16,7 @@ if ($isLoggedIn) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi Panel - Premium Mod APK Manager</title>
+    <title>SilentMultiPanel - Premium Mod APK Manager</title>
     <meta name="description" content="Professional Mod APK management system with secure distribution and user management.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -290,7 +290,7 @@ if ($isLoggedIn) {
     <nav class="navbar navbar-expand-lg navbar-custom" id="navbar">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-crown me-2"></i>Multi Panel
+                <i class="fas fa-crown me-2"></i>SilentMultiPanel
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -356,15 +356,7 @@ if ($isLoggedIn) {
                 <div class="col-lg-6">
                     <div class="text-center">
                         <div class="position-relative">
-                            <div class="glass-card p-4 fade-in" style="max-width: 400px; margin: 0 auto;">
-                                <div class="text-center">
-                                    <div class="feature-icon mx-auto mb-3">
-                                        <i class="fas fa-shield-alt"></i>
-                                    </div>
-                                    <h4 class="text-white mb-3">Secure & Reliable</h4>
-                                    <p class="text-white-50 mb-0">Enterprise-grade security with advanced encryption and user management</p>
-                                </div>
-                            </div>
+                            <img src="assets/images/hero-logo.jpg" alt="SilentMultiPanel" class="img-fluid rounded-4 fade-in" style="max-width: 400px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
                         </div>
                     </div>
                 </div>
@@ -478,11 +470,11 @@ if ($isLoggedIn) {
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5><i class="fas fa-crown me-2"></i>Multi Panel</h5>
+                    <h5><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
                     <p class="text-muted">Professional Mod APK Management System</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="text-muted mb-0">&copy; 2024 Multi Panel. All rights reserved.</p>
+                    <p class="text-muted mb-0">&copy; 2024 SilentMultiPanel. All rights reserved.</p>
                 </div>
             </div>
         </div>

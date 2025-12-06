@@ -118,7 +118,7 @@ function formatFileSize($bytes) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Upload Mod APK - Multi Panel</title>
+    <title>Upload Mod APK - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -588,7 +588,7 @@ function formatFileSize($bytes) {
             <button class="mobile-toggle me-3" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>SilentMultiPanel</h5>
         </div>
         <div class="d-flex align-items-center">
             <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
@@ -604,7 +604,7 @@ function formatFileSize($bytes) {
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="position-sticky">
                     <h4 class="text-center py-3 border-bottom" style="border-color: var(--border-light) !important; color: var(--purple); font-weight: 600;">
-                        <i class="fas fa-shield-alt me-2"></i>Multi Panel
+                        <i class="fas fa-shield-alt me-2"></i>SilentMultiPanel
                     </h4>
                 <nav class="nav flex-column p-3">
                     <a class="nav-link" href="admin_dashboard.php">

@@ -89,7 +89,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Multi Panel</title>
+    <title>Settings - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -429,7 +429,7 @@ try {
             <div class="col-md-3 col-lg-2 p-0">
                 <div class="sidebar" id="sidebar">
                     <div class="brand">
-                        <h4><i class="fas fa-crown me-2"></i>Multi Panel</h4>
+                        <h4><i class="fas fa-crown me-2"></i>SilentMultiPanel</h4>
                         <small class="text-muted">Admin Dashboard</small>
                     </div>
                     <nav class="nav flex-column px-3">

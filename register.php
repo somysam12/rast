@@ -126,7 +126,7 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Prince Panel</title>
+    <title>Register - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
@@ -402,7 +402,7 @@ if ($_POST) {
                     <div class="register-header">
                         <i class="fas fa-user-plus fa-3x mb-3"></i>
                         <h3>Create Account</h3>
-                        <p class="mb-0">Join Prince Panel today</p>
+                        <p class="mb-0">Join SilentMultiPanel today</p>
                     </div>
                     <div class="register-body">
                         <?php if ($error): ?>
