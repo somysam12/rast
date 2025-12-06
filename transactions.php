@@ -639,6 +639,9 @@ try {
                             <div class="user-avatar">
                                 <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
                             </div>
+                            <a href="logout.php" class="btn btn-outline-danger btn-sm ms-3" title="Logout">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
                         </div>
                     </div>
                 </div>
