@@ -12,7 +12,7 @@ function generateReferralCode() {
 }
 
 function formatCurrency($amount) {
-    return '₹' . number_format($amount, 2);
+    return '₹' . number_format((float)($amount ?? 0), 2);
 }
 
 function formatDate($date) {
