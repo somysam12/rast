@@ -563,7 +563,7 @@ function formatDate($date) {
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="fas fa-key me-2"></i>Manage Keys</h2>
+                    <h2><i class="fas fa-key me-2"></i>Generate Keys</h2>
                     <div class="d-flex align-items-center">
                         <span class="me-3">Balance: <?php echo formatCurrency($user['balance']); ?></span>
                         <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">

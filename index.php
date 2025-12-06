@@ -331,11 +331,11 @@ if ($isLoggedIn) {
                 <div class="col-lg-6">
                     <div class="hero-content">
                         <h1 class="display-4 fw-bold mb-4 fade-in">
-                            Premium Mod APK
-                            <span class="d-block text-warning">Management System</span>
+                            Welcome To
+                            <span class="d-block text-warning">SilentMultiPanel</span>
                         </h1>
                         <p class="lead mb-5 fade-in">
-                            Secure, professional, and feature-rich platform for managing mod APK distribution with advanced user management and analytics.
+                            Best Multipanel And Instant Support.
                         </p>
                         <div class="d-flex flex-wrap gap-3 fade-in">
                             <?php if ($isLoggedIn): ?>

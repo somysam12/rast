@@ -1304,7 +1304,7 @@ try {
                                 <button class="btn btn-outline-secondary me-3" onclick="history.back()" title="Go Back">
                                     <i class="fas fa-arrow-left me-1"></i>Back
                                 </button>
-                                <h2 class="mb-0"><i class="fas fa-key me-2"></i>Manage Keys</h2>
+                                <h2 class="mb-0"><i class="fas fa-key me-2"></i>Generate Keys</h2>
                             </div>
                             <p>Browse available keys and manage your purchases</p>
                             <div class="balance-info">
@@ -1589,14 +1589,30 @@ try {
         
         // Duration selection functionality
         function selectDuration(element, modId, duration, durationType, price) {
-            // Remove selected class from all options in this mod group
             const modGroup = element.closest('.key-card');
             const allOptions = modGroup.querySelectorAll('.duration-option');
+            const wasSelected = element.classList.contains('selected');
+            
+            // Remove selected class from all options in this mod group
             allOptions.forEach(option => {
                 option.classList.remove('selected');
                 const radio = option.querySelector('input[type="radio"]');
                 if (radio) radio.checked = false;
             });
+            
+            // If it was already selected, unselect it (toggle behavior)
+            if (wasSelected) {
+                // Clear form values
+                document.getElementById('selected_mod_id_' + modId).value = '';
+                document.getElementById('selected_duration_' + modId).value = '';
+                document.getElementById('selected_duration_type_' + modId).value = '';
+                document.getElementById('selected_price_' + modId).value = '';
+                
+                // Hide purchase form and show message
+                document.getElementById('purchaseForm_' + modId).style.display = 'none';
+                document.getElementById('selectMessage_' + modId).style.display = 'block';
+                return;
+            }
             
             // Add selected class to clicked option
             element.classList.add('selected');
