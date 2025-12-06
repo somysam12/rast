@@ -1,4 +1,4 @@
-modules = ["php-8.2", "nodejs-20", "web", "postgresql-16"]
+modules = ["php-8.2", "nodejs-20", "web", "bash"]
 [nix]
 channel = "stable-25_05"
 packages = ["unzip"]
@@ -37,6 +37,10 @@ externalPort = 80
 [[ports]]
 localPort = 35615
 externalPort = 3000
+
+[[ports]]
+localPort = 40325
+externalPort = 3002
 
 [[ports]]
 localPort = 40907
