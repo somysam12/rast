@@ -11,8 +11,11 @@ define('DB_NAME', ltrim($parsedUrl['path'], '/'));
 function getDBConnection() {
     try {
         $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
-        $pdo = new PDO($dsn, DB_USER, DB_PASS);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_EMULATE_PREPARES => true
+        ];
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         return $pdo;
     } catch(PDOException $e) {
         die("Connection failed: " . $e->getMessage());
