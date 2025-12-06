@@ -1,0 +1,13 @@
+.git
+.gitignore
+.local
+.replit
+replit.nix
+replit.md
+*.md
+.cache
+node_modules
+.env.local
+.env.development
+uploads/apks/*
+!uploads/apks/.gitkeep
