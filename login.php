@@ -523,6 +523,26 @@ if ($_POST) {
                 });
                 
                 pixel.addEventListener('mouseleave', function() {
+
+                pixel.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const colors = [
+                        'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+                        'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
+                        'linear-gradient(135deg, #ffd93d 0%, #f5a623 100%)',
+                        'linear-gradient(135deg, #a8e6cf 0%, #56ab2f 100%)',
+                        'linear-gradient(135deg, #ff8b94 0%, #ff6b6b 100%)',
+                        'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
+                        'linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%)',
+                        'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)'
+                    ];
+                    this.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    this.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.9)';
+                    setTimeout(() => {
+                        this.style.background = 'transparent';
+                        this.style.boxShadow = 'none';
+                    }, 600);
+                });
                     this.style.background = 'transparent';
                     this.style.boxShadow = 'none';
                 });
