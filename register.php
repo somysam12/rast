@@ -390,6 +390,7 @@ if ($_POST) {
     </style>
 </head>
 <body>
+    <div class="interactive-grid" id="interactiveGrid"></div>
     <!-- Theme Toggle -->
     <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
