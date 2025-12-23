@@ -1,6 +1,17 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', '/tmp/php-errors.log');
+
 $databaseUrl = getenv('DATABASE_URL') ?: getenv('SUPABASE_DATABASE_URL');
+if (!$databaseUrl) {
+    die("DATABASE_URL environment variable not set");
+}
 $parsedUrl = parse_url($databaseUrl);
+if (!$parsedUrl) {
+    die("Failed to parse DATABASE_URL");
+}
 
 define('DB_HOST', $parsedUrl['host']);
 define('DB_PORT', $parsedUrl['port'] ?? 5432);
