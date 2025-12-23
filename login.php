@@ -68,7 +68,12 @@ if ($_POST) {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
-        .login-container { width: 100%; position: relative; z-index: 10; }
+        .login-container { 
+            width: 100%; 
+            position: relative; 
+            z-index: 1000; 
+            pointer-events: none;
+        }
         .login-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -172,14 +177,12 @@ if ($_POST) {
             pointer-events: auto;
         }
         
-        .login-container {
-            position: relative;
-            z-index: 1000;
-        }
-        
-        .form-control, .btn, input, textarea, select {
-            position: relative;
-            z-index: 1001;
+        .login-container input,
+        .login-container button,
+        .login-container a,
+        .form-check-input,
+        .form-control {
+            pointer-events: auto !important;
         }
 
         .grid-pixel:hover {
@@ -271,31 +274,46 @@ if ($_POST) {
             const cols = Math.ceil(window.innerWidth / (size + gap));
             const rows = Math.ceil(window.innerHeight / (size + gap));
             
+            const activatePixel = (px) => {
+                const col = tapColors[Math.floor(Math.random() * tapColors.length)];
+                px.style.background = col;
+                px.style.boxShadow = '0 0 25px rgba(139, 92, 246, 0.9)';
+                px.style.transform = 'scale(1.15)';
+                setTimeout(() => {
+                    px.style.background = 'transparent';
+                    px.style.boxShadow = 'none';
+                    px.style.transform = 'scale(1)';
+                }, 800);
+            };
+            
             for (let i = 0; i < cols * rows; i++) {
                 const px = document.createElement('div');
                 px.className = 'grid-pixel';
                 px.style.left = ((i % cols) * (size + gap) + 15) + 'px';
                 px.style.top = (Math.floor(i / cols) * (size + gap) + 15) + 'px';
                 
-                px.addEventListener('mouseenter', function() {
-                    this.style.background = 'linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #8b5cf6 100%)';
-                    this.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.8)';
+                px.addEventListener('mouseenter', () => {
+                    px.style.background = 'linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #8b5cf6 100%)';
+                    px.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.8)';
+                    px.style.transform = 'scale(1.08)';
                 });
                 
-                px.addEventListener('mouseleave', function() {
-                    this.style.background = 'transparent';
-                    this.style.boxShadow = 'none';
+                px.addEventListener('mouseleave', () => {
+                    px.style.background = 'transparent';
+                    px.style.boxShadow = 'none';
+                    px.style.transform = 'scale(1)';
                 });
                 
-                px.addEventListener('click', function() {
-                    const col = tapColors[Math.floor(Math.random() * tapColors.length)];
-                    this.style.background = col;
-                    this.style.boxShadow = '0 0 25px rgba(139, 92, 246, 0.9)';
-                    setTimeout(() => {
-                        this.style.background = 'transparent';
-                        this.style.boxShadow = 'none';
-                    }, 800);
-                });
+                px.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    activatePixel(px);
+                }, false);
+                
+                px.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    activatePixel(px);
+                }, false);
                 
                 grid.appendChild(px);
             }
