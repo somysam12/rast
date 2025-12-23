@@ -155,8 +155,8 @@ if ($_POST) {
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            z-index: 1;
+            height: 100vh;
+            z-index: 999;
             pointer-events: none;
         }
 
@@ -170,6 +170,16 @@ if ($_POST) {
             cursor: pointer;
             transition: all 0.12s ease;
             pointer-events: auto;
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .form-control, .btn, input, textarea, select {
+            position: relative;
+            z-index: 1001;
         }
 
         .grid-pixel:hover {
