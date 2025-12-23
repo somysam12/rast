@@ -19,15 +19,26 @@ define('DB_USER', urldecode($parsedUrl['user']));
 define('DB_PASS', urldecode($parsedUrl['pass']));
 define('DB_NAME', ltrim($parsedUrl['path'], '/'));
 
+// Connection pool for performance
+static $connection = null;
+
 function getDBConnection() {
+    global $connection;
+    
+    if ($connection) {
+        return $connection;
+    }
+    
     try {
         $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=prefer";
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES => true
+            PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_PERSISTENT => true
         ];
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-        return $pdo;
+        $connection = new PDO($dsn, DB_USER, DB_PASS, $options);
+        return $connection;
     } catch(PDOException $e) {
         die("Connection failed: " . $e->getMessage());
     }
