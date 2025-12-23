@@ -188,4 +188,128 @@ function uploadFile($file, $uploadDir = 'uploads/') {
     
     return ['success' => false, 'error' => 'Upload failed'];
 }
+
+// Deletion Functions
+function deleteMod($modId) {
+    $pdo = getDBConnection();
+    
+    try {
+        $pdo->beginTransaction();
+        
+        // Get mod details for logging
+        $stmt = $pdo->prepare("SELECT * FROM mods WHERE id = ?");
+        $stmt->execute([$modId]);
+        $mod = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$mod) {
+            throw new Exception("Mod not found");
+        }
+        
+        // Delete all associated license keys (cascade)
+        $stmt = $pdo->prepare("DELETE FROM license_keys WHERE mod_id = ?");
+        $stmt->execute([$modId]);
+        
+        // Delete all associated APK files
+        $stmt = $pdo->prepare("DELETE FROM mod_apks WHERE mod_id = ?");
+        $stmt->execute([$modId]);
+        
+        // Delete mod
+        $stmt = $pdo->prepare("DELETE FROM mods WHERE id = ?");
+        $stmt->execute([$modId]);
+        
+        $pdo->commit();
+        return ['success' => true, 'message' => 'Mod deleted successfully'];
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}
+
+function deleteLicenseKey($keyId) {
+    $pdo = getDBConnection();
+    
+    try {
+        $pdo->beginTransaction();
+        
+        // Get key details
+        $stmt = $pdo->prepare("SELECT * FROM license_keys WHERE id = ?");
+        $stmt->execute([$keyId]);
+        $key = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$key) {
+            throw new Exception("License key not found");
+        }
+        
+        // If key was sold, create a refund transaction log
+        if ($key['status'] == 'sold' && $key['sold_to']) {
+            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, reference, status) 
+                                  VALUES (?, ?, 'key_deleted', ?, 'completed')");
+            $stmt->execute([$key['sold_to'], 0, 'License key #' . $keyId . ' was deleted']);
+        }
+        
+        // Delete license key
+        $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id = ?");
+        $stmt->execute([$keyId]);
+        
+        $pdo->commit();
+        return ['success' => true, 'message' => 'License key deleted successfully'];
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}
+
+function deleteMultipleLicenseKeys($keyIds) {
+    $pdo = getDBConnection();
+    
+    try {
+        $pdo->beginTransaction();
+        
+        $deletedCount = 0;
+        foreach ((array)$keyIds as $keyId) {
+            $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id = ?");
+            if ($stmt->execute([$keyId])) {
+                $deletedCount++;
+            }
+        }
+        
+        $pdo->commit();
+        return ['success' => true, 'message' => "Deleted $deletedCount license keys successfully"];
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}
+
+function getAllLicenseKeys($filters = []) {
+    $pdo = getDBConnection();
+    
+    $where = ["1=1"];
+    $params = [];
+    
+    if (!empty($filters['mod_id'])) {
+        $where[] = "lk.mod_id = :mod_id";
+        $params[':mod_id'] = $filters['mod_id'];
+    }
+    
+    if (!empty($filters['status'])) {
+        $where[] = "lk.status = :status";
+        $params[':status'] = $filters['status'];
+    }
+    
+    if (!empty($filters['search'])) {
+        $where[] = "lk.license_key LIKE :search";
+        $params[':search'] = '%' . $filters['search'] . '%';
+    }
+    
+    $sql = "SELECT lk.*, m.name as mod_name 
+            FROM license_keys lk 
+            LEFT JOIN mods m ON lk.mod_id = m.id 
+            WHERE " . implode(' AND ', $where) . " 
+            ORDER BY lk.created_at DESC";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>

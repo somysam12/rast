@@ -699,6 +699,7 @@ try {
                                             <th><i class="fas fa-clock me-2"></i>Duration</th>
                                             <th><i class="fas fa-rupee-sign me-2"></i>Price</th>
                                             <th><i class="fas fa-key me-2"></i>Available Keys</th>
+                                            <th><i class="fas fa-tools me-2"></i>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -724,6 +725,11 @@ try {
                                                 <span class="badge bg-success">
                                                     <?php echo $group['count']; ?> Available
                                                 </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="expandKeys('<?php echo htmlspecialchars($group['duration']); ?>', <?php echo $mod['mod_id']; ?>)" title="View & Delete Keys">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>

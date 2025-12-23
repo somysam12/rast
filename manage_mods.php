@@ -538,9 +538,8 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                    title="<?php echo $mod['status'] === 'active' ? 'Deactivate' : 'Activate'; ?>">
                                                     <i class="fas fa-<?php echo $mod['status'] === 'active' ? 'pause' : 'play'; ?>"></i>
                                                 </a>
-                                                <a href="?delete=<?php echo $mod['id']; ?>" 
+                                                <a href="delete_mod.php?id=<?php echo $mod['id']; ?>&confirm=0" 
                                                    class="btn btn-danger"
-                                                   onclick="return confirm('Are you sure you want to delete this mod? This action cannot be undone.')"
                                                    title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
