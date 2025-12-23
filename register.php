@@ -161,6 +161,8 @@ if ($_POST) {
             border: 1px solid var(--border-light);
             overflow: hidden;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
         }
         
         .register-card:hover {
@@ -313,6 +315,36 @@ if ($_POST) {
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
         }
+
+        /* Interactive Grid Styles */
+        #pixelGrid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .grid-pixel {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border: 1.5px solid rgba(139, 92, 246, 0.2);
+            border-radius: 5px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: auto;
+        }
+
+        .grid-pixel:hover {
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #8b5cf6 100%);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3);
+            transform: scale(1.18) rotate(6deg);
+        }
         
         /* Dark theme styles */
         [data-theme="dark"] {
@@ -369,7 +401,7 @@ if ($_POST) {
             
             .form-control {
                 padding: 10px 14px;
-                font-size: 16px; /* Prevent zoom on iOS */
+                font-size: 16px;
             }
             
             .btn-register {
@@ -387,41 +419,12 @@ if ($_POST) {
                 margin-bottom: 0;
             }
         }
-    
-        .interactive-grid {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 0; opacity: 0.12;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
-            grid-gap: 3px; padding: 20px;
-        }
-        
-        .grid-pixel {
-            width: 45px; height: 45px;
-            background: transparent;
-            border: 1px solid rgba(139, 92, 246, 0.25);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .grid-pixel:hover {
-            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-            border-color: #8b5cf6;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.9);
-            transform: scale(1.15) rotate(8deg);
-        }
-        
-        .container { position: relative; z-index: 1; }
-
-</style>
+    </style>
 </head>
 <body>
-    <div class="interactive-grid" id="interactiveGrid"></div>
-    <div class="interactive-grid" id="interactiveGrid"></div>
+    <!-- Interactive Pixel Grid -->
+    <div id="pixelGrid"></div>
+
     <!-- Theme Toggle -->
     <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
@@ -530,6 +533,38 @@ if ($_POST) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Create Interactive Pixel Grid
+        function createPixelGrid() {
+            const grid = document.getElementById('pixelGrid');
+            const pixelSize = 35;
+            const gapSize = 3;
+            const cols = Math.ceil(window.innerWidth / (pixelSize + gapSize));
+            const rows = Math.ceil(window.innerHeight / (pixelSize + gapSize));
+            
+            for (let i = 0; i < cols * rows; i++) {
+                const pixel = document.createElement('div');
+                pixel.className = 'grid-pixel';
+                
+                const x = (i % cols) * (pixelSize + gapSize) + 15;
+                const y = Math.floor(i / cols) * (pixelSize + gapSize) + 15;
+                
+                pixel.style.left = x + 'px';
+                pixel.style.top = y + 'px';
+                
+                pixel.addEventListener('mouseenter', function() {
+                    this.style.background = `linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #8b5cf6 100%)`;
+                    this.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)';
+                });
+                
+                pixel.addEventListener('mouseleave', function() {
+                    this.style.background = 'transparent';
+                    this.style.boxShadow = 'none';
+                });
+                
+                grid.appendChild(pixel);
+            }
+        }
+
         // Dark mode functionality
         function toggleDarkMode() {
             const body = document.body;
@@ -555,6 +590,7 @@ if ($_POST) {
         
         // Form validation enhancement
         document.addEventListener('DOMContentLoaded', function() {
+            createPixelGrid();
             const form = document.querySelector('form');
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirm_password');
