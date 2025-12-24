@@ -21,8 +21,15 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // PDO connection
-$pdo = getDBConnection();
-$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+try {
+    $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4';
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+} catch (Throwable $e) {
+    die('Database connection failed');
+}
 
 // Load current user
 $stmt = $pdo->prepare('SELECT id, username, role, balance FROM users WHERE id = ? LIMIT 1');
@@ -52,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
 
             // Find an available key for this mod and duration
             $stmt = $pdo->prepare('SELECT id FROM license_keys 
-                                   WHERE mod_id = ? AND duration = ? AND duration_type = ? AND price = ? AND sold_to IS NULL AND status = \'available\'
+                                   WHERE mod_id = ? AND duration = ? AND duration_type = ? AND price = ? AND sold_to IS NULL 
                                    LIMIT 1 FOR UPDATE');
             $stmt->execute([$modId, $duration, $durationType, $price]);
             $key = $stmt->fetch();
@@ -75,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $stmt = $pdo->prepare('UPDATE users SET balance = balance - ? WHERE id = ?');
             $stmt->execute([$price, $user['id']]);
 
-            $stmt = $pdo->prepare('UPDATE license_keys SET status = \'sold\', sold_to = ?, sold_at = NOW() WHERE id = ?');
+            $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = NOW() WHERE id = ?');
             $stmt->execute([$user['id'], $key['id']]);
 
             // Optional: record transaction if table exists
@@ -131,8 +138,8 @@ try {
                                MIN(lk.id) as min_id
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
-                               WHERE lk.sold_to IS NULL AND lk.status = \'available\' AND lk.mod_id = ?
-                               GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
+                               WHERE lk.sold_to IS NULL AND lk.mod_id = ?
+                               GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
                                ORDER BY m.name, lk.duration, lk.duration_type');
         $stmt->execute([$modId]);
     } else {
@@ -146,8 +153,8 @@ try {
                              MIN(lk.id) as min_id
                               FROM license_keys lk
                               LEFT JOIN mods m ON m.id = lk.mod_id
-                              WHERE lk.sold_to IS NULL AND lk.status = \'available\'
-                             GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
+                              WHERE lk.sold_to IS NULL
+                             GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
                              ORDER BY m.name, lk.duration, lk.duration_type');
     }
     $availableKeys = $stmt->fetchAll();
@@ -173,11 +180,10 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Generate Keys - Mod APK Manager</title>
+    <title>Manage Keys - Mod APK Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/mobile.css" rel="stylesheet">
     <style>
         /* Enhanced theme with modern colors */
         :root{
@@ -1216,10 +1222,10 @@ try {
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
                     <a href="user_manage_keys.php" class="dropdown-item">
-                        <i class="fas fa-key"></i>Generate Keys
+                        <i class="fas fa-key"></i>Manage Keys
                     </a>
                     <a href="user_generate.php" class="dropdown-item">
-                        <i class="fas fa-plus"></i>Manage Keys
+                        <i class="fas fa-plus"></i>Generate
                     </a>
                     <a href="user_balance.php" class="dropdown-item">
                         <i class="fas fa-wallet"></i>Balance
@@ -1273,10 +1279,10 @@ try {
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
                     <a class="nav-link active" href="user_manage_keys.php">
-                        <i class="fas fa-key"></i>Generate Keys
+                        <i class="fas fa-key"></i>Manage Keys
                     </a>
                     <a class="nav-link" href="user_generate.php">
-                        <i class="fas fa-plus"></i>Manage Keys
+                        <i class="fas fa-plus"></i>Generate
                     </a>
                     <a class="nav-link" href="user_balance.php">
                         <i class="fas fa-wallet"></i>Balance
@@ -1305,7 +1311,7 @@ try {
                                 <button class="btn btn-outline-secondary me-3" onclick="history.back()" title="Go Back">
                                     <i class="fas fa-arrow-left me-1"></i>Back
                                 </button>
-                                <h2 class="mb-0"><i class="fas fa-key me-2"></i>Generate Keys</h2>
+                                <h2 class="mb-0"><i class="fas fa-key me-2"></i>Manage Keys</h2>
                             </div>
                             <p>Browse available keys and manage your purchases</p>
                             <div class="balance-info">
@@ -1590,30 +1596,14 @@ try {
         
         // Duration selection functionality
         function selectDuration(element, modId, duration, durationType, price) {
+            // Remove selected class from all options in this mod group
             const modGroup = element.closest('.key-card');
             const allOptions = modGroup.querySelectorAll('.duration-option');
-            const wasSelected = element.classList.contains('selected');
-            
-            // Remove selected class from all options in this mod group
             allOptions.forEach(option => {
                 option.classList.remove('selected');
                 const radio = option.querySelector('input[type="radio"]');
                 if (radio) radio.checked = false;
             });
-            
-            // If it was already selected, unselect it (toggle behavior)
-            if (wasSelected) {
-                // Clear form values
-                document.getElementById('selected_mod_id_' + modId).value = '';
-                document.getElementById('selected_duration_' + modId).value = '';
-                document.getElementById('selected_duration_type_' + modId).value = '';
-                document.getElementById('selected_price_' + modId).value = '';
-                
-                // Hide purchase form and show message
-                document.getElementById('purchaseForm_' + modId).style.display = 'none';
-                document.getElementById('selectMessage_' + modId).style.display = 'block';
-                return;
-            }
             
             // Add selected class to clicked option
             element.classList.add('selected');

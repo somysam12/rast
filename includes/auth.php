@@ -1,27 +1,25 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/database.php';
+require_once 'config/database.php';
+
+initializeDatabase();
 
 function isLoggedIn() {
     if (!isset($_SESSION['user_id'])) {
         return false;
     }
     
-    try {
-        $pdo = getDBConnection();
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = :user_id AND session_id = :session_id");
-        $stmt->execute([':user_id' => $_SESSION['user_id'], ':session_id' => session_id()]);
-        $sessionExists = $stmt->fetchColumn();
-        
-        if (!$sessionExists) {
-            logout();
-            return false;
-        }
-        
-        return true;
-    } catch (Exception $e) {
-        return isset($_SESSION['user_id']);
+    $pdo = getDBConnection();
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$_SESSION['user_id'], session_id()]);
+    $sessionExists = $stmt->fetchColumn();
+    
+    if (!$sessionExists) {
+        logout();
+        return false;
     }
+    
+    return true;
 }
 
 function isAdmin() {
@@ -56,13 +54,13 @@ function login($username, $password, $forceLogout = false) {
     
     cleanupExpiredSessions();
     
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username OR email = :username");
-    $stmt->execute([':username' => $username]);
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+    $stmt->execute([$username, $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user && password_verify($password, $user['password'])) {
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = :user_id AND session_id != :session_id");
-        $stmt->execute([':user_id' => $user['id'], ':session_id' => session_id()]);
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id != ?");
+        $stmt->execute([$user['id'], session_id()]);
         $activeSessions = $stmt->fetchColumn();
         
         if ($activeSessions > 0 && !$forceLogout) {
@@ -70,20 +68,12 @@ function login($username, $password, $forceLogout = false) {
         }
         
         if ($forceLogout && $activeSessions > 0) {
-            $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = :user_id AND session_id != :session_id");
-            $stmt->execute([':user_id' => $user['id'], ':session_id' => session_id()]);
+            $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = ? AND session_id != ?");
+            $stmt->execute([$user['id'], session_id()]);
         }
         
-        $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = :user_id AND session_id = :session_id");
-        $stmt->execute([':user_id' => $user['id'], ':session_id' => session_id()]);
-        
-        $stmt = $pdo->prepare("INSERT INTO user_sessions (user_id, session_id, ip_address, user_agent, created_at) VALUES (:user_id, :session_id, :ip_address, :user_agent, NOW())");
-        $stmt->execute([
-            ':user_id' => $user['id'],
-            ':session_id' => session_id(),
-            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? '',
-            ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
-        ]);
+        $stmt = $pdo->prepare("INSERT OR REPLACE INTO user_sessions (user_id, session_id, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, datetime('now'))");
+        $stmt->execute([$user['id'], session_id(), $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '']);
         
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
@@ -102,16 +92,16 @@ function register($username, $email, $password, $referralCode = null) {
     $referralType = null;
     
     if ($referralCode) {
-        $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = :code AND status = 'active' AND expires_at > NOW()");
-        $stmt->execute([':code' => $referralCode]);
+        $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > datetime('now')");
+        $stmt->execute([$referralCode]);
         $adminReferral = $stmt->fetchColumn();
         
         if ($adminReferral) {
             $referredBy = $adminReferral;
             $referralType = 'admin';
         } else {
-            $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = :code AND role = 'user'");
-            $stmt->execute([':code' => $referralCode]);
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user'");
+            $stmt->execute([$referralCode]);
             $referredBy = $stmt->fetchColumn();
             if ($referredBy) {
                 $referralType = 'user';
@@ -125,31 +115,27 @@ function register($username, $email, $password, $referralCode = null) {
         $pdo->beginTransaction();
         
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by) VALUES (:username, :email, :password, :referral_code, :referred_by)");
-        $stmt->execute([
-            ':username' => $username,
-            ':email' => $email,
-            ':password' => $hashedPassword,
-            ':referral_code' => $userReferralCode,
-            ':referred_by' => $referredBy
-        ]);
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy]);
         
-        if ($referralType === 'admin' && $referralCode) {
-            $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = :code");
-            $stmt->execute([':code' => $referralCode]);
-        } else if ($referralType === 'user' && $referredBy) {
+        $userId = $pdo->lastInsertId();
+        
+        if ($referralType === 'admin') {
+            $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = ?");
+            $stmt->execute([$referralCode]);
+        } else if ($referralType === 'user') {
             $newUserReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
-            $stmt = $pdo->prepare("UPDATE users SET referral_code = :referral_code WHERE id = :id");
-            $stmt->execute([':referral_code' => $newUserReferralCode, ':id' => $referredBy]);
+            $stmt = $pdo->prepare("UPDATE users SET referral_code = ? WHERE id = ?");
+            $stmt->execute([$newUserReferralCode, $referredBy]);
         }
         
         if ($referredBy) {
-            $stmt = $pdo->prepare("UPDATE users SET balance = balance + 50 WHERE id = :id");
-            $stmt->execute([':id' => $referredBy]);
+            $stmt = $pdo->prepare("UPDATE users SET balance = balance + 50 WHERE id = ?");
+            $stmt->execute([$referredBy]);
             
             try {
-                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (:user_id, 'balance_add', 50, 'Referral bonus for referring new user', NOW())");
-                $stmt->execute([':user_id' => $referredBy]);
+                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', datetime('now'))");
+                $stmt->execute([$referredBy]);
             } catch (Exception $e) {}
         }
         
@@ -163,11 +149,9 @@ function register($username, $email, $password, $referralCode = null) {
 
 function logout() {
     if (isset($_SESSION['user_id'])) {
-        try {
-            $pdo = getDBConnection();
-            $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = :user_id AND session_id = :session_id");
-            $stmt->execute([':user_id' => $_SESSION['user_id'], ':session_id' => session_id()]);
-        } catch (Exception $e) {}
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = ? AND session_id = ?");
+        $stmt->execute([$_SESSION['user_id'], session_id()]);
     }
     
     session_destroy();
@@ -177,55 +161,56 @@ function logout() {
 
 function forceLogoutAllDevices($userId) {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = :user_id");
-    $stmt->execute([':user_id' => $userId]);
+    $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = ?");
+    $stmt->execute([$userId]);
 }
 
 function cleanupExpiredSessions() {
-    try {
-        $pdo = getDBConnection();
-        $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE created_at < NOW() - INTERVAL '24 hours'");
-        $stmt->execute();
-    } catch (Exception $e) {}
+    $pdo = getDBConnection();
+    $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE created_at < datetime('now', '-24 hours')");
+    $stmt->execute();
 }
 
 function hasActiveSession($userId) {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = :user_id AND session_id != :session_id");
-    $stmt->execute([':user_id' => $userId, ':session_id' => session_id()]);
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id != ?");
+    $stmt->execute([$userId, session_id()]);
     return $stmt->fetchColumn() > 0;
 }
 
 function resetDevice($username, $password) {
     $pdo = getDBConnection();
     
-    $stmt = $pdo->prepare("SELECT id, password FROM users WHERE username = :username OR email = :username");
-    $stmt->execute([':username' => $username]);
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+    $stmt->execute([$username, $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$user) {
         return 'user_not_found';
     }
     
-    if (!password_verify($password, $user['password'])) {
+    $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+    $stmt->execute([$user['id']]);
+    $hashedPassword = $stmt->fetchColumn();
+    
+    if (!password_verify($password, $hashedPassword)) {
         return 'invalid_password';
     }
     
-    $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = :user_id");
-    $stmt->execute([':user_id' => $user['id']]);
+    $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = ?");
+    $stmt->execute([$user['id']]);
     
     return 'success';
 }
 
 function getUserData($userId = null) {
     if (!$userId) {
-        $userId = $_SESSION['user_id'] ?? null;
+        $userId = $_SESSION['user_id'];
     }
-    if (!$userId) return null;
     
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-    $stmt->execute([':id' => $userId]);
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
@@ -235,11 +220,11 @@ function updateBalance($userId, $amount, $type = 'balance_add', $reference = nul
     try {
         $pdo->beginTransaction();
         
-        $stmt = $pdo->prepare("UPDATE users SET balance = balance + :amount WHERE id = :id");
-        $stmt->execute([':amount' => $amount, ':id' => $userId]);
+        $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+        $stmt->execute([$amount, $userId]);
         
-        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, reference, status) VALUES (:user_id, :amount, :type, :reference, 'completed')");
-        $stmt->execute([':user_id' => $userId, ':amount' => $amount, ':type' => $type, ':reference' => $reference]);
+        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, reference, status) VALUES (?, ?, ?, ?, 'completed')");
+        $stmt->execute([$userId, $amount, $type, $reference]);
         
         $pdo->commit();
         return true;

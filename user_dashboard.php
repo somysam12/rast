@@ -84,7 +84,6 @@ function formatDate($date) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/mobile.css" rel="stylesheet">
     <style>
         /* Modern Dashboard Design */
         :root {
@@ -771,10 +770,10 @@ function formatDate($date) {
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
                     <a class="nav-link" href="user_manage_keys.php">
-                        <i class="fas fa-key"></i>Generate Keys
+                        <i class="fas fa-key"></i>Manage Keys
                     </a>
                     <a class="nav-link" href="user_generate.php">
-                        <i class="fas fa-plus"></i>Manage Keys
+                        <i class="fas fa-plus"></i>Generate
                     </a>
                     <a class="nav-link" href="user_balance.php">
                         <i class="fas fa-wallet"></i>Balance

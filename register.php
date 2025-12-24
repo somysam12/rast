@@ -1,15 +1,22 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-require_once 'config/database.php';
-session_start();
 
+require_once 'config/database.php';
+
+// Redirect if already logged in
+session_start();
 if (isset($_SESSION['user_id'])) {
-    header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin_dashboard.php' : 'user_dashboard.php'));
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin_dashboard.php');
+    } else {
+        header('Location: user_dashboard.php');
+    }
     exit();
 }
 
-$error = $success = '';
+$error = '';
+$success = '';
 
 if ($_POST) {
     $username = trim($_POST['username']);
@@ -19,19 +26,22 @@ if ($_POST) {
     $referralCode = trim($_POST['referral_code']);
     
     if (empty($username) || empty($email) || empty($password) || empty($confirmPassword) || empty($referralCode)) {
-        $error = 'Please fill in all required fields';
+        $error = 'Please fill in all required fields including referral code';
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match';
     } elseif (strlen($password) < 6) {
-        $error = 'Password must be at least 6 characters';
+        $error = 'Password must be at least 6 characters long';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Invalid email address';
+        $error = 'Please enter a valid email address';
     } else {
         try {
             $pdo = getDBConnection();
+            
+            // First check if referral code is valid (check both user codes and admin codes)
             $referredBy = null;
             $referralType = null;
             
+            // First check admin-generated referral codes
             $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > NOW()");
             $stmt->execute([$referralCode]);
             $adminReferral = $stmt->fetchColumn();
@@ -40,6 +50,7 @@ if ($_POST) {
                 $referredBy = $adminReferral;
                 $referralType = 'admin';
             } else {
+                // Check user-generated referral codes
                 $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user'");
                 $stmt->execute([$referralCode]);
                 $referredBy = $stmt->fetchColumn();
@@ -49,35 +60,63 @@ if ($_POST) {
             }
             
             if (!$referredBy) {
-                $error = 'Invalid or expired referral code';
+                $error = 'Invalid or expired referral code. You must have a valid referral code to register.';
             } else {
+                // Check if username or email already exists
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
                 $stmt->execute([$username, $email]);
                 
                 if ($stmt->fetchColumn() > 0) {
                     $error = 'Username or email already exists';
                 } else {
-                    $userReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
-                    $pdo->beginTransaction();
-                    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy]);
-                    
-                    if ($referralType === 'admin') {
-                        $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = ?");
-                        $stmt->execute([$referralCode]);
-                    }
-                    
-                    $stmt = $pdo->prepare("UPDATE users SET balance = balance + 50 WHERE id = ?");
+                
+                // Generate unique referral code for new user
+                $userReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
+                
+                $pdo->beginTransaction();
+                
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy]);
+                
+                $userId = $pdo->lastInsertId();
+                
+                // Deactivate the referral code after use (one-time use only)
+                if ($referralType === 'admin') {
+                    // Deactivate admin-generated referral code
+                    $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = ?");
+                    $stmt->execute([$referralCode]);
+                } else if ($referralType === 'user') {
+                    // For user codes, we'll track usage in a separate table or mark as used
+                    // For now, we'll deactivate the user's referral code and generate a new one
+                    $newUserReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
+                    $stmt = $pdo->prepare("UPDATE users SET referral_code = ? WHERE id = ?");
+                    $stmt->execute([$newUserReferralCode, $referredBy]);
+                }
+                
+                // New user starts with ₹0 balance (no welcome bonus)
+                // Only give bonus to referrer
+                $stmt = $pdo->prepare("UPDATE users SET balance = balance + 50 WHERE id = ?");
+                $stmt->execute([$referredBy]);
+                
+                // Record referral transaction for referrer only
+                try {
+                    $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', NOW())");
                     $stmt->execute([$referredBy]);
-                    $pdo->commit();
-                    $success = 'Registration successful! Redirecting...';
-                    header('refresh:2;url=login.php');
+                } catch (Exception $e) {
+                    // Ignore transaction errors
+                }
+                
+                $pdo->commit();
+                $success = 'Registration successful! You can now login.';
+                header('refresh:2;url=login.php');
                 }
             }
         } catch (Exception $e) {
-            if (isset($pdo)) $pdo->rollBack();
-            $error = 'Registration failed';
+            if (isset($pdo)) {
+                $pdo->rollBack();
+            }
+            $error = 'Registration failed. Please try again.';
         }
     }
 }
@@ -87,358 +126,371 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - SilentMultiPanel</title>
+    <title>Register - Prince Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/mobile.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --purple: #8b5cf6;
+            --purple-light: #a78bfa;
+            --purple-dark: #7c3aed;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         body {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 25%, #4facfe 50%, #00f2fe 75%, #667eea 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            background-color: var(--bg-color);
             min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
+            padding: 2rem 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 20px;
         }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        #pixelGrid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            z-index: 1;
-            pointer-events: none;
-            opacity: 0.3;
-        }
-
-        .grid-pixel {
-            position: absolute;
-            width: 35px;
-            height: 35px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            background: transparent;
-            cursor: pointer;
-            transition: all 0.12s ease;
-            pointer-events: auto;
-        }
-
-        .grid-pixel:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
-        }
-
-        .register-wrapper {
-            position: relative;
-            z-index: 100;
-            width: 100%;
-            max-width: 600px;
-        }
-
+        
         .register-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow-large);
+            border: 1px solid var(--border-light);
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .register-card:hover {
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-            transform: translateY(-5px);
-        }
-
-        .register-header {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 50px 30px 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .register-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(20px); }
-        }
-
-        .user-plus-icon {
-            font-size: 3.5rem;
-            margin-bottom: 15px;
-            display: inline-block;
-            animation: bounce 2s ease-in-out infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .register-header h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .register-header p {
-            font-size: 0.95rem;
-            opacity: 0.95;
-            margin: 0;
-            position: relative;
-            z-index: 2;
-        }
-
-        .register-body {
-            padding: 40px 30px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-control {
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 0.95rem;
-            background: #f8f9fa;
             transition: all 0.3s ease;
-            color: #333;
         }
-
+        
+        .register-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .register-header {
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border-top: 4px solid var(--purple-light);
+        }
+        
+        .register-header h3 {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .register-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        
+        .register-body {
+            padding: 2.5rem 2rem;
+            background: var(--card-bg);
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid var(--border-light);
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+            background: var(--card-bg);
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+        
         .form-control:focus {
-            border-color: #f5576c;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(245, 87, 108, 0.1);
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+            background: var(--card-bg);
             outline: none;
         }
-
+        
         .form-control::placeholder {
-            color: #999;
+            color: var(--text-secondary);
         }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
         }
-
-        .form-row.full {
-            grid-template-columns: 1fr;
-        }
-
+        
         .btn-register {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
             border: none;
-            border-radius: 12px;
-            padding: 14px 28px;
-            font-weight: 700;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
             color: white;
-            width: 100%;
-            font-size: 1rem;
-            letter-spacing: 0.5px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.3);
-            margin-bottom: 25px;
-            margin-top: 10px;
+            box-shadow: var(--shadow-medium);
         }
-
+        
         .btn-register:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(245, 87, 108, 0.4);
+            background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 100%);
+            box-shadow: var(--shadow-large);
+            transform: translateY(-1px);
+            color: white;
         }
-
+        
         .btn-register:active {
             transform: translateY(0);
+            box-shadow: var(--shadow-medium);
         }
-
-        .register-footer {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #f0f0f0;
-        }
-
-        .register-footer p {
-            color: #666;
-            font-size: 0.9rem;
-            margin: 0;
-        }
-
-        .register-footer a {
-            color: #f5576c;
+        
+        .login-link {
+            color: var(--purple);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.2s ease;
         }
-
-        .register-footer a:hover {
-            color: #f093fb;
+        
+        .login-link:hover {
+            color: var(--purple-dark);
             text-decoration: underline;
         }
-
+        
         .alert {
-            border-radius: 12px;
-            border: 2px solid #ff6b6b;
-            background: #fff5f5;
-            color: #c92a2a;
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            font-weight: 500;
-            font-size: 0.9rem;
+            border-radius: 8px;
+            border: none;
+            padding: 12px 16px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
         }
-
+        
+        .alert-danger {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+        
         .alert-success {
-            border-color: #51cf66;
-            background: #f1fdf5;
-            color: #2f8a44;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
         }
-
+        
+        .referral-info {
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 0.5rem;
+            border: 1px solid var(--border-light);
+        }
+        
+        .referral-info small {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
         .theme-toggle {
             position: fixed;
-            top: 30px;
-            right: 30px;
+            top: 20px;
+            right: 20px;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            width: 50px;
-            height: 50px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 1.2rem;
-            color: #f5576c;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-medium);
         }
-
+        
         .theme-toggle:hover {
-            transform: scale(1.1) rotate(20deg);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            color: var(--purple);
+            box-shadow: var(--shadow-large);
+            transform: translateY(-1px);
         }
-
-        @media (max-width: 600px) {
-            .register-header { padding: 35px 25px 30px; }
-            .register-body { padding: 30px 20px; }
-            .register-header h1 { font-size: 1.8rem; }
-            .user-plus-icon { font-size: 2.8rem; }
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 0;
+        
+        /* Dark theme styles */
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-light: #334155;
+        }
+        
+        [data-theme="dark"] .register-card {
+            border-color: var(--border-light);
+        }
+        
+        [data-theme="dark"] .form-control {
+            background: var(--card-bg);
+            border-color: var(--border-light);
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        [data-theme="dark"] .referral-info {
+            background-color: #334155;
+            border-color: var(--border-light);
+        }
+        
+        [data-theme="dark"] .alert-danger {
+            background-color: #450a0a;
+            border-color: #7f1d1d;
+            color: #fca5a5;
+        }
+        
+        [data-theme="dark"] .alert-success {
+            background-color: #052e16;
+            border-color: #166534;
+            color: #86efac;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .register-header {
+                padding: 2rem 1.5rem;
+            }
+            
+            .register-body {
+                padding: 2rem 1.5rem;
+            }
+            
+            .form-control {
+                padding: 10px 14px;
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            .btn-register {
+                padding: 12px 20px;
+            }
+            
+            .theme-toggle {
+                top: 16px;
+                right: 16px;
+                width: 40px;
+                height: 40px;
+            }
+            
+            .col-md-6 {
+                margin-bottom: 0;
             }
         }
     </style>
 </head>
 <body>
-    <div id="pixelGrid"></div>
-    <button class="theme-toggle" title="Toggle Dark Mode"><i class="fas fa-sun"></i></button>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+        <i class="fas fa-moon" id="darkModeIcon"></i>
+    </button>
     
-    <div class="register-wrapper">
-        <div class="register-card">
-            <div class="register-header">
-                <div class="user-plus-icon"><i class="fas fa-user-plus"></i></div>
-                <h1>Create Account</h1>
-                <p>Join SilentMultiPanel today</p>
-            </div>
-            
-            <div class="register-body">
-                <?php if ($error): ?>
-                    <div class="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="register-card">
+                    <div class="register-header">
+                        <i class="fas fa-user-plus fa-3x mb-3"></i>
+                        <h3>Create Account</h3>
+                        <p class="mb-0">Join Prince Panel today</p>
                     </div>
-                <?php endif; ?>
-                
-                <?php if ($success): ?>
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?>
+                    <div class="register-body">
+                        <?php if ($error): ?>
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <?php echo htmlspecialchars($error); ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($success): ?>
+                            <div class="alert alert-success" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <?php echo htmlspecialchars($success); ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important:</strong> Registration is only allowed with a valid referral code. Each referral code can only be used once. New users start with ₹0 balance.
+                        </div>
+                        
+                        <form method="POST">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">
+                                            <i class="fas fa-user me-2"></i>Username *
+                                        </label>
+                                        <input type="text" class="form-control" id="username" name="username" 
+                                               value="<?php echo htmlspecialchars($username ?? ''); ?>" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">
+                                            <i class="fas fa-envelope me-2"></i>Email *
+                                        </label>
+                                        <input type="email" class="form-control" id="email" name="email" 
+                                               value="<?php echo htmlspecialchars($email ?? ''); ?>" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">
+                                            <i class="fas fa-lock me-2"></i>Password *
+                                        </label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="confirm_password" class="form-label">
+                                            <i class="fas fa-lock me-2"></i>Confirm Password *
+                                        </label>
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="referral_code" class="form-label">
+                                    <i class="fas fa-gift me-2"></i>Referral Code *
+                                </label>
+                                <input type="text" class="form-control" id="referral_code" name="referral_code" 
+                                       value="<?php echo htmlspecialchars($referralCode ?? ''); ?>" 
+                                       placeholder="Enter your referral code" required>
+                                <div class="referral-info">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        <strong>Registration is only possible with a valid referral code.</strong> Each referral code can only be used once. New users start with ₹0 balance.
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-register w-100">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0">Already have an account? 
+                                <a href="login.php" class="login-link">Login here</a>
+                            </p>
+                        </div>
                     </div>
-                <?php endif; ?>
-                
-                <form method="POST" autocomplete="off">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label"><i class="fas fa-user me-2"></i>Username</label>
-                            <input type="text" class="form-control" name="username" placeholder="Choose username" required autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><i class="fas fa-envelope me-2"></i>Email</label>
-                            <input type="email" class="form-control" name="email" placeholder="Your email" required autocomplete="off">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label"><i class="fas fa-lock me-2"></i>Password</label>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Min 6 characters" required autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><i class="fas fa-lock me-2"></i>Confirm</label>
-                            <input type="password" class="form-control" id="confirm" name="confirm_password" placeholder="Confirm password" required autocomplete="off">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label class="form-label"><i class="fas fa-gift me-2"></i>Referral Code</label>
-                            <input type="text" class="form-control" name="referral_code" placeholder="Enter your referral code" required autocomplete="off">
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn-register">
-                        <i class="fas fa-user-plus me-2"></i>Create Account
-                    </button>
-                </form>
-                
-                <div class="register-footer">
-                    <p>Already have an account? <a href="login.php">Login here</a></p>
                 </div>
             </div>
         </div>
@@ -446,61 +498,58 @@ if ($_POST) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const tapColors = [
-            'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
-            'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
-            'linear-gradient(135deg, #ffd93d 0%, #f5a623 100%)',
-            'linear-gradient(135deg, #a8e6cf 0%, #56ab2f 100%)',
-            'linear-gradient(135deg, #ff8b94 0%, #ff6b6b 100%)',
-            'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
-            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-        ];
-
-        function createGrid() {
-            const grid = document.getElementById('pixelGrid');
-            const size = 35, gap = 3;
-            const cols = Math.ceil(window.innerWidth / (size + gap));
-            const rows = Math.ceil(window.innerHeight / (size + gap));
+        // Dark mode functionality
+        function toggleDarkMode() {
+            const body = document.body;
+            const icon = document.getElementById('darkModeIcon');
             
-            const activatePixel = (px) => {
-                const col = tapColors[Math.floor(Math.random() * tapColors.length)];
-                px.style.background = col;
-                px.style.boxShadow = '0 0 20px rgba(245, 87, 108, 0.7)';
-                px.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    px.style.background = 'transparent';
-                    px.style.boxShadow = 'none';
-                    px.style.transform = 'scale(1)';
-                }, 700);
-            };
-            
-            for (let i = 0; i < cols * rows; i++) {
-                const px = document.createElement('div');
-                px.className = 'grid-pixel';
-                px.style.left = ((i % cols) * (size + gap) + 15) + 'px';
-                px.style.top = (Math.floor(i / cols) * (size + gap) + 15) + 'px';
-                
-                px.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    activatePixel(px);
-                }, false);
-                
-                px.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    activatePixel(px);
-                }, false);
-                
-                grid.appendChild(px);
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
             }
         }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', createGrid);
-        } else {
-            createGrid();
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('darkModeIcon').className = 'fas fa-sun';
         }
+        
+        // Form validation enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            function validatePasswords() {
+                if (password.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('Passwords do not match');
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            }
+            
+            password.addEventListener('input', validatePasswords);
+            confirmPassword.addEventListener('input', validatePasswords);
+            
+            // Auto-hide alerts
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                    }, 300);
+                }, 5000);
+            });
+        });
     </script>
 </body>
 </html>

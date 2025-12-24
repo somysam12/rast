@@ -22,10 +22,10 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Applications - SilentMultiPanel</title>
+    <title>Applications - Prince Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/mobile.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
@@ -323,7 +323,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <button class="mobile-toggle me-3" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>SilentMultiPanel</h5>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Prince Panel</h5>
         </div>
         <div class="d-flex align-items-center">
             <span class="balance-badge d-none d-sm-inline"><?php echo formatCurrency($user['balance']); ?></span>
@@ -339,7 +339,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="p-4 border-bottom border-light">
                     <h4 class="mb-1" style="color: var(--purple); font-weight: 700;">
-                        <i class="fas fa-crown me-2"></i>SilentMultiPanel
+                        <i class="fas fa-crown me-2"></i>Prince Panel
                     </h4>
                     <p class="text-muted small mb-0">User Dashboard</p>
                 </div>
@@ -348,10 +348,10 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
                     <a class="nav-link" href="user_manage_keys.php">
-                        <i class="fas fa-key"></i>Generate Keys
+                        <i class="fas fa-key"></i>Manage Keys
                     </a>
                     <a class="nav-link" href="user_generate.php">
-                        <i class="fas fa-plus"></i>Manage Keys
+                        <i class="fas fa-plus"></i>Generate
                     </a>
                     <a class="nav-link" href="user_balance.php">
                         <i class="fas fa-wallet"></i>Balance

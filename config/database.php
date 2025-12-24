@@ -1,44 +1,16 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('log_errors', 1);
-ini_set('error_log', '/tmp/php-errors.log');
+define('DB_PATH', '/home/runner/workspace/data/database.db');
 
-$databaseUrl = getenv('DATABASE_URL') ?: getenv('SUPABASE_DATABASE_URL');
-if (!$databaseUrl) {
-    die("DATABASE_URL environment variable not set");
+if (!is_dir('/home/runner/workspace/data')) {
+    mkdir('/home/runner/workspace/data', 0777, true);
 }
-$parsedUrl = parse_url($databaseUrl);
-if (!$parsedUrl) {
-    die("Failed to parse DATABASE_URL");
-}
-
-define('DB_HOST', $parsedUrl['host']);
-define('DB_PORT', $parsedUrl['port'] ?? 5432);
-define('DB_USER', urldecode($parsedUrl['user']));
-define('DB_PASS', urldecode($parsedUrl['pass']));
-define('DB_NAME', ltrim($parsedUrl['path'], '/'));
-
-// Connection pool for performance
-static $connection = null;
 
 function getDBConnection() {
-    global $connection;
-    
-    if ($connection) {
-        return $connection;
-    }
-    
     try {
-        $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=prefer";
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_PERSISTENT => true
-        ];
-        $connection = new PDO($dsn, DB_USER, DB_PASS, $options);
-        return $connection;
+        $pdo = new PDO("sqlite:" . DB_PATH);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->exec("PRAGMA foreign_keys = ON");
+        return $pdo;
     } catch(PDOException $e) {
         die("Connection failed: " . $e->getMessage());
     }
@@ -48,94 +20,94 @@ function initializeDatabase() {
     $pdo = getDBConnection();
     
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        balance DECIMAL(10,2) DEFAULT 0.00,
-        role VARCHAR(20) DEFAULT 'user',
-        referral_code VARCHAR(20) UNIQUE,
-        referred_by VARCHAR(20),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
-    
-    $pdo->exec("CREATE TABLE IF NOT EXISTS mods (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        description TEXT,
-        status VARCHAR(20) DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
-    
-    $pdo->exec("CREATE TABLE IF NOT EXISTS license_keys (
-        id SERIAL PRIMARY KEY,
-        mod_id INT NOT NULL REFERENCES mods(id) ON DELETE CASCADE,
-        license_key VARCHAR(100) UNIQUE NOT NULL,
-        duration INT NOT NULL,
-        duration_type VARCHAR(20) DEFAULT 'days',
-        price DECIMAL(10,2) NOT NULL,
-        status VARCHAR(20) DEFAULT 'available',
-        sold_to INT REFERENCES users(id) ON DELETE SET NULL,
-        sold_at TIMESTAMP NULL,
-        device_id VARCHAR(255) NULL,
-        activated_at TIMESTAMP NULL,
-        expires_at TIMESTAMP NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
-    
-    $pdo->exec("CREATE TABLE IF NOT EXISTS mod_apks (
-        id SERIAL PRIMARY KEY,
-        mod_id INT NOT NULL REFERENCES mods(id) ON DELETE CASCADE,
-        file_name VARCHAR(255) NOT NULL,
-        file_path VARCHAR(500) NOT NULL,
-        file_size INT NOT NULL,
-        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
-    
-    $pdo->exec("CREATE TABLE IF NOT EXISTS transactions (
-        id SERIAL PRIMARY KEY,
-        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        amount DECIMAL(10,2) NOT NULL,
-        type VARCHAR(20) NOT NULL,
-        reference VARCHAR(100),
-        description TEXT,
-        status VARCHAR(20) DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
-    
-    $pdo->exec("CREATE TABLE IF NOT EXISTS referral_codes (
-        id SERIAL PRIMARY KEY,
-        code VARCHAR(20) UNIQUE NOT NULL,
-        created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        expires_at TIMESTAMP NOT NULL,
-        status VARCHAR(20) DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        balance REAL DEFAULT 0.00,
+        role TEXT DEFAULT 'user',
+        referral_code TEXT UNIQUE,
+        referred_by INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
     
     $pdo->exec("CREATE TABLE IF NOT EXISTS user_sessions (
-        id SERIAL PRIMARY KEY,
-        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        session_id VARCHAR(255) NOT NULL,
-        ip_address VARCHAR(45),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        session_id TEXT UNIQUE NOT NULL,
+        ip_address TEXT,
         user_agent TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(user_id, session_id)
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )");
     
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE role = 'admin'");
-    $stmt->execute();
+    $pdo->exec("CREATE TABLE IF NOT EXISTS mods (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        status TEXT DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+    
+    $pdo->exec("CREATE TABLE IF NOT EXISTS license_keys (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mod_id INTEGER NOT NULL,
+        license_key TEXT UNIQUE NOT NULL,
+        duration INTEGER NOT NULL,
+        duration_type TEXT DEFAULT 'days',
+        price REAL NOT NULL,
+        status TEXT DEFAULT 'available',
+        sold_to INTEGER,
+        sold_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mod_id) REFERENCES mods(id) ON DELETE CASCADE,
+        FOREIGN KEY (sold_to) REFERENCES users(id) ON DELETE SET NULL
+    )");
+    
+    $pdo->exec("CREATE TABLE IF NOT EXISTS mod_apks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mod_id INTEGER NOT NULL,
+        file_name TEXT NOT NULL,
+        file_path TEXT NOT NULL,
+        file_size INTEGER NOT NULL,
+        uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mod_id) REFERENCES mods(id) ON DELETE CASCADE
+    )");
+    
+    $pdo->exec("CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        type TEXT NOT NULL,
+        reference TEXT,
+        description TEXT,
+        status TEXT DEFAULT 'completed',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )");
+    
+    $pdo->exec("CREATE TABLE IF NOT EXISTS referral_codes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        created_by INTEGER NOT NULL,
+        expires_at DATETIME NOT NULL,
+        status TEXT DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+    )");
+    
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE role = ?");
+    $stmt->execute(['admin']);
     $adminCount = $stmt->fetchColumn();
     
     if ($adminCount == 0) {
         $adminPassword = password_hash('admin123', PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, balance) VALUES (:username, :email, :password, :role, :balance)");
-        $stmt->execute([
-            ':username' => 'admin',
-            ':email' => 'admin@example.com',
-            ':password' => $adminPassword,
-            ':role' => 'admin',
-            ':balance' => 99999.00
-        ]);
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, balance) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute(['admin', 'admin@example.com', $adminPassword, 'admin', 99999.00]);
     }
+}
+
+if (!file_exists(DB_PATH)) {
+    initializeDatabase();
 }
 ?>

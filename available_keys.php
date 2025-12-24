@@ -66,7 +66,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Available License Keys - SilentMultiPanel</title>
+    <title>Available License Keys - Multi Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -501,7 +501,7 @@ try {
             <button class="mobile-toggle me-3" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>SilentMultiPanel</h5>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
         </div>
         <div class="d-flex align-items-center">
             <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
@@ -517,7 +517,7 @@ try {
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="position-sticky">
                     <h4 class="text-center py-3 border-bottom" style="border-color: var(--border-light) !important; color: var(--purple); font-weight: 600;">
-                        <i class="fas fa-shield-alt me-2"></i>SilentMultiPanel
+                        <i class="fas fa-shield-alt me-2"></i>Multi Panel
                     </h4>
                 <nav class="nav flex-column p-3">
                     <a class="nav-link" href="admin_dashboard.php">
@@ -699,7 +699,6 @@ try {
                                             <th><i class="fas fa-clock me-2"></i>Duration</th>
                                             <th><i class="fas fa-rupee-sign me-2"></i>Price</th>
                                             <th><i class="fas fa-key me-2"></i>Available Keys</th>
-                                            <th><i class="fas fa-tools me-2"></i>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -725,11 +724,6 @@ try {
                                                 <span class="badge bg-success">
                                                     <?php echo $group['count']; ?> Available
                                                 </span>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-secondary" onclick="expandKeys('<?php echo htmlspecialchars($group['duration']); ?>', <?php echo $mod['mod_id']; ?>)" title="View & Delete Keys">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
@@ -1093,7 +1087,7 @@ try {
             
             // Welcome message
             setTimeout(() => {
-                showToast('Welcome to SilentMultiPanel! Available Keys Overview', 'info');
+                showToast('Welcome to Multi Panel! Available Keys Overview', 'info');
             }, 1000);
         });
         

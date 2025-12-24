@@ -127,7 +127,7 @@ function formatDate($date) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Keys - Mod APK Manager</title>
+    <title>Manage Keys - Mod APK Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -537,10 +537,10 @@ function formatDate($date) {
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
                     <a class="nav-link active" href="user_manage_keys_simple.php">
-                        <i class="fas fa-key"></i>Generate Keys
+                        <i class="fas fa-key"></i>Manage Keys
                     </a>
                     <a class="nav-link" href="user_generate_simple.php">
-                        <i class="fas fa-plus"></i>Manage Keys
+                        <i class="fas fa-plus"></i>Generate
                     </a>
                     <a class="nav-link" href="user_balance_simple.php">
                         <i class="fas fa-wallet"></i>Balance
@@ -563,7 +563,7 @@ function formatDate($date) {
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="fas fa-key me-2"></i>Generate Keys</h2>
+                    <h2><i class="fas fa-key me-2"></i>Manage Keys</h2>
                     <div class="d-flex align-items-center">
                         <span class="me-3">Balance: <?php echo formatCurrency($user['balance']); ?></span>
                         <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
