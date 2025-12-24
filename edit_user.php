@@ -53,8 +53,15 @@ try {
     $error = 'Failed to fetch user: ' . $e->getMessage();
 }
 
+// LOG: Initial state
+file_put_contents('/tmp/edit_user_log.txt', "\n=== PAGE LOAD ===\n" . date('Y-m-d H:i:s') . "\nUser ID: $user_id\nPDO: " . ($pdo ? "YES" : "NO") . "\nUser: " . ($user ? $user['username'] : "NO") . "\n", FILE_APPEND);
+file_put_contents('/tmp/edit_user_log.txt', "REQUEST METHOD: " . $_SERVER['REQUEST_METHOD'] . "\n", FILE_APPEND);
+
 // Handle form submission
+file_put_contents('/tmp/edit_user_log.txt', "Checking condition: REQUEST_METHOD=" . $_SERVER['REQUEST_METHOD'] . " PDO=" . ($pdo ? "1" : "0") . " USER=" . ($user ? "1" : "0") . "\n", FILE_APPEND);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
+    file_put_contents('/tmp/edit_user_log.txt', "✓ CONDITION MET - PROCESSING FORM\n", FILE_APPEND);
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -63,31 +70,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     $balance_amount = isset($_POST['balance_amount']) ? (float)$_POST['balance_amount'] : 0;
     $balance_type = $_POST['balance_type'] ?? 'add';
     
+    // LOG: What data was received
+    file_put_contents('/tmp/edit_user_log.txt', "\n=== FORM SUBMISSION ===\n" . date('Y-m-d H:i:s') . "\n", FILE_APPEND);
+    file_put_contents('/tmp/edit_user_log.txt', "User ID: $user_id\n", FILE_APPEND);
+    file_put_contents('/tmp/edit_user_log.txt', "Username: $username\n", FILE_APPEND);
+    file_put_contents('/tmp/edit_user_log.txt', "Email: $email\n", FILE_APPEND);
+    file_put_contents('/tmp/edit_user_log.txt', "Password: " . (!empty($password) ? "YES (length: " . strlen($password) . ")" : "NO") . "\n", FILE_APPEND);
+    
     try {
         // 1. UPDATE USERNAME & EMAIL
         if (!empty($username) && !empty($email)) {
+            file_put_contents('/tmp/edit_user_log.txt', "→ Updating username & email\n", FILE_APPEND);
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE (username = ? OR email = ?) AND id != ?");
             $stmt->execute([$username, $email, $user_id]);
             
             if ($stmt->fetchColumn() > 0) {
                 $error = 'Username or email already exists';
+                file_put_contents('/tmp/edit_user_log.txt', "✗ Username/email already exists\n", FILE_APPEND);
             } else {
                 $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
-                $stmt->execute([$username, $email, $user_id]);
+                $result = $stmt->execute([$username, $email, $user_id]);
+                $affected = $stmt->rowCount();
+                file_put_contents('/tmp/edit_user_log.txt', "✓ Updated username/email (affected: $affected)\n", FILE_APPEND);
                 $success = 'Username and email updated!';
             }
         }
         
         // 2. UPDATE PASSWORD (INDEPENDENT - ALWAYS WORKS)
         if (!empty($password)) {
+            file_put_contents('/tmp/edit_user_log.txt', "→ Updating password\n", FILE_APPEND);
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            file_put_contents('/tmp/edit_user_log.txt', "→ Hash generated (length: " . strlen($hashed_password) . ")\n", FILE_APPEND);
+            
             $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
             $result = $stmt->execute([$hashed_password, $user_id]);
             $affected = $stmt->rowCount();
             
+            file_put_contents('/tmp/edit_user_log.txt', "→ Execute result: " . ($result ? "TRUE" : "FALSE") . "\n", FILE_APPEND);
+            file_put_contents('/tmp/edit_user_log.txt', "→ Rows affected: $affected\n", FILE_APPEND);
+            
             if ($affected > 0) {
+                file_put_contents('/tmp/edit_user_log.txt', "✓ Password updated successfully!\n", FILE_APPEND);
                 $success = 'Password updated successfully!';
             } else {
+                file_put_contents('/tmp/edit_user_log.txt', "✗ Password update failed - no rows affected\n", FILE_APPEND);
                 $error = 'Failed to update password - please try again';
             }
         }
@@ -327,7 +353,7 @@ try {
                 <div class="card">
                     <h2 style="margin-bottom: 30px;">Edit User: <?php echo htmlspecialchars($user['username']); ?></h2>
                     
-                    <form method="POST" style="margin-bottom: 30px;">
+                    <form method="POST" action="edit_user.php?id=<?php echo $user_id; ?>" style="margin-bottom: 30px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                             <div class="form-group">
                                 <label class="form-label">Username</label>
