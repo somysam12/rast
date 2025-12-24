@@ -1,0 +1,48 @@
+# SilentMultiPanel - cPanel .htaccess Configuration
+# Remove the ".example" from filename to use: rename to ".htaccess"
+
+# Enable PHP
+<FilesMatch "\.php$">
+    Require all granted
+</FilesMatch>
+
+# Set environment variables for database
+SetEnv DB_HOST localhost
+SetEnv DB_NAME silentmu_silentdb
+SetEnv DB_USER silentmu_silentdb
+SetEnv DB_PASS 844121@luvkush
+
+# Force HTTPS redirect (uncomment after SSL is installed)
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Disable directory listing
+Options -Indexes
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Block access to sensitive files
+<FilesMatch "(database\.php|\.env|\.git|\.htaccess)">
+    Require all denied
+</FilesMatch>
+
+# Compress text files
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Cache control
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
