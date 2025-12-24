@@ -69,14 +69,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
         $stmt->execute([$role, $user_id]);
         
-        // Update logout limit
-        $stmt = $pdo->prepare("UPDATE force_logouts SET logout_limit = ? WHERE user_id = ? LIMIT 1");
-        $stmt->execute([$logout_limit, $user_id]);
-        
-        // If no record exists, insert one
+        // Update or create logout limit
         $stmt = $pdo->prepare("SELECT id FROM force_logouts WHERE user_id = ?");
         $stmt->execute([$user_id]);
-        if (!$stmt->fetch()) {
+        $exists = $stmt->fetch();
+        
+        if ($exists) {
+            $stmt = $pdo->prepare("UPDATE force_logouts SET logout_limit = ? WHERE user_id = ?");
+            $stmt->execute([$logout_limit, $user_id]);
+        } else {
             $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, ?)");
             $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
         }
@@ -171,29 +172,44 @@ try {
         
         .btn {
             padding: 10px 20px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             border: none;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
         }
         
         .btn-primary {
-            background-color: var(--purple);
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
             color: white;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
         }
         
         .btn-primary:hover {
-            background-color: var(--purple-dark);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
         }
         
         .btn-secondary {
-            background-color: #e2e8f0;
+            background-color: #f3f4f6;
             color: var(--text-primary);
+            border: 1px solid var(--border-light);
         }
         
         .btn-secondary:hover {
-            background-color: #cbd5e1;
+            background-color: #e5e7eb;
+            border-color: #d1d5db;
         }
         
         .card {
@@ -305,11 +321,13 @@ try {
                             <small style="color: #888;">0 means unlimited force logouts</small>
                         </div>
 
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; gap: 12px; margin-top: 30px;">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Update User
+                                <i class="fas fa-check-circle"></i>Update User
                             </button>
-                            <a href="manage_users.php" class="btn btn-secondary">Cancel</a>
+                            <a href="manage_users.php" class="btn btn-secondary">
+                                <i class="fas fa-times-circle"></i>Cancel
+                            </a>
                         </div>
                     </form>
                 </div>
