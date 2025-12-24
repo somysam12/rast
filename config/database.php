@@ -1,6 +1,6 @@
 <?php
 // SilentMultiPanel Database Configuration
-// Auto-detects and connects to SQLite (Local), MySQL (cPanel), or PostgreSQL (Render)
+// Auto-detects: SQLite (Replit), MySQL (cPanel), PostgreSQL (Render)
 
 function getDBConnection() {
     static $pdo = null;
@@ -11,20 +11,16 @@ function getDBConnection() {
     
     try {
         $isReplit = file_exists('/home/runner/workspace');
-        $dbHost = getenv('DB_HOST');
-        $dbName = getenv('DB_NAME');
         $databaseUrl = getenv('DATABASE_URL');
         
-        // PRIORITY 1: Replit Local Development - Use SQLite
-        if ($isReplit && (empty($dbHost) || $dbHost === 'localhost')) {
+        // PRIORITY 1: Replit Local Development - Always use SQLite
+        if ($isReplit) {
             $dataDir = '/home/runner/workspace/data';
-            
             if (!is_dir($dataDir)) {
                 @mkdir($dataDir, 0777, true);
             }
             
             $dbPath = $dataDir . '/database.db';
-            
             $pdo = new PDO("sqlite:" . $dbPath);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $pdo->exec("PRAGMA foreign_keys = ON");
@@ -33,30 +29,7 @@ function getDBConnection() {
             return $pdo;
         }
         
-        // PRIORITY 2: MySQL Configuration (cPanel or explicit config)
-        if (!empty($dbHost) && $dbHost !== 'localhost') {
-            $database = $dbName ?: 'silentmu_silentdb';
-            $username = getenv('DB_USER') ?: 'silentmu_silentdb';
-            $password = getenv('DB_PASS') ?: '844121@luvkush';
-            
-            $dsn = "mysql:host=" . $dbHost 
-                   . ";dbname=" . $database
-                   . ";charset=utf8mb4";
-            
-            $pdo = new PDO(
-                $dsn,
-                $username,
-                $password,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
-                ]
-            );
-            return $pdo;
-        }
-        
-        // PRIORITY 3: PostgreSQL (Render Production)
+        // PRIORITY 2: cPanel/Production - Check for PostgreSQL first (Render)
         if (!empty($databaseUrl) && strpos($databaseUrl, 'postgresql') !== false) {
             $dbUrl = parse_url($databaseUrl);
             
@@ -77,18 +50,28 @@ function getDBConnection() {
             return $pdo;
         }
         
-        // FALLBACK: SQLite
-        $dataDir = '/home/runner/workspace/data';
-        if (!is_dir($dataDir)) {
-            @mkdir($dataDir, 0777, true);
-        }
+        // PRIORITY 3: cPanel/Production - Use MySQL (default for non-Replit)
+        // Use environment variables if available, otherwise use hardcoded cPanel credentials
+        $host = getenv('DB_HOST') ?: 'localhost';
+        $database = getenv('DB_NAME') ?: 'silentmu_silentdb';
+        $username = getenv('DB_USER') ?: 'silentmu_silentdb';
+        $password = getenv('DB_PASS') ?: '844121@luvkush';
         
-        $dbPath = $dataDir . '/database.db';
-        $pdo = new PDO("sqlite:" . $dbPath);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->exec("PRAGMA foreign_keys = ON");
-        $pdo->exec("PRAGMA journal_mode = WAL");
-        $pdo->exec("PRAGMA synchronous = NORMAL");
+        $dsn = "mysql:host=" . $host 
+               . ";dbname=" . $database
+               . ";charset=utf8mb4";
+        
+        $pdo = new PDO(
+            $dsn,
+            $username,
+            $password,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+            ]
+        );
+        
         return $pdo;
         
     } catch(PDOException $e) {
@@ -99,38 +82,20 @@ function getDBConnection() {
 
 function initializeDatabase() {
     $isReplit = file_exists('/home/runner/workspace');
-    $dbHost = getenv('DB_HOST');
     
-    // Detect database type
-    $isPostgres = !$isReplit && !empty(getenv('DATABASE_URL')) && strpos(getenv('DATABASE_URL'), 'postgresql') !== false;
-    $isMysql = !empty($dbHost) && $dbHost !== 'localhost';
-    $isSqlite = $isReplit || (!$isPostgres && !$isMysql);
+    // Only auto-create tables for Replit (SQLite)
+    // For cPanel/Production, tables are created via fresh_database.sql import
+    if (!$isReplit) {
+        return;
+    }
     
-    // Skip file check for hosted databases
-    if ($isSqlite && file_exists('/home/runner/workspace/data/.initialized')) {
+    if (file_exists('/home/runner/workspace/data/.initialized')) {
         return;
     }
     
     $pdo = getDBConnection();
     
-    // Check if tables already exist (for hosted databases)
-    if ($isPostgres || $isMysql) {
-        try {
-            if ($isPostgres) {
-                $stmt = $pdo->query("SELECT to_regclass('public.users')");
-                if ($stmt->fetchColumn() !== null) {
-                    return; // Tables exist
-                }
-            } else {
-                $stmt = $pdo->query("SELECT 1 FROM users LIMIT 1");
-                return; // If query succeeds, tables exist
-            }
-        } catch (Exception $e) {
-            // Tables don't exist, continue with creation
-        }
-    }
-    
-    // SQLite/MySQL compatible table creation
+    // SQLite table creation
     $tables = [
         "CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -329,7 +294,6 @@ function initializeDatabase() {
     ];
     
     try {
-        // Create tables
         foreach ($tables as $sql) {
             try {
                 $pdo->exec($sql);
@@ -338,7 +302,6 @@ function initializeDatabase() {
             }
         }
         
-        // Create default admin user if none exists
         $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM users WHERE role = 'admin'");
         $stmt->execute();
         $result = $stmt->fetch();
@@ -350,15 +313,12 @@ function initializeDatabase() {
             $stmt->execute(['admin', 'admin@example.com', $adminPassword, 'admin', 99999.00]);
         }
         
-        // Mark as initialized for SQLite
-        if ($isSqlite) {
-            @touch('/home/runner/workspace/data/.initialized');
-        }
+        @touch('/home/runner/workspace/data/.initialized');
     } catch (Exception $e) {
         error_log("Database initialization error: " . $e->getMessage());
     }
 }
 
-// Auto-initialize database
+// Auto-initialize database (only for Replit)
 initializeDatabase();
 ?>
