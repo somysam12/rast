@@ -560,6 +560,9 @@ try {
                     <a class="nav-link" href="referral_codes.php">
                         <i class="fas fa-tag"></i>Referral Code
                     </a>
+                    <a class="nav-link" href="admin_block_reset_requests.php">
+                        <i class="fas fa-shield-alt"></i>Block & Reset Requests
+                    </a>
                     <a class="nav-link" href="settings.php">
                         <i class="fas fa-cog"></i>Settings
                     </a>
