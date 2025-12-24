@@ -12,10 +12,9 @@ $pdo = getDBConnection();
 // Get current user data
 $user = getUserData();
 
-if ($_POST) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     if (isset($_POST['reset_device'])) {
-        $password = $_POST['password'];
-        
+        $password = $_POST['password'] ?? '';
         if (empty($password)) {
             $error = 'Please enter your password to reset device';
         } else {
@@ -30,36 +29,36 @@ if ($_POST) {
             }
         }
     } elseif (isset($_POST['update_profile'])) {
-        $username = trim($_POST['username']);
-        $email = trim($_POST['email']);
+        $username = trim($_POST['username'] ?? '');
+        $email = trim($_POST['email'] ?? '');
         
         if (empty($username) || empty($email)) {
             $error = 'Please fill in all fields';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = 'Please enter a valid email address';
         } else {
-            // Check if username or email already exists (excluding current user)
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE (username = ? OR email = ?) AND id != ?");
             $stmt->execute([$username, $email, $user['id']]);
             
             if ($stmt->fetchColumn() > 0) {
                 $error = 'Username or email already exists';
             } else {
-                $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
-                if ($stmt->execute([$username, $email, $user['id']])) {
+                try {
+                    $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
+                    $stmt->execute([$username, $email, $user['id']]);
                     $_SESSION['username'] = $username;
                     $_SESSION['email'] = $email;
                     $success = 'Profile updated successfully!';
-                    $user = getUserData(); // Refresh user data
-                } else {
-                    $error = 'Failed to update profile';
+                    $user = getUserData();
+                } catch (Exception $e) {
+                    $error = 'Database error: ' . $e->getMessage();
                 }
             }
         }
     } elseif (isset($_POST['change_password'])) {
-        $currentPassword = $_POST['current_password'];
-        $newPassword = $_POST['new_password'];
-        $confirmPassword = $_POST['confirm_password'];
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
         
         if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
             $error = 'Please fill in all password fields';
@@ -70,12 +69,13 @@ if ($_POST) {
         } elseif (!password_verify($currentPassword, $user['password'])) {
             $error = 'Current password is incorrect';
         } else {
-            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-            if ($stmt->execute([$hashedPassword, $user['id']])) {
+            try {
+                $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                $stmt->execute([$hashedPassword, $user['id']]);
                 $success = 'Password changed successfully!';
-            } else {
-                $error = 'Failed to change password';
+            } catch (Exception $e) {
+                $error = 'Database error: ' . $e->getMessage();
             }
         }
     }
@@ -346,7 +346,6 @@ if ($_POST) {
             display: block;
         }
         
-        /* Mobile Responsive Design */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -401,10 +400,8 @@ if ($_POST) {
     </style>
 </head>
 <body>
-    <!-- Mobile Overlay -->
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
     
-    <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="d-flex align-items-center">
             <button class="mobile-toggle me-3" onclick="toggleSidebar()">
@@ -422,7 +419,6 @@ if ($_POST) {
     
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="p-4 border-bottom border-light">
                     <h4 class="mb-1" style="color: var(--purple); font-weight: 700;">
@@ -458,7 +454,6 @@ if ($_POST) {
                 </nav>
             </div>
             
-            <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content" id="mainContent">
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
@@ -497,7 +492,6 @@ if ($_POST) {
                 <?php endif; ?>
                 
                 <div class="row">
-                    <!-- Account Information -->
                     <div class="col-md-6">
                         <div class="form-card">
                             <h5><i class="fas fa-user me-2"></i>Account Information</h5>
@@ -535,7 +529,6 @@ if ($_POST) {
                         </div>
                     </div>
                     
-                    <!-- Change Password -->
                     <div class="col-md-6">
                         <div class="form-card">
                             <h5><i class="fas fa-shield-alt me-2"></i>Change Password</h5>
@@ -567,7 +560,6 @@ if ($_POST) {
                     </div>
                 </div>
                 
-                <!-- Referral Information -->
                 <div class="form-card">
                     <h5><i class="fas fa-gift me-2"></i>Referral Information</h5>
                     <div class="row">
@@ -576,16 +568,9 @@ if ($_POST) {
                                 <label class="form-label fw-semibold">Your Referral Code</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" value="<?php echo htmlspecialchars($user['referral_code']); ?>" readonly>
-                                    <button class="btn btn-outline-secondary" type="button" 
-                                            onclick="copyToClipboard('<?php echo htmlspecialchars($user['referral_code']); ?>')">
+                                    <button class="btn btn-outline-secondary" type="button">
                                         <i class="fas fa-copy"></i>
                                     </button>
-                                </div>
-                                <div class="referral-info">
-                                    <small class="text-muted">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        Share this code with friends to earn rewards when they register!
-                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -593,43 +578,7 @@ if ($_POST) {
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Referred By</label>
                                 <input type="text" class="form-control" 
-                                       value="<?php echo $user['referred_by'] ? htmlspecialchars($user['referred_by']) : 'No referral'; ?>" 
-                                       readonly>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Device Management -->
-                <div class="form-card">
-                    <h5><i class="fas fa-mobile-alt me-2"></i>Device Management</h5>
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Reset All Devices</label>
-                                <p class="text-muted small mb-3">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    This will logout your account from all devices. You'll need to login again on any device you want to use.
-                                </p>
-                                <form method="POST" class="d-inline">
-                                    <input type="hidden" name="reset_device" value="1">
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" name="password" 
-                                               placeholder="Enter your password to confirm" required>
-                                        <button class="btn btn-outline-danger" type="submit" 
-                                                onclick="return confirm('Are you sure you want to logout from all devices?')">
-                                            <i class="fas fa-mobile-alt me-1"></i>Reset All Devices
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <strong>Warning:</strong> This action cannot be undone.
-                                </div>
+                                       value="<?php echo $user['referred_by'] ? htmlspecialchars($user['referred_by']) : 'No referral'; ?>" readonly>
                             </div>
                         </div>
                     </div>
@@ -641,58 +590,8 @@ if ($_POST) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.overlay');
-            
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-        }
-        
-        // Close sidebar when clicking on nav links on mobile
-        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 991.98) {
-                    toggleSidebar();
-                }
-            });
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 991.98) {
-                document.querySelector('.sidebar').classList.remove('show');
-                document.querySelector('.overlay').classList.remove('show');
-            }
-        });
-        
-        // Password confirmation validation
-        document.getElementById('confirm_password').addEventListener('input', function() {
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = this.value;
-            
-            if (newPassword !== confirmPassword) {
-                this.setCustomValidity('Passwords do not match');
-            } else {
-                this.setCustomValidity('');
-            }
-        });
-        
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                // Create a simple toast notification
-                const toast = document.createElement('div');
-                toast.className = 'alert alert-success position-fixed';
-                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
-                toast.innerHTML = '<i class="fas fa-check me-2"></i>Referral code copied to clipboard!';
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            }, function(err) {
-                console.error('Could not copy text: ', err);
-                alert('Could not copy referral code. Please copy manually.');
-            });
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('overlay').classList.toggle('show');
         }
     </script>
 </body>
