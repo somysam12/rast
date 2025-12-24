@@ -81,6 +81,9 @@ if ($_POST) {
                 $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy]);
                 
                 $userId = $pdo->lastInsertId();
+                // Set default force logout limit to 1 for new users
+                $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, 1)");
+                $stmt->execute([$userId, 1]);
                 
                 // Deactivate the referral code after use (one-time use only)
                 if ($referralType === 'admin') {
