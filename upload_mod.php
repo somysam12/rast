@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $pdo = getDBConnection();
 $success = $error = '';
-$uploadLimit = 2;
 
 // Handle upload
 if ($_POST && isset($_FILES['apk_file'])) {
@@ -105,7 +104,7 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
             <div class="col-md-9 main">
                 <div class="header">
                     <h2><i class="fas fa-upload me-2"></i>Upload Mod APK</h2>
-                    <p>Maximum file size: <?php echo $uploadLimit; ?>MB</p>
+                    <p>Upload your APK files without any size restrictions</p>
                 </div>
                 
                 <div class="card p-4 mb-4">
