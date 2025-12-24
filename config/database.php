@@ -48,6 +48,29 @@ function getDBConnection() {
                 ]
             );
         }
+        // MySQL Connection - Default cPanel Credentials
+        else {
+            // cPanel MySQL Configuration
+            $host = 'localhost';
+            $database = 'silentmu_isam';
+            $username = 'silentmu_isam';
+            $password = 'silentmu_isam';
+            
+            $dsn = "mysql:host=" . $host 
+                   . ";dbname=" . $database
+                   . ";charset=utf8mb4";
+            
+            $pdo = new PDO(
+                $dsn,
+                $username,
+                $password,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+                ]
+            );
+        }
         // SQLite Connection (Local Development on Replit)
         else {
             $dataDir = '/home/runner/workspace/data';

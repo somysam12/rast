@@ -3,6 +3,10 @@
 -- Complete schema covering all features
 -- ============================================
 
+-- Create database (if not exists)
+CREATE DATABASE IF NOT EXISTS silentmu_isam;
+USE silentmu_isam;
+
 -- ============================================
 -- 1. USERS TABLE - User accounts & authentication
 -- ============================================
