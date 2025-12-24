@@ -58,6 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? 'user';
     $logout_limit = isset($_POST['logout_limit']) ? (int)$_POST['logout_limit'] : 0;
+    $balance_amount = isset($_POST['balance_amount']) ? (float)$_POST['balance_amount'] : 0;
+    $balance_type = $_POST['balance_type'] ?? 'add';
     
     try {
         if (!empty($password)) {
@@ -80,6 +82,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         } else {
             $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, ?)");
             $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
+        }
+        
+        // Update balance if amount provided
+        if ($balance_amount > 0) {
+            if ($balance_type === 'add') {
+                $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+            } else {
+                $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
+            }
+            $stmt->execute([$balance_amount, $user_id]);
+            
+            // Log transaction
+            $desc = $balance_type === 'add' ? 'Balance added by admin' : 'Balance deducted by admin';
+            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$user_id, 'balance_' . $balance_type, $balance_amount, $desc]);
         }
         
         $success = 'User updated successfully!';
@@ -319,6 +336,29 @@ try {
                             <label class="form-label">Force Logout Limit (24h)</label>
                             <input type="number" name="logout_limit" class="form-control" value="<?php echo htmlspecialchars($user['logout_limit'] ?? 0); ?>" min="0" placeholder="0 = Unlimited">
                             <small style="color: #888;">0 means unlimited force logouts</small>
+                        </div>
+
+                        <div id="balance" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; color: white;">
+                            <h4 style="margin-top: 0; color: white;">Manage Balance</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                                <div class="form-group">
+                                    <label class="form-label" style="color: white;">Amount (₹)</label>
+                                    <input type="number" name="balance_amount" class="form-control" placeholder="Enter amount" min="0" step="0.01" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" style="color: white;">Action</label>
+                                    <select name="balance_type" class="form-control" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white;">
+                                        <option value="add" style="background: #1e293b;">Add Balance</option>
+                                        <option value="deduct" style="background: #1e293b;">Deduct Balance</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" style="color: white;">Current: <?php echo formatCurrency($user['balance'] ?? 0); ?></label>
+                                    <div style="padding: 10px; background: rgba(255,255,255,0.2); border-radius: 6px; text-align: center; font-weight: 600;">
+                                        <?php echo formatCurrency($user['balance'] ?? 0); ?>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div style="display: flex; gap: 12px; margin-top: 30px;">
