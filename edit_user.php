@@ -84,8 +84,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         // Always allow password update regardless of username/email error
         if (!empty($password)) {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-            $stmt->execute([$hashed_password, $user_id]);
+            
+            // Debug logging
+            error_log("PASSWORD UPDATE DEBUG:");
+            error_log("User ID: " . $user_id);
+            error_log("New Password: " . $password);
+            error_log("Hash Length: " . strlen($hashed_password));
+            error_log("Hash: " . substr($hashed_password, 0, 20) . "...");
+            
+            // Verify hash is valid
+            if (!password_verify($password, $hashed_password)) {
+                error_log("ERROR: Hash verification failed!");
+                $error = "Password hash verification failed!";
+                $has_error = true;
+            } else {
+                try {
+                    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                    $result = $stmt->execute([$hashed_password, $user_id]);
+                    $affected = $stmt->rowCount();
+                    
+                    error_log("Update Result: " . ($result ? "TRUE" : "FALSE"));
+                    error_log("Rows Affected: " . $affected);
+                    
+                    if ($affected === 0) {
+                        error_log("WARNING: No rows updated!");
+                    }
+                } catch (Exception $e) {
+                    error_log("ERROR during password update: " . $e->getMessage());
+                    $error = "Database error during password update: " . $e->getMessage();
+                    $has_error = true;
+                }
+            }
         }
         
         if (!$has_error) {
