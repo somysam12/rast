@@ -5,6 +5,52 @@ ini_set('display_errors', 1);
 session_start();
 require_once 'config/database.php';
 
+// AJAX endpoint for key lookup
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_lookup'])) {
+    header('Content-Type: application/json');
+    try {
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+            exit;
+        }
+        
+        $pdo = getDBConnection();
+        $licenseKey = trim($_POST['license_key'] ?? '');
+        
+        if (empty($licenseKey)) {
+            echo json_encode(['success' => false, 'message' => 'Please enter a license key']);
+            exit;
+        }
+        
+        $stmt = $pdo->prepare('SELECT lk.id, lk.license_key, lk.duration, lk.duration_type, lk.mod_id, m.name AS mod_name
+                               FROM license_keys lk
+                               LEFT JOIN mods m ON m.id = lk.mod_id
+                               WHERE lk.license_key = ? AND lk.sold_to = ? LIMIT 1');
+        $stmt->execute([$licenseKey, $_SESSION['user_id']]);
+        $key = $stmt->fetch();
+        
+        if (!$key) {
+            echo json_encode(['success' => false, 'message' => 'Key not found or you do not own this key']);
+            exit;
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'key' => [
+                'id' => $key['id'],
+                'license_key' => $key['license_key'],
+                'mod_name' => $key['mod_name'] ?? 'Unknown',
+                'duration' => $key['duration'],
+                'duration_type' => ucfirst($key['duration_type'])
+            ]
+        ]);
+        exit;
+    } catch (Throwable $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
 function formatCurrency($amount){
     return '₹' . number_format((float)$amount, 2, '.', ',');
 }
@@ -316,32 +362,17 @@ try {
                         
                         <!-- Paste Tab -->
                         <div class="tab-pane fade" id="paste-pane" role="tabpanel">
-                            <form method="POST">
-                                <div class="form-group mt-4">
-                                    <label class="form-label">Paste Your License Key *</label>
-                                    <input type="text" class="form-control" name="license_key" placeholder="Paste your license key here..." required>
-                                </div>
-                                <button type="submit" name="lookup_key" class="btn btn-primary mb-4">
-                                    <i class="fas fa-search me-2"></i>Lookup Key
-                                </button>
-                                
-                                <?php if ($selectedKeyDetails): ?>
-                                <div class="key-display">
-                                    <strong><i class="fas fa-check-circle me-2" style="color: #10b981;"></i>Key Found!</strong>
-                                    <div class="key-detail-item mt-2">
-                                        <span class="key-detail-label">Product:</span>
-                                        <span class="key-detail-value"><?php echo htmlspecialchars($selectedKeyDetails['mod_name']); ?></span>
-                                    </div>
-                                    <div class="key-detail-item">
-                                        <span class="key-detail-label">Duration:</span>
-                                        <span class="key-detail-value"><?php echo $selectedKeyDetails['duration'] . ' ' . ucfirst($selectedKeyDetails['duration_type']); ?></span>
-                                    </div>
-                                    <div class="key-detail-item">
-                                        <span class="key-detail-label">License Key:</span>
-                                        <span class="key-detail-value" style="font-family: monospace;"><?php echo htmlspecialchars($selectedKeyDetails['license_key']); ?></span>
-                                    </div>
-                                </div>
-                                
+                            <div class="form-group mt-4">
+                                <label class="form-label">Paste Your License Key *</label>
+                                <input type="text" id="pasteKeyInput" class="form-control" placeholder="Paste your license key here...">
+                            </div>
+                            <button type="button" id="lookupBtn" class="btn btn-primary mb-4">
+                                <i class="fas fa-search me-2"></i>Lookup Key
+                            </button>
+                            
+                            <div id="keyResultContainer"></div>
+                            
+                            <form id="pasteForm" method="POST" style="display: none;">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
@@ -359,11 +390,10 @@ try {
                                     <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
                                 </div>
                                 <input type="hidden" name="key_selection" value="pasted">
-                                <input type="hidden" name="license_key" value="<?php echo htmlspecialchars($selectedKeyDetails['license_key']); ?>">
+                                <input type="hidden" id="licenseKeyHidden" name="license_key">
                                 <button type="submit" name="submit_request" class="btn btn-primary">
                                     <i class="fas fa-paper-plane me-2"></i>Submit Request
                                 </button>
-                                <?php endif; ?>
                             </form>
                         </div>
                     </div>
@@ -420,5 +450,65 @@ try {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('lookupBtn').addEventListener('click', async function() {
+            const keyInput = document.getElementById('pasteKeyInput').value.trim();
+            const container = document.getElementById('keyResultContainer');
+            const form = document.getElementById('pasteForm');
+            
+            if (!keyInput) {
+                container.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Please enter a license key</div>';
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('ajax_lookup', '1');
+                formData.append('license_key', keyInput);
+                
+                const response = await fetch('user_block_request.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const key = data.key;
+                    container.innerHTML = `
+                        <div class="key-display">
+                            <strong><i class="fas fa-check-circle me-2" style="color: #10b981;"></i>Key Found!</strong>
+                            <div class="key-detail-item mt-2">
+                                <span class="key-detail-label">Product:</span>
+                                <span class="key-detail-value">${key.mod_name}</span>
+                            </div>
+                            <div class="key-detail-item">
+                                <span class="key-detail-label">Duration:</span>
+                                <span class="key-detail-value">${key.duration} ${key.duration_type}</span>
+                            </div>
+                            <div class="key-detail-item">
+                                <span class="key-detail-label">License Key:</span>
+                                <span class="key-detail-value" style="font-family: monospace;">${key.license_key}</span>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('licenseKeyHidden').value = key.license_key;
+                    form.style.display = 'block';
+                } else {
+                    container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${data.message}</div>`;
+                    form.style.display = 'none';
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}</div>`;
+                form.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('pasteKeyInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('lookupBtn').click();
+            }
+        });
+    </script>
 </body>
 </html>
