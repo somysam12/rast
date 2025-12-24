@@ -81,13 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             }
         }
         
+        // Always allow password update regardless of username/email error
+        if (!empty($password)) {
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt->execute([$hashed_password, $user_id]);
+        }
+        
         if (!$has_error) {
-            if (!empty($password)) {
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-                $stmt->execute([$hashed_password, $user_id]);
-            }
-            
             $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
             $stmt->execute([$role, $user_id]);
             
@@ -118,8 +119,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
                 $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)");
                 $stmt->execute([$user_id, 'balance_' . $balance_type, $balance_amount, $desc]);
             }
-            
-            $success = 'User updated successfully!';
+        }
+        
+        $success = 'User updated successfully!';
+        if ($has_error) {
+            $success .= ' (but username/email already exists - skipped)';
         }
         
         // Refresh user data
