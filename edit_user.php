@@ -63,6 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     $balance_amount = isset($_POST['balance_amount']) ? (float)$_POST['balance_amount'] : 0;
     $balance_type = $_POST['balance_type'] ?? 'add';
     
+    $has_error = false;
+    
     try {
         // Update username and email
         if (!empty($username) && !empty($email)) {
@@ -72,50 +74,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             
             if ($stmt->fetchColumn() > 0) {
                 $error = 'Username or email already exists';
+                $has_error = true;
             } else {
                 $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
                 $stmt->execute([$username, $email, $user_id]);
             }
         }
         
-        if (!empty($password)) {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-            $stmt->execute([$hashed_password, $user_id]);
-        }
-        
-        $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
-        $stmt->execute([$role, $user_id]);
-        
-        // Update or create logout limit
-        $stmt = $pdo->prepare("SELECT id FROM force_logouts WHERE user_id = ?");
-        $stmt->execute([$user_id]);
-        $exists = $stmt->fetch();
-        
-        if ($exists) {
-            $stmt = $pdo->prepare("UPDATE force_logouts SET logout_limit = ? WHERE user_id = ?");
-            $stmt->execute([$logout_limit, $user_id]);
-        } else {
-            $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, ?)");
-            $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
-        }
-        
-        // Update balance if amount provided
-        if ($balance_amount > 0) {
-            if ($balance_type === 'add') {
-                $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
-            } else {
-                $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
+        if (!$has_error) {
+            if (!empty($password)) {
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                $stmt->execute([$hashed_password, $user_id]);
             }
-            $stmt->execute([$balance_amount, $user_id]);
             
-            // Log transaction
-            $desc = $balance_type === 'add' ? 'Balance added by admin' : 'Balance deducted by admin';
-            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$user_id, 'balance_' . $balance_type, $balance_amount, $desc]);
+            $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
+            $stmt->execute([$role, $user_id]);
+            
+            // Update or create logout limit
+            $stmt = $pdo->prepare("SELECT id FROM force_logouts WHERE user_id = ?");
+            $stmt->execute([$user_id]);
+            $exists = $stmt->fetch();
+            
+            if ($exists) {
+                $stmt = $pdo->prepare("UPDATE force_logouts SET logout_limit = ? WHERE user_id = ?");
+                $stmt->execute([$logout_limit, $user_id]);
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, ?)");
+                $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
+            }
+            
+            // Update balance if amount provided
+            if ($balance_amount > 0) {
+                if ($balance_type === 'add') {
+                    $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+                } else {
+                    $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
+                }
+                $stmt->execute([$balance_amount, $user_id]);
+                
+                // Log transaction
+                $desc = $balance_type === 'add' ? 'Balance added by admin' : 'Balance deducted by admin';
+                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$user_id, 'balance_' . $balance_type, $balance_amount, $desc]);
+            }
+            
+            $success = 'User updated successfully!';
         }
         
-        $success = 'User updated successfully!';
         // Refresh user data
         $stmt = $pdo->prepare("SELECT u.*, COALESCE(fl.logout_limit, 0) as logout_limit FROM users u LEFT JOIN force_logouts fl ON u.id = fl.user_id WHERE u.id = ?");
         $stmt->execute([$user_id]);
