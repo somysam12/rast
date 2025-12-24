@@ -1,160 +1,147 @@
-# Mod APK Manager
+# SilentMultiPanel - MOD APK License Management System
 
-## Overview
+## Project Overview
+SilentMultiPanel is a PHP-based license key management system for MOD APK distribution. It manages:
+- User accounts and authentication
+- License key generation and validation
+- MOD APK file uploads and downloads
+- Transaction history and balance management
+- Referral codes and user referrals
+- Admin dashboard for system management
 
-Mod APK Manager is a web-based distribution platform for modified Android applications (APK files). The system provides a dual-panel architecture with separate admin and user interfaces for managing mod distribution, license keys, user accounts, and financial transactions. Built with PHP and PostgreSQL, it handles APK file uploads, license key generation and sales, user balance management, referral systems, and transaction tracking.
+## Current Status
+✅ **PRODUCTION READY - Deployed to cPanel**
 
-## User Preferences
+### Database Configuration
+- **Type**: MySQL (on cPanel)
+- **Database**: silentmu_silentdb
+- **Username**: silentmu_isam
+- **Password**: 844121@LuvKush
+- **Host**: localhost
 
-Preferred communication style: Simple, everyday language.
+### Auto-Environment Detection
+The system automatically detects the environment:
+1. **Replit**: Uses SQLite (local development)
+2. **cPanel**: Uses MySQL (production)
+3. **Render**: Uses PostgreSQL (optional)
 
-## System Architecture
+## Admin Account
+- **Username**: admin
+- **Password**: admin123
 
-### Frontend Architecture
+## File Structure
+```
+/
+├── config/database.php           # Database configuration (auto-detect)
+├── includes/                     # Core includes
+│   ├── auth.php                 # Authentication functions
+│   ├── functions.php            # Helper functions
+│   ├── optimization.php         # Performance optimization
+│   └── performance.php          # Caching utilities
+├── assets/                       # CSS, JS, images
+│   ├── css/                     # Stylesheets
+│   ├── js/                      # JavaScript files
+│   └── images/                  # Images
+├── api/stats.php                # API endpoints
+├── login.php                    # Login page
+├── register.php                 # Registration page
+├── logout.php                   # Logout handler
+├── index.php                    # Home page
+│
+├── ADMIN FEATURES:
+├── admin_dashboard.php          # Admin dashboard
+├── manage_users.php             # User management
+├── manage_mods.php              # MOD management
+├── add_mod.php                  # Add new MOD
+├── delete_mod.php               # Delete MOD
+├── add_license.php              # Add license keys
+├── delete_key.php               # Delete license key
+├── licence_key_list.php         # View all keys
+├── admin_block_reset_requests.php # Manage key requests
+├── add_balance.php              # Add user balance
+│
+├── USER FEATURES:
+├── user_dashboard.php           # User dashboard
+├── user_manage_keys.php         # Manage own keys
+├── user_balance.php             # View balance
+├── user_transactions.php        # Transaction history
+├── user_generate.php            # Generate referral code
+├── user_settings.php            # User settings
+├── user_block_request.php       # Request key blocking
+├── user_notifications.php       # View notifications
+├── user_request_confirmations.php # View confirmations
+├── referral_codes.php           # Referral management
+├── transactions.php             # Transaction history
+├── user_applications.php        # Application list
+├── available_keys.php           # Available license keys
+│
+├── fresh_database.sql           # Database schema
+├── CPANEL_DEPLOYMENT_GUIDE.md   # Deployment instructions
+├── DEPLOYMENT_CHECKLIST.md      # Pre-deployment checklist
+└── README.md                    # Project readme
+```
 
-**Technology Stack**: The frontend uses vanilla JavaScript with ES6 classes for enhanced UI functionality and dark mode support. The design system is built with custom CSS using CSS variables for theming.
+## Features Implemented
 
-**Component Organization**: The UI is organized into reusable JavaScript classes (`DarkModeManager`, `EnhancedUI`) that handle:
-- Dark/light theme switching with localStorage persistence
-- Loading overlays and spinners for asynchronous operations
-- Form enhancements and validation
-- Smooth transitions and scroll animations
-- Tooltip system
+### User Features
+- ✅ User registration and login
+- ✅ License key management
+- ✅ Balance viewing and tracking
+- ✅ Transaction history
+- ✅ Referral code generation
+- ✅ Device/session management
+- ✅ Notifications
+- ✅ Key request (block, reset, extend)
 
-**Styling Approach**: Uses a custom CSS framework with:
-- CSS custom properties (variables) for consistent theming
-- Two font families (Inter and Poppins) from Google Fonts
-- Comprehensive color palette including primary gradients, semantic colors (success, warning, danger), and complete dark mode variants
-- Predefined spacing scale and border radius values
-- Shadow system for depth perception
+### Admin Features
+- ✅ User management (create, edit, delete)
+- ✅ MOD management (create, edit, delete)
+- ✅ License key management (generate, block, reset)
+- ✅ Balance management
+- ✅ Referral code management
+- ✅ Transaction monitoring
+- ✅ Request approval system
+- ✅ Key confirmation tracking
 
-**Rationale**: The decision to use vanilla JavaScript instead of a framework keeps the application lightweight and reduces dependencies, suitable for a PHP-based application. The component-based JavaScript architecture provides modularity while maintaining simplicity.
+## Database Tables
+1. **users** - User accounts
+2. **user_sessions** - Session management
+3. **mods** - Application/MOD info
+4. **license_keys** - License key storage
+5. **mod_apks** - APK file tracking
+6. **transactions** - Payment/balance history
+7. **referral_codes** - Referral code management
+8. **key_requests** - User key requests
+9. **key_confirmations** - Request confirmations
+10. **force_logouts** - Device logout tracking
+11. **notifications** - User notifications
+12. **applications** - Application list
+13. **activity_log** - Audit trail
 
-### Backend Architecture
+## Deployment
+Deployed to cPanel with:
+- MySQLdatabase fully configured
+- All tables created via fresh_database.sql
+- Admin account created with proper bcrypt password hash
+- Environment auto-detection working
+- Production-ready error handling
 
-**Language & Version**: PHP 7.4+ with PDO for database operations.
+## Recent Updates
+- Fixed database configuration with correct credentials
+- Created admin account with proper password hashing
+- Cleaned up all test files
+- Updated error messages for production
+- Verified all authentication systems
 
-**Architecture Pattern**: Traditional server-side MVC-style architecture where:
-- PHP handles routing, business logic, and database operations
-- HTML templates are likely rendered server-side
-- AJAX/fetch calls from frontend for dynamic operations
+## Testing
+- ✅ Database connection verified
+- ✅ Admin login works
+- ✅ User registration works
+- ✅ Authentication system functional
+- ✅ Session management working
 
-**Session Management**: Standard PHP session handling for authentication and authorization, with separate admin and user roles.
-
-**File Upload System**: Dedicated file upload handling for APK files stored in `uploads/apks/` directory with file system permission requirements (755/777).
-
-**Rationale**: PHP with PDO provides a straightforward, widely-supported solution for this type of application. The server-side rendering approach is appropriate for a CRUD-heavy admin panel system. PDO offers prepared statements for SQL injection protection.
-
-### Data Storage
-
-**Database**: PostgreSQL (database name: `mod_apk_manager`)
-
-**Configuration**: Database connection configured via `DATABASE_URL` environment variable in `config/database.php`.
-
-**Data Model** (inferred from features):
-- **Users table**: Stores user accounts with balance, referral codes, roles (admin/user)
-- **Mods table**: Mod APK metadata (name, description, status)
-- **License Keys table**: Generated keys linked to mods with status tracking (available/sold)
-- **Transactions table**: Financial transaction history for balance additions and key purchases
-- **APK Files**: File paths stored in database, actual files in filesystem
-
-**Relationships**:
-- Users have many transactions
-- Users have many purchased keys
-- Mods have many license keys
-- Mods have APK file references
-- License keys belong to mods and users (after purchase)
-
-**Rationale**: PostgreSQL is a reliable choice for this transactional system requiring ACID compliance for financial operations. Storing APK files on the filesystem rather than in the database is appropriate given their large size, with only metadata/paths in the database.
-
-### Authentication & Authorization
-
-**Authentication Method**: Username/password based authentication with default admin credentials (admin/admin123).
-
-**User Registration**: Self-service registration system for end users.
-
-**Role-Based Access Control**: Two-tier system:
-- **Admin Role**: Full system access including mod management, key generation, user management, balance operations, and system settings
-- **User Role**: Limited access to purchasing keys, viewing balance, downloading purchased APKs, and profile management
-
-**Session Security**: PHP session-based authentication (specifics would be in auth implementation files).
-
-**Rationale**: Simple role-based access is sufficient for this two-tier system. Username/password authentication is straightforward for both admin and user portals.
-
-### Key Functional Components
-
-**Mod Management System**:
-- CRUD operations for mod entries
-- APK file upload and storage
-- Status management for mods
-
-**License Key System**:
-- Single and bulk key generation
-- Key-to-mod association
-- Purchase/activation workflow
-- Status tracking (available/sold/activated)
-
-**Financial System**:
-- User balance tracking
-- Admin balance addition capability
-- Transaction logging for all financial operations
-- Key purchase transactions
-
-**Referral System**:
-- Referral code generation
-- Referral tracking (implementation details not visible in provided files)
-
-**Download System**:
-- Secure APK download for purchased/activated keys
-- File access control based on ownership
-
-## External Dependencies
-
-### Third-Party Libraries
-
-**Font Awesome**: Icon library used throughout the UI (`fas fa-moon`, `fas fa-sun` icons visible in dark mode toggle).
-
-**Google Fonts**: 
-- Inter font family (weights: 300, 400, 500, 600, 700, 800)
-- Poppins font family (weights: 300, 400, 500, 600, 700)
-
-**Rationale**: Font Awesome provides comprehensive iconography. Google Fonts CDN delivery ensures fonts load reliably without local hosting overhead.
-
-### Server Requirements
-
-**PHP Extensions Required**:
-- PDO PostgreSQL extension for database connectivity
-- File upload extensions (standard with PHP)
-
-**Web Server**: Any PHP-compatible web server (Apache, Nginx) with PHP 7.4+ support.
-
-**File System**: Write permissions required on `uploads/apks/` directory for APK storage.
-
-### Database
-
-**PostgreSQL Database**: Requires PostgreSQL server with database named `mod_apk_manager`. Connection configured via `DATABASE_URL` environment variable in `config/database.php`.
-
-**No External Database Services**: Uses self-hosted PostgreSQL rather than cloud database services.
-
-## Render.com Deployment
-
-This project is configured for deployment on Render.com with Docker.
-
-### Deployment Files
-
-- `Dockerfile` - Docker build configuration with PHP 8.2 and Apache
-- `docker-entrypoint.sh` - Startup script that initializes database before Apache starts
-- `render.yaml` - Render Blueprint configuration (auto-creates database and web service)
-- `apache.conf` - Apache virtual host configuration
-- `health.php` - Health check endpoint for Render
-- `.htaccess` - URL rewriting and HTTPS redirect
-- `.dockerignore` - Files excluded from Docker build
-
-### Quick Deploy
-
-1. Push code to GitHub
-2. Go to Render.com -> New -> Blueprint
-3. Connect your GitHub repository
-4. Render will automatically detect `render.yaml` and deploy
-
-See `RENDER_DEPLOY.md` for detailed deployment instructions.
+## Known Status
+- All core features implemented and tested
+- No database errors
+- No PHP warnings or errors
+- Production ready for cPanel deployment
