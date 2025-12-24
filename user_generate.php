@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $pdo->beginTransaction();
 
             // Lock key row
-            $stmt = $pdo->prepare('SELECT id, mod_id, price FROM license_keys WHERE id = ? AND sold_to IS NULL LIMIT 1 FOR UPDATE');
+            $stmt = $pdo->prepare('SELECT id, mod_id, price FROM license_keys WHERE id = ? AND sold_to IS NULL LIMIT 1');
             $stmt->execute([$keyId]);
             $key = $stmt->fetch();
             if(!$key){
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             }
 
             // Refresh user balance with lock
-            $stmt = $pdo->prepare('SELECT balance FROM users WHERE id = ? FOR UPDATE');
+            $stmt = $pdo->prepare('SELECT balance FROM users WHERE id = ?');
             $stmt->execute([$user['id']]);
             $row = $stmt->fetch();
             $currentBalance = (float)$row['balance'];
