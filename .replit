@@ -47,6 +47,6 @@ run = ["php", "-S", "0.0.0.0:5000"]
 [userenv.shared]
 APP_URL = "https://silentmultipanel.vippanel.in"
 DB_HOST = "localhost"
-DB_NAME = "silentmu_isam"
-DB_USER = "silentmu_isam"
-DB_PASS = "silentmu_isam"
+DB_NAME = "silentmu_silentdb"
+DB_USER = "silentmu_silentdb"
+DB_PASS = "silentmu_silentdb"

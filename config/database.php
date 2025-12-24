@@ -35,9 +35,9 @@ function getDBConnection() {
         else {
             // Try with environment variables first, fallback to defaults
             $host = getenv('DB_HOST') ?: 'localhost';
-            $database = getenv('DB_NAME') ?: 'silentmu_isam';
-            $username = getenv('DB_USER') ?: 'silentmu_isam';
-            $password = getenv('DB_PASS') ?: 'silentmu_isam';
+            $database = getenv('DB_NAME') ?: 'silentmu_silentdb';
+            $username = getenv('DB_USER') ?: 'silentmu_silentdb';
+            $password = getenv('DB_PASS') ?: 'silentmu_silentdb';
             
             $dsn = "mysql:host=" . $host 
                    . ";dbname=" . $database
