@@ -244,9 +244,11 @@ function formatDate($date) {
             left: 0;
             top: 0;
             z-index: 1000;
-            min-height: 100vh;
+            height: 100vh;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             transform: translateX(0);
+        overflow-y: auto;
+        overflow-x: hidden;
         }
         
         .sidebar.hidden {
@@ -660,6 +662,8 @@ function formatDate($date) {
             
             .sidebar.show {
                 transform: translateX(0);
+        overflow-y: auto;
+        overflow-x: hidden;
                 pointer-events: auto;
             }
             

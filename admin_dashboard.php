@@ -108,7 +108,7 @@ try {
         .sidebar {
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-light);
-            min-height: 100vh;
+            height: 100vh;
             position: fixed;
             width: 280px;
             left: 0;
@@ -117,6 +117,8 @@ try {
             transition: transform 0.3s ease;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: translateX(0);
+            overflow-y: auto;
+            overflow-x: hidden;
         }
         
         .sidebar.hidden {
@@ -370,6 +372,8 @@ try {
             
             .sidebar.show {
                 transform: translateX(0);
+            overflow-y: auto;
+            overflow-x: hidden;
             }
             
             .main-content {
