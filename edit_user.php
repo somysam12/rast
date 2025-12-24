@@ -55,6 +55,8 @@ try {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
+    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? 'user';
     $logout_limit = isset($_POST['logout_limit']) ? (int)$_POST['logout_limit'] : 0;
@@ -62,6 +64,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     $balance_type = $_POST['balance_type'] ?? 'add';
     
     try {
+        // Update username and email
+        if (!empty($username) && !empty($email)) {
+            // Check if username or email already exists (excluding current user)
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE (username = ? OR email = ?) AND id != ?");
+            $stmt->execute([$username, $email, $user_id]);
+            
+            if ($stmt->fetchColumn() > 0) {
+                $error = 'Username or email already exists';
+            } else {
+                $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
+                $stmt->execute([$username, $email, $user_id]);
+            }
+        }
+        
         if (!empty($password)) {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
