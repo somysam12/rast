@@ -1,3 +1,4 @@
+<?php require_once "includes/optimization.php"; ?>
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -61,22 +62,10 @@ try {
             COUNT(CASE WHEN balance > 0 THEN 1 END) as users_with_balance,
             AVG(balance) as avg_balance
             FROM users WHERE role = 'user'");
-        $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
-    } else {
-        $userStats = [
-            'total_users' => 0,
-            'total_balance' => 0,
-            'users_with_balance' => 0,
-            'avg_balance' => 0
-        ];
+        $pdo = getDBConnection();        $stmt = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(balance), 0) as total_balance, COALESCE(AVG(balance), 0) as avg_balance FROM users WHERE role = 'user'");        $userStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['count' => 0, 'total_balance' => 0, 'avg_balance' => 0];
     }
 } catch (Exception $e) {
-    $userStats = [
-        'total_users' => 0,
-        'total_balance' => 0,
-        'users_with_balance' => 0,
-        'avg_balance' => 0
-    ];
+        $pdo = getDBConnection();        $stmt = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(balance), 0) as total_balance, COALESCE(AVG(balance), 0) as avg_balance FROM users WHERE role = 'user'");        $userStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['count' => 0, 'total_balance' => 0, 'avg_balance' => 0];
 }
 ?>
 <!DOCTYPE html>

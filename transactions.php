@@ -70,26 +70,10 @@ try {
             COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_transactions,
             COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_transactions
             FROM transactions");
-        $transactionStats = $stmt->fetch(PDO::FETCH_ASSOC);
-    } else {
-        $transactionStats = [
-            'total_transactions' => 0,
-            'total_income' => 0,
-            'total_expenses' => 0,
-            'completed_transactions' => 0,
-            'pending_transactions' => 0,
-            'failed_transactions' => 0
-        ];
+        $pdo = getDBConnection();        $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) as total_income FROM transactions WHERE amount > 0");        $income_row = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['total_income' => 0];        $stmt = $pdo->query("SELECT COALESCE(ABS(SUM(amount)), 0) as total_expenses FROM transactions WHERE amount < 0");        $expense_row = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['total_expenses' => 0];        $transactionStats = ['total_income' => $income_row['total_income'] ?? 0, 'total_expenses' => $expense_row['total_expenses'] ?? 0];
     }
 } catch (Exception $e) {
-    $transactionStats = [
-        'total_transactions' => 0,
-        'total_income' => 0,
-        'total_expenses' => 0,
-        'completed_transactions' => 0,
-        'pending_transactions' => 0,
-        'failed_transactions' => 0
-    ];
+        $pdo = getDBConnection();        $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) as total_income FROM transactions WHERE amount > 0");        $income_row = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['total_income' => 0];        $stmt = $pdo->query("SELECT COALESCE(ABS(SUM(amount)), 0) as total_expenses FROM transactions WHERE amount < 0");        $expense_row = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['total_expenses' => 0];        $transactionStats = ['total_income' => $income_row['total_income'] ?? 0, 'total_expenses' => $expense_row['total_expenses'] ?? 0];
 }
 ?>
 <!DOCTYPE html>

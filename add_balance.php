@@ -25,11 +25,8 @@ $error = '';
 // Get all users for dropdown
 try {
     $pdo = getDBConnection();
-    $stmt = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY username");
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    $error = 'Failed to fetch users: ' . $e->getMessage();
-    $users = [];
+        $stmt = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(balance), 0) as total_balance, COALESCE(AVG(balance), 0) as avg_balance FROM users WHERE role = 'user' LIMIT 1");
+        $pdo = getDBConnection();        $stmt = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(balance), 0) as total_balance, COALESCE(AVG(balance), 0) as avg_balance FROM users WHERE role = 'user'");        $userStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['count' => 0, 'total_balance' => 0, 'avg_balance' => 0];
 }
 
 // Pre-select user if provided in URL
@@ -40,13 +37,9 @@ try {
     if ($pdo) {
         $stmt = $pdo->query("SELECT 
             COUNT(*) as total_users,
-            SUM(balance) as total_balance,
             COUNT(CASE WHEN balance > 0 THEN 1 END) as users_with_balance,
-            AVG(balance) as avg_balance
             FROM users WHERE role = 'user'");
-        $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
     } else {
-        $userStats = [
             'total_users' => 0,
             'total_balance' => 0,
             'users_with_balance' => 0,
@@ -54,7 +47,6 @@ try {
         ];
     }
 } catch (Exception $e) {
-    $userStats = [
         'total_users' => 0,
         'total_balance' => 0,
         'users_with_balance' => 0,
@@ -78,11 +70,8 @@ if ($_POST) {
                 // Refresh user stats after balance update
                 $stmt = $pdo->query("SELECT 
                     COUNT(*) as total_users,
-                    SUM(balance) as total_balance,
                     COUNT(CASE WHEN balance > 0 THEN 1 END) as users_with_balance,
-                    AVG(balance) as avg_balance
                     FROM users WHERE role = 'user'");
-                $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
             } else {
                 $error = 'Failed to add balance. Please try again.';
             }
@@ -615,7 +604,6 @@ if ($_POST) {
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Total Users</h6>
-                                    <h3 class="mb-0"><?php echo $userStats['total_users']; ?></h3>
                                 </div>
                                 <div style="color: var(--purple);">
                                     <i class="fas fa-users fa-2x"></i>
@@ -628,7 +616,6 @@ if ($_POST) {
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Total Balance</h6>
-                                    <h3 class="mb-0"><?php echo formatCurrency($userStats['total_balance']); ?></h3>
                                 </div>
                                 <div style="color: var(--success);">
                                     <i class="fas fa-wallet fa-2x"></i>
@@ -641,7 +628,6 @@ if ($_POST) {
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Active Wallets</h6>
-                                    <h3 class="mb-0"><?php echo $userStats['users_with_balance']; ?></h3>
                                 </div>
                                 <div style="color: var(--info);">
                                     <i class="fas fa-credit-card fa-2x"></i>
@@ -654,7 +640,6 @@ if ($_POST) {
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Avg Balance</h6>
-                                    <h3 class="mb-0"><?php echo formatCurrency($userStats['avg_balance']); ?></h3>
                                 </div>
                                 <div style="color: var(--warning);">
                                     <i class="fas fa-chart-line fa-2x"></i>
