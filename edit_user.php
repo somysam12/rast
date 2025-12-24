@@ -19,6 +19,17 @@ if (!isset($_SESSION['user_id'])) {
 
 try {
     $pdo = getDBConnection();
+    
+    // Create force_logouts table if it doesn't exist
+    $pdo->exec("CREATE TABLE IF NOT EXISTS force_logouts (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        logged_out_by INTEGER NOT NULL,
+        logout_limit INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (logged_out_by) REFERENCES users(id) ON DELETE CASCADE
+    )");
 } catch (Exception $e) {
     $error = 'Database connection failed: ' . $e->getMessage();
     $pdo = null;
