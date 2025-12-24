@@ -336,9 +336,8 @@ if ($isLoggedIn) {
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="hero-content">
-                        <h1 class="display-4 fw-bold mb-4 fade-in">
-                            Welcome To
-                            <span class="d-block" style="color: #fbbf24;">SilentMultiPanel</span>
+                        <h1 class="display-3 fw-bold mb-4 fade-in" style="background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; text-shadow: 0 0 30px rgba(251, 191, 36, 0.3);">
+                            Welcome To <span class="d-block" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 3.5rem; font-weight: 900; letter-spacing: 3px; text-shadow: 0 0 40px rgba(251, 191, 36, 0.5);">SilentMultiPanel</span>
                         </h1>
                         <p class="lead mb-5 fade-in">
                             Best Multipanel And Instant Support.
@@ -346,7 +345,7 @@ if ($isLoggedIn) {
                         <div class="d-flex flex-wrap gap-3 fade-in">
                             <?php if ($isLoggedIn): ?>
                                 <a href="<?php echo $dashboardUrl; ?>" class="btn-cta">
-                                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                                    <i class="fas fa-crown me-2"></i>Go To MultiPanel
                                 </a>
                             <?php else: ?>
                                 <a href="register.php" class="btn-cta">
