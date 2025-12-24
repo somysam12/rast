@@ -38,10 +38,17 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete']) && $pdo) {
     }
 }
 
-// Get all users
+// Get all users with force logout counts
 try {
     if ($pdo) {
-        $stmt = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC");
+        $stmt = $pdo->query("SELECT u.*, 
+                            COUNT(fl.id) as force_logout_count,
+                            COALESCE(fl.logout_limit, 0) as logout_limit
+                            FROM users u 
+                            LEFT JOIN force_logouts fl ON u.id = fl.user_id
+                            WHERE u.role IN ('user', 'reseller')
+                            GROUP BY u.id
+                            ORDER BY u.created_at DESC");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {
         $users = [];
@@ -141,22 +148,31 @@ try {
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                    <th style="padding: 12px; text-align: left;">ID</th>
                                     <th style="padding: 12px; text-align: left;">Username</th>
                                     <th style="padding: 12px; text-align: left;">Email</th>
                                     <th style="padding: 12px; text-align: left;">Balance</th>
-                                    <th style="padding: 12px; text-align: left;">Created</th>
+                                    <th style="padding: 12px; text-align: left;">Role</th>
+                                    <th style="padding: 12px; text-align: left;">Join Date</th>
+                                    <th style="padding: 12px; text-align: left;">Reset Limit (24h)</th>
+                                    <th style="padding: 12px; text-align: left;">Usage (24h)</th>
                                     <th style="padding: 12px; text-align: left;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($users as $user): ?>
                                     <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px;"><?php echo htmlspecialchars($user['id'] ?? ''); ?></td>
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($user['username'] ?? ''); ?></td>
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($user['email'] ?? ''); ?></td>
                                         <td style="padding: 12px; font-weight: 500;"><?php echo formatCurrency($user['balance'] ?? 0); ?></td>
+                                        <td style="padding: 12px;"><span style="background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;"><?php echo htmlspecialchars(ucfirst($user['role'] ?? 'user')); ?></span></td>
                                         <td style="padding: 12px;"><?php echo formatDate($user['created_at'] ?? ''); ?></td>
+                                        <td style="padding: 12px;"><?php echo htmlspecialchars($user['logout_limit'] ?? 0); ?></td>
+                                        <td style="padding: 12px; font-weight: 600; color: #ef4444;"><?php echo htmlspecialchars($user['force_logout_count'] ?? 0); ?>/<?php echo htmlspecialchars($user['logout_limit'] ?? 0); ?></td>
                                         <td style="padding: 12px;">
-                                            <a href="add_balance.php?user_id=<?php echo $user['id']; ?>" style="color: var(--purple-dark); text-decoration: none; margin-right: 10px;">Add Balance</a>
+                                            <a href="edit_user.php?id=<?php echo $user['id']; ?>" style="color: var(--purple-dark); text-decoration: none; margin-right: 10px;">Edit</a>
+                                            <a href="add_balance.php?user_id=<?php echo $user['id']; ?>" style="color: #0066cc; text-decoration: none; margin-right: 10px;">Balance</a>
                                             <a href="?delete=<?php echo $user['id']; ?>" onclick="return confirm('Delete this user?');" style="color: #ef4444; text-decoration: none;">Delete</a>
                                         </td>
                                     </tr>

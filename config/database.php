@@ -134,6 +134,16 @@ function initializeDatabase() {
             FOREIGN KEY (request_id) REFERENCES key_requests(id) ON DELETE CASCADE
         )",
         
+        "CREATE TABLE IF NOT EXISTS force_logouts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            logged_out_by INTEGER NOT NULL,
+            logout_limit INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (logged_out_by) REFERENCES users(id) ON DELETE CASCADE
+        )",
+        
         "CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)",
         "CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)",
         "CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)",
