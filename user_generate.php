@@ -39,6 +39,8 @@ $error = '';
 // Handle key purchase
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
     $keyId = (int)($_POST['key_id'] ?? 0);
+    $quantity = max(1, (int)($_POST['quantity'] ?? 1));
+    
     if ($keyId <= 0) {
         $error = 'Invalid key.';
     } else {
@@ -57,23 +59,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $row = $stmt->fetch();
             $currentBalance = (float)$row['balance'];
             $price = (float)$key['price'];
-            if ($currentBalance < $price) {
-                throw new Exception('Insufficient balance. Need ₹' . number_format($price, 2) . ', have ₹' . number_format($currentBalance, 2));
+            $totalPrice = $price * $quantity;
+            
+            if ($currentBalance < $totalPrice) {
+                throw new Exception('Insufficient balance. Need ₹' . number_format($totalPrice, 2) . ' for ' . $quantity . ' key(s), have ₹' . number_format($currentBalance, 2));
             }
 
-            $stmt = $pdo->prepare('UPDATE users SET balance = balance - ? WHERE id = ?');
-            $stmt->execute([$price, $user['id']]);
+            // Get available keys of this type
+            $stmt = $pdo->prepare('SELECT id FROM license_keys WHERE id >= ? AND sold_to IS NULL ORDER BY id LIMIT ?');
+            $stmt->execute([$keyId, $quantity]);
+            $keysToSell = $stmt->fetchAll();
+            
+            if (count($keysToSell) < $quantity) {
+                throw new Exception('Only ' . count($keysToSell) . ' key(s) available, but you requested ' . $quantity);
+            }
 
-            $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ?');
-            $stmt->execute([$user['id'], $keyId]);
+            // Deduct balance
+            $stmt = $pdo->prepare('UPDATE users SET balance = balance - ? WHERE id = ?');
+            $stmt->execute([$totalPrice, $user['id']]);
+
+            // Purchase each key
+            $keysSold = 0;
+            foreach ($keysToSell as $keyData) {
+                $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ?');
+                $stmt->execute([$user['id'], $keyData['id']]);
+                $keysSold++;
+            }
 
             try {
-                $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, "debit", ?, "License key purchase", CURRENT_TIMESTAMP)');
-                $stmt->execute([$user['id'], $price]);
+                $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, "debit", ?, ?, CURRENT_TIMESTAMP)');
+                $desc = $quantity === 1 ? 'License key purchase' : $quantity . ' License keys purchase';
+                $stmt->execute([$user['id'], $totalPrice, $desc]);
             } catch (Throwable $ignored) {}
 
             $pdo->commit();
-            $success = 'License key purchased successfully!';
+            $success = 'Purchased ' . $keysSold . ' license key(s) successfully!';
 
             $stmt = $pdo->prepare('SELECT id, username, role, balance FROM users WHERE id = ? LIMIT 1');
             $stmt->execute([$user['id']]);
@@ -271,8 +291,9 @@ try {
                                         <span class="available"><?php echo 'Available: ' . $key['key_count']; ?></span>
                                     </div>
                                 </div>
-                                <form method="POST" style="display: inline;">
+                                <form method="POST" style="display: flex; gap: 10px; align-items: center;">
                                     <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
+                                    <input type="number" name="quantity" min="1" max="<?php echo $key['key_count']; ?>" value="1" style="width: 70px; padding: 0.5rem; border: 1px solid var(--border); border-radius: 6px; text-align: center;">
                                     <button type="submit" name="purchase_key" class="btn-generate">
                                         <i class="fas fa-shopping-cart me-1"></i>Generate
                                     </button>

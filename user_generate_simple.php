@@ -22,6 +22,50 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $success = '';
 $error = '';
 
+// Handle key purchase
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["purchase_key"])) {
+    $keyId = (int)($_POST["key_id"] ?? 0);
+    $quantity = max(1, (int)($_POST["quantity"] ?? 1));
+    
+    if ($keyId <= 0) {
+        $error = "Invalid key.";
+    } else {
+        try {
+            $pdo->beginTransaction();
+            $stmt = $pdo->prepare("SELECT id, price FROM license_keys WHERE id = ? AND sold_to IS NULL LIMIT 1");
+            $stmt->execute([$keyId]);
+            $key = $stmt->fetch();
+            if (!$key) throw new Exception("Key not available");
+            
+            $totalPrice = (float)$key["price"] * $quantity;
+            $stmt = $pdo->prepare("SELECT balance FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
+            $currentBalance = (float)$stmt->fetch()["balance"];
+            
+            if ($currentBalance < $totalPrice) throw new Exception("Insufficient balance");
+            
+            $stmt = $pdo->prepare("SELECT id FROM license_keys WHERE id >= ? AND sold_to IS NULL ORDER BY id LIMIT ?");
+            $stmt->execute([$keyId, $quantity]);
+            $keysToSell = $stmt->fetchAll();
+            
+            if (count($keysToSell) < $quantity) throw new Exception("Not enough keys available");
+            
+            $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
+            $stmt->execute([$totalPrice, $userId]);
+            
+            foreach ($keysToSell as $keyData) {
+                $stmt = $pdo->prepare("UPDATE license_keys SET sold_to = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ?");
+                $stmt->execute([$userId, $keyData["id"]]);
+            }
+            
+            $pdo->commit();
+            $success = "Purchased " . $quantity . " key(s) successfully!";
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            $error = $e->getMessage();
+        }
+    }
+}
 // Helper functions
 function formatCurrency($amount) {
     return '₹' . number_format($amount, 2, '.', ',');
