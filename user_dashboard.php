@@ -847,7 +847,7 @@ function formatDate($date) {
                                     <i class="fas fa-shopping-cart text-white"></i>
                                 </div>
                                 <h6 class="text-muted mb-2">Total Purchases</h6>
-                                <h2 class="mb-0 fw-bold"><?php echo $userStats['total_purchases'] ?: 0; ?></h2>
+                                <h2 class="mb-0 fw-bold"><?php echo $stats['total_purchases'] ?: 0; ?></h2>
                                 <small class="text-info">
                                     <i class="fas fa-shopping-bag me-1"></i>License keys bought
                                 </small>
@@ -861,7 +861,7 @@ function formatDate($date) {
                                     <i class="fas fa-rupee-sign text-white"></i>
                                 </div>
                                 <h6 class="text-muted mb-2">Total Spent</h6>
-                                <h2 class="mb-0 fw-bold"><?php echo formatCurrency($userStats['total_spent'] ?: 0); ?></h2>
+                                <h2 class="mb-0 fw-bold"><?php echo formatCurrency($stats['total_spent'] ?: 0); ?></h2>
                                 <small class="text-warning">
                                     <i class="fas fa-chart-line me-1"></i>All time spending
                                 </small>

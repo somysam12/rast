@@ -98,7 +98,6 @@ try {
                     <a class="nav-link" href="user_dashboard.php"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
                     <a class="nav-link active" href="user_manage_keys.php"><i class="fas fa-key"></i>Manage Keys</a>
                     <a class="nav-link" href="user_generate.php"><i class="fas fa-plus"></i>Generate</a>
-                    <a class="nav-link" href="user_balance.php"><i class="fas fa-wallet"></i>Balance</a>
                     <a class="nav-link" href="user_transactions.php"><i class="fas fa-exchange-alt"></i>Transaction</a>
                     <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt"></i>Applications</a>
                     <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban"></i>Block & Reset</a>

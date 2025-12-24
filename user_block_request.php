@@ -139,15 +139,26 @@ try {
     $purchasedKeys = [];
 }
 
-// Get pending requests
+// Get pending requests with search
+$searchQuery = trim($_GET['search'] ?? '');
 $pendingRequests = [];
 try {
-    $stmt = $pdo->prepare('SELECT kr.id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.created_at, lk.license_key, lk.duration, lk.duration_type
-                           FROM key_requests kr
-                           LEFT JOIN license_keys lk ON lk.id = kr.key_id
-                           WHERE kr.user_id = ? AND kr.status = "pending"
-                           ORDER BY kr.created_at DESC');
-    $stmt->execute([$user['id']]);
+    if (!empty($searchQuery)) {
+        $stmt = $pdo->prepare('SELECT kr.id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.created_at, lk.license_key, lk.duration, lk.duration_type
+                               FROM key_requests kr
+                               LEFT JOIN license_keys lk ON lk.id = kr.key_id
+                               WHERE kr.user_id = ? AND kr.status = "pending" AND (kr.mod_name LIKE ? OR lk.license_key LIKE ?)
+                               ORDER BY kr.created_at DESC');
+        $searchTerm = '%' . $searchQuery . '%';
+        $stmt->execute([$user['id'], $searchTerm, $searchTerm]);
+    } else {
+        $stmt = $pdo->prepare('SELECT kr.id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.created_at, lk.license_key, lk.duration, lk.duration_type
+                               FROM key_requests kr
+                               LEFT JOIN license_keys lk ON lk.id = kr.key_id
+                               WHERE kr.user_id = ? AND kr.status = "pending"
+                               ORDER BY kr.created_at DESC');
+        $stmt->execute([$user['id']]);
+    }
     $pendingRequests = $stmt->fetchAll();
 } catch (Throwable $e) {
     $pendingRequests = [];
@@ -216,7 +227,6 @@ try {
                     <a class="nav-link" href="user_dashboard.php"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
                     <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key"></i>Manage Keys</a>
                     <a class="nav-link" href="user_generate.php"><i class="fas fa-plus"></i>Generate</a>
-                    <a class="nav-link" href="user_balance.php"><i class="fas fa-wallet"></i>Balance</a>
                     <a class="nav-link" href="user_transactions.php"><i class="fas fa-exchange-alt"></i>Transaction</a>
                     <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt"></i>Applications</a>
                     <a class="nav-link active" href="user_block_request.php"><i class="fas fa-ban"></i>Block & Reset</a>
@@ -362,6 +372,15 @@ try {
                 <!-- Pending Requests -->
                 <div class="card-section">
                     <h5><i class="fas fa-hourglass-half me-2"></i>Pending Requests</h5>
+                    <form method="GET" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" placeholder="Search by mod name or license key..." value="<?php echo htmlspecialchars($searchQuery); ?>">
+                            <button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i>Search</button>
+                            <?php if (!empty($searchQuery)): ?>
+                            <a href="user_block_request.php" class="btn btn-secondary"><i class="fas fa-times me-1"></i>Clear</a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
                     <?php if (empty($pendingRequests)): ?>
                         <div class="empty-state">
                             <i class="fas fa-inbox" style="font-size: 3rem; color: var(--purple); opacity: 0.5; margin-bottom: 1rem;"></i>
