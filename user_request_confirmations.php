@@ -52,7 +52,7 @@ foreach ($confirmations as $conf) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Reset/Block Requests Confirmations</title>
+    <title>Block/Reset Request Confirmations</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -182,10 +182,10 @@ foreach ($confirmations as $conf) {
         <div class="container-custom">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <h2 style="margin: 0; color: var(--accent); font-weight: 700;">📬 All Reset/Block Requests Confirmations</h2>
+                    <h2 style="margin: 0; color: var(--accent); font-weight: 700;">📬 Block/Reset Request Confirmations</h2>
                     <?php if ($unreadCount > 0): ?>
                         <p style="margin: 0.5rem 0 0; color: var(--muted); font-size: 0.9rem;">
-                            <?php echo $unreadCount; ?> नई अधिसूचनाएं
+                            <?php echo $unreadCount; ?> new notifications
                         </p>
                     <?php endif; ?>
                 </div>
@@ -197,12 +197,12 @@ foreach ($confirmations as $conf) {
     <div class="container-custom">
         <div class="card-custom">
             <?php if (empty($confirmations)): ?>
-                <p style="color: var(--muted); text-align: center; font-size: 1.1rem;">कोई अधिसूचनाएं नहीं हैं।</p>
+                <p style="color: var(--muted); text-align: center; font-size: 1.1rem;">No notifications at this time.</p>
             <?php else: ?>
                 <?php if ($unreadCount > 0): ?>
                     <form method="POST" style="margin-bottom: 1.5rem;">
                         <button type="submit" name="mark_as_read" value="1" class="btn-primary-custom">
-                            ✓ सभी को पढ़ा जा चुका चिह्नित करें
+                            ✓ Mark All As Read
                         </button>
                     </form>
                 <?php endif; ?>
@@ -210,7 +210,7 @@ foreach ($confirmations as $conf) {
                 <?php foreach ($confirmations as $conf): ?>
                     <div class="confirmation-item <?php echo $conf['status'] === 'unread' ? 'unread' : ''; ?>">
                         <?php if ($conf['status'] === 'unread'): ?>
-                            <span class="unread-badge">नया</span>
+                            <span class="unread-badge">NEW</span>
                         <?php endif; ?>
                         
                         <div style="margin-bottom: 1rem;">
@@ -227,7 +227,7 @@ foreach ($confirmations as $conf) {
                         
                         <div style="background: var(--line); padding: 1rem; border-radius: 6px; color: var(--text);">
                             <p style="margin: 0;">
-                                <strong>अधिसूचना:</strong><br>
+                                <strong>Notification:</strong><br>
                                 <?php echo htmlspecialchars($conf['message']); ?>
                             </p>
                         </div>

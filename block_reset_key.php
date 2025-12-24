@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
                 $stmt->execute([$keyId, $userId]);
                 
                 if ($stmt->fetchColumn()) {
-                    $message = 'पहले से एक लंबित अनुरोध मौजूद है!';
+                    $message = 'A pending request already exists for this key!';
                     $messageType = 'danger';
                 } else {
                     // Create request
@@ -47,15 +47,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
                                           VALUES (?, ?, ?, ?, ?)");
                     $stmt->execute([$userId, $keyId, $requestType, $key['name'], $reason]);
                     
-                    $message = 'आपकी अनुरोध सफलतापूर्वक जमा की गई है! एडमिन जल्द ही इसे प्रोसेस करेगा।';
+                    $message = 'Your request has been submitted successfully! Admin will process it soon.';
                     $messageType = 'success';
                 }
             } else {
-                $message = 'यह कुंजी आपकी नहीं है!';
+                $message = 'This key does not belong to you!';
                 $messageType = 'danger';
             }
         } catch (Exception $e) {
-            $message = 'त्रुटि: ' . $e->getMessage();
+            $message = 'Error: ' . $e->getMessage();
             $messageType = 'danger';
         }
     }
@@ -248,10 +248,10 @@ try {
         <?php endif; ?>
         
         <div class="card-custom">
-            <h3 style="margin-bottom: 2rem; color: var(--accent);">अपनी कुंजी चुनें और कार्रवाई करें</h3>
+            <h3 style="margin-bottom: 2rem; color: var(--accent);">Select your key and choose an action</h3>
             
             <?php if (empty($userKeys)): ?>
-                <p style="color: var(--muted); text-align: center;">आपके पास कोई खरीदी हुई कुंजियाँ नहीं हैं।</p>
+                <p style="color: var(--muted); text-align: center;">You have no purchased keys.</p>
             <?php else: ?>
                 <?php foreach ($userKeys as $key): ?>
                     <div class="key-item">
@@ -262,7 +262,7 @@ try {
                                     Key: <strong><?php echo htmlspecialchars($key['license_key']); ?></strong>
                                 </p>
                             </div>
-                            <span class="badge-custom badge-sold">✓ सक्रिय</span>
+                            <span class="badge-custom badge-sold">✓ Active</span>
                         </div>
                         
                         <form method="POST" style="display: flex; gap: 1rem; flex-wrap: wrap;">
@@ -271,13 +271,13 @@ try {
                             
                             <div style="flex: 1; min-width: 200px;">
                                 <select name="request_type" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text);">
-                                    <option value="">-- कार्रवाई चुनें --</option>
-                                    <option value="block">🚫 Block करें</option>
-                                    <option value="reset">↻ Reset करें</option>
+                                    <option value="">-- Choose Action --</option>
+                                    <option value="block">🚫 Block</option>
+                                    <option value="reset">↻ Reset</option>
                                 </select>
                             </div>
                             
-                            <button type="submit" class="btn-primary-custom" style="border: none; white-space: nowrap;">जमा करें</button>
+                            <button type="submit" class="btn-primary-custom" style="border: none; white-space: nowrap;">Submit</button>
                         </form>
                     </div>
                 <?php endforeach; ?>

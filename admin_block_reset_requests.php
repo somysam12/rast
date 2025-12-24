@@ -30,10 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 
                 // Create confirmation notification
                 if ($action === 'approve') {
-                    $msgText = "आपकी {$request['request_type']} के लिए अनुरोध मंजूर कर दिया गया है। अपनी कुंजी {$request['mod_name']} को {$request['request_type']} किया जा चुका है।";
+                    $msgText = "Your request to {$request['request_type']} the key for {$request['mod_name']} has been approved. Your key has been {$request['request_type']}ed.";
                     $actionType = $request['request_type'];
                 } else {
-                    $msgText = "आपकी {$request['request_type']} के लिए अनुरोध अस्वीकार कर दिया गया है।";
+                    $msgText = "Your request to {$request['request_type']} the key for {$request['mod_name']} has been rejected.";
                     $actionType = $request['request_type'];
                 }
                 
@@ -41,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                       VALUES (?, ?, ?, ?)");
                 $stmt->execute([$request['user_id'], $requestId, $actionType, $msgText]);
                 
-                $message = $action === 'approve' ? 'अनुरोध मंजूर किया गया!' : 'अनुरोध अस्वीकार किया गया!';
+                $message = $action === 'approve' ? 'Request approved!' : 'Request rejected!';
                 $messageType = 'success';
             }
         } catch (Exception $e) {
-            $message = 'त्रुटि: ' . $e->getMessage();
+            $message = 'Error: ' . $e->getMessage();
             $messageType = 'danger';
         }
     }
@@ -233,9 +233,9 @@ try {
         
         <div class="card-custom">
             <?php if (empty($pendingRequests)): ?>
-                <p style="color: var(--muted); text-align: center; font-size: 1.1rem;">कोई लंबित अनुरोध नहीं है।</p>
+                <p style="color: var(--muted); text-align: center; font-size: 1.1rem;">No pending requests at this time.</p>
             <?php else: ?>
-                <h3 style="margin-bottom: 1.5rem; color: var(--text);">कुल लंबित अनुरोध: <?php echo count($pendingRequests); ?></h3>
+                <h3 style="margin-bottom: 1.5rem; color: var(--text);">Total Pending Requests: <?php echo count($pendingRequests); ?></h3>
                 
                 <?php foreach ($pendingRequests as $req): ?>
                     <div class="request-card">
@@ -244,9 +244,6 @@ try {
                                 <h4 style="margin: 0; color: var(--text);">👤 <?php echo htmlspecialchars($req['username']); ?></h4>
                                 <p style="margin: 0.5rem 0; color: var(--muted); font-size: 0.9rem;">
                                     <strong>Product:</strong> <?php echo htmlspecialchars($req['mod_name']); ?>
-                                </p>
-                                <p style="margin: 0.5rem 0; color: var(--muted); font-size: 0.9rem; word-break: break-all;">
-                                    <strong>Key:</strong> <?php echo htmlspecialchars($req['mod_name']); ?>
                                 </p>
                                 <p style="margin: 0.5rem 0; color: var(--muted); font-size: 0.85rem;">
                                     <strong>Request Date:</strong> <?php echo date('d M Y H:i', strtotime($req['created_at'])); ?>
