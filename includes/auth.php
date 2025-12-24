@@ -2,15 +2,17 @@
 session_start();
 require_once 'config/database.php';
 
-initializeDatabase();
-
 function isLoggedIn() {
     if (!isset($_SESSION['user_id'])) {
         return false;
     }
     
+    if (isset($_SESSION['session_check']) && time() - $_SESSION['session_check'] < 300) {
+        return true;
+    }
+    
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id = ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id = ? LIMIT 1");
     $stmt->execute([$_SESSION['user_id'], session_id()]);
     $sessionExists = $stmt->fetchColumn();
     
@@ -19,6 +21,7 @@ function isLoggedIn() {
         return false;
     }
     
+    $_SESSION['session_check'] = time();
     return true;
 }
 
@@ -52,14 +55,12 @@ function requireUser() {
 function login($username, $password, $forceLogout = false) {
     $pdo = getDBConnection();
     
-    cleanupExpiredSessions();
-    
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1");
     $stmt->execute([$username, $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user && password_verify($password, $user['password'])) {
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id != ?");
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id != ? LIMIT 1");
         $stmt->execute([$user['id'], session_id()]);
         $activeSessions = $stmt->fetchColumn();
         
@@ -80,6 +81,7 @@ function login($username, $password, $forceLogout = false) {
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['balance'] = $user['balance'];
+        $_SESSION['session_check'] = time();
         return true;
     }
     return false;
@@ -92,7 +94,7 @@ function register($username, $email, $password, $referralCode = null) {
     $referralType = null;
     
     if ($referralCode) {
-        $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > datetime('now')");
+        $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > datetime('now') LIMIT 1");
         $stmt->execute([$referralCode]);
         $adminReferral = $stmt->fetchColumn();
         
@@ -100,7 +102,7 @@ function register($username, $email, $password, $referralCode = null) {
             $referredBy = $adminReferral;
             $referralType = 'admin';
         } else {
-            $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user'");
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user' LIMIT 1");
             $stmt->execute([$referralCode]);
             $referredBy = $stmt->fetchColumn();
             if ($referredBy) {
@@ -134,7 +136,7 @@ function register($username, $email, $password, $referralCode = null) {
             $stmt->execute([$referredBy]);
             
             try {
-                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', datetime('now'))");
+                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus', datetime('now'))");
                 $stmt->execute([$referredBy]);
             } catch (Exception $e) {}
         }
@@ -173,7 +175,7 @@ function cleanupExpiredSessions() {
 
 function hasActiveSession($userId) {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id != ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id != ? LIMIT 1");
     $stmt->execute([$userId, session_id()]);
     return $stmt->fetchColumn() > 0;
 }
@@ -181,7 +183,7 @@ function hasActiveSession($userId) {
 function resetDevice($username, $password) {
     $pdo = getDBConnection();
     
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
     $stmt->execute([$username, $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -189,7 +191,7 @@ function resetDevice($username, $password) {
         return 'user_not_found';
     }
     
-    $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ? LIMIT 1");
     $stmt->execute([$user['id']]);
     $hashedPassword = $stmt->fetchColumn();
     
@@ -209,7 +211,7 @@ function getUserData($userId = null) {
     }
     
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
     $stmt->execute([$userId]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
