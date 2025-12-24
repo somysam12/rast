@@ -103,21 +103,23 @@ try {
     $mods = $stmt->fetchAll();
 } catch (Throwable $e) {}
 
-// Get available keys (unsold)
+// Get available keys grouped by mod and duration
 try {
     if ($modId !== '' && ctype_digit((string)$modId)) {
-        $stmt = $pdo->prepare('SELECT lk.id, lk.mod_id, lk.duration, lk.duration_type, lk.price, m.name AS mod_name
+        $stmt = $pdo->prepare('SELECT m.name AS mod_name, lk.mod_id, lk.duration, lk.duration_type, lk.price, COUNT(*) as key_count, MIN(lk.id) as min_id
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
                                WHERE lk.sold_to IS NULL AND lk.mod_id = ?
-                               ORDER BY lk.id DESC');
+                               GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
+                               ORDER BY m.name, lk.duration');
         $stmt->execute([$modId]);
     } else {
-        $stmt = $pdo->query('SELECT lk.id, lk.mod_id, lk.duration, lk.duration_type, lk.price, m.name AS mod_name
+        $stmt = $pdo->query('SELECT m.name AS mod_name, lk.mod_id, lk.duration, lk.duration_type, lk.price, COUNT(*) as key_count, MIN(lk.id) as min_id
                               FROM license_keys lk
                               LEFT JOIN mods m ON m.id = lk.mod_id
                               WHERE lk.sold_to IS NULL
-                              ORDER BY lk.id DESC');
+                              GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
+                              ORDER BY m.name, lk.duration');
     }
     $availableKeys = $stmt->fetchAll();
 } catch (Throwable $e) {
