@@ -51,9 +51,10 @@ function getDBConnection() {
         // MySQL Connection - Default cPanel Credentials
         else {
             // cPanel MySQL Configuration
+            // Note: cPanel prefixes database name with your cPanel username
             $host = 'localhost';
-            $database = 'silentmu_isam';
-            $username = 'silentmu_isam';
+            $database = 'cpses_si2afsulwr_silentmu_isam';  // cPanel prefixed name
+            $username = 'cpses_si2afsulwr_silentmu';       // cPanel prefixed username
             $password = 'silentmu_isam';
             
             $dsn = "mysql:host=" . $host 
