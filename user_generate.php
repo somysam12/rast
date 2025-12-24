@@ -66,9 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             }
 
             // Get available keys of this type
-            $stmt = $pdo->prepare('SELECT id FROM license_keys WHERE id >= ? AND sold_to IS NULL ORDER BY id LIMIT ?');
-            $stmt->execute([$keyId, $quantity]);
-            $keysToSell = $stmt->fetchAll();
+            $stmt = $pdo->prepare('SELECT id FROM license_keys WHERE id >= ? AND sold_to IS NULL ORDER BY id LIMIT 100');
+            $stmt->execute([$keyId]);
+            $allKeys = $stmt->fetchAll();
+            $keysToSell = array_slice($allKeys, 0, $quantity);
             
             if (count($keysToSell) < $quantity) {
                 throw new Exception('Only ' . count($keysToSell) . ' key(s) available, but you requested ' . $quantity);
@@ -123,7 +124,7 @@ try {
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
                                WHERE lk.sold_to IS NULL AND lk.mod_id = ?
-                               GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
+                               GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
                                ORDER BY m.name, lk.duration');
         $stmt->execute([$modId]);
     } else {
@@ -131,7 +132,7 @@ try {
                               FROM license_keys lk
                               LEFT JOIN mods m ON m.id = lk.mod_id
                               WHERE lk.sold_to IS NULL
-                              GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
+                              GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
                               ORDER BY m.name, lk.duration');
     }
     $availableKeys = $stmt->fetchAll();

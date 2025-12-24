@@ -57,8 +57,9 @@ function getModStats() {
 function getRecentMods($limit = 5) {
     try {
         $pdo = getDBConnection();
-        $stmt = $pdo->prepare("SELECT * FROM mods ORDER BY created_at DESC LIMIT ?");
-        $stmt->execute([$limit]);
+        $limit = max(1, min((int)$limit, 100));
+        $stmt = $pdo->prepare("SELECT * FROM mods ORDER BY created_at DESC LIMIT " . $limit);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         return [];
@@ -68,8 +69,9 @@ function getRecentMods($limit = 5) {
 function getRecentUsers($limit = 5) {
     try {
         $pdo = getDBConnection();
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC LIMIT ?");
-        $stmt->execute([$limit]);
+        $limit = max(1, min((int)$limit, 100));
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC LIMIT " . $limit);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         return [];
@@ -79,8 +81,9 @@ function getRecentUsers($limit = 5) {
 function getUserTransactions($userId, $limit = 50) {
     try {
         $pdo = getDBConnection();
-        $stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT ?");
-        $stmt->execute([$userId, $limit]);
+        $limit = max(1, min((int)$limit, 500));
+        $stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT " . $limit);
+        $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         return [];
