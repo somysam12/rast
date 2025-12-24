@@ -43,7 +43,7 @@ if ($_POST) {
             $referralType = null;
             
             // First check admin-generated referral codes
-            $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > datetime('now')");
+            $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND (expires_at IS NULL OR expires_at > NOW())");
             $stmt->execute([$referralCode]);
             $adminReferral = $stmt->fetchColumn();
             
@@ -105,7 +105,7 @@ if ($_POST) {
                 
                 // Record referral transaction for referrer only
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', datetime('now'))");
+                    $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', NOW())");
                     $stmt->execute([$referredBy]);
                 } catch (Exception $e) {
                     // Ignore transaction errors
