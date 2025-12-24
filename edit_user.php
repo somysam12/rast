@@ -63,96 +63,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     $balance_amount = isset($_POST['balance_amount']) ? (float)$_POST['balance_amount'] : 0;
     $balance_type = $_POST['balance_type'] ?? 'add';
     
-    $has_error = false;
-    
     try {
-        // Update username and email
+        // 1. UPDATE USERNAME & EMAIL
         if (!empty($username) && !empty($email)) {
-            // Check if username or email already exists (excluding current user)
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE (username = ? OR email = ?) AND id != ?");
             $stmt->execute([$username, $email, $user_id]);
             
             if ($stmt->fetchColumn() > 0) {
                 $error = 'Username or email already exists';
-                $has_error = true;
             } else {
                 $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
                 $stmt->execute([$username, $email, $user_id]);
+                $success = 'Username and email updated!';
             }
         }
         
-        // Always allow password update regardless of username/email error
+        // 2. UPDATE PASSWORD (INDEPENDENT - ALWAYS WORKS)
         if (!empty($password)) {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $result = $stmt->execute([$hashed_password, $user_id]);
+            $affected = $stmt->rowCount();
             
-            // Debug logging
-            error_log("PASSWORD UPDATE DEBUG:");
-            error_log("User ID: " . $user_id);
-            error_log("New Password: " . $password);
-            error_log("Hash Length: " . strlen($hashed_password));
-            error_log("Hash: " . substr($hashed_password, 0, 20) . "...");
-            
-            // Verify hash is valid
-            if (!password_verify($password, $hashed_password)) {
-                error_log("ERROR: Hash verification failed!");
-                $error = "Password hash verification failed!";
-                $has_error = true;
+            if ($affected > 0) {
+                $success = 'Password updated successfully!';
             } else {
-                try {
-                    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-                    $result = $stmt->execute([$hashed_password, $user_id]);
-                    $affected = $stmt->rowCount();
-                    
-                    error_log("Update Result: " . ($result ? "TRUE" : "FALSE"));
-                    error_log("Rows Affected: " . $affected);
-                    
-                    if ($affected === 0) {
-                        error_log("WARNING: No rows updated!");
-                    }
-                } catch (Exception $e) {
-                    error_log("ERROR during password update: " . $e->getMessage());
-                    $error = "Database error during password update: " . $e->getMessage();
-                    $has_error = true;
-                }
+                $error = 'Failed to update password - please try again';
             }
         }
         
-        if (!$has_error) {
-            $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
-            $stmt->execute([$role, $user_id]);
-            
-            // Update or create logout limit
-            $stmt = $pdo->prepare("SELECT id FROM force_logouts WHERE user_id = ?");
-            $stmt->execute([$user_id]);
-            $exists = $stmt->fetch();
-            
-            if ($exists) {
-                $stmt = $pdo->prepare("UPDATE force_logouts SET logout_limit = ? WHERE user_id = ?");
-                $stmt->execute([$logout_limit, $user_id]);
-            } else {
-                $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, ?)");
-                $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
-            }
-            
-            // Update balance if amount provided
-            if ($balance_amount > 0) {
-                if ($balance_type === 'add') {
-                    $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
-                } else {
-                    $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
-                }
-                $stmt->execute([$balance_amount, $user_id]);
-                
-                // Log transaction
-                $desc = $balance_type === 'add' ? 'Balance added by admin' : 'Balance deducted by admin';
-                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$user_id, 'balance_' . $balance_type, $balance_amount, $desc]);
-            }
+        // 3. UPDATE ROLE
+        $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
+        $stmt->execute([$role, $user_id]);
+        
+        // 4. UPDATE FORCE LOGOUT LIMIT
+        $stmt = $pdo->prepare("SELECT id FROM force_logouts WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+        $exists = $stmt->fetch();
+        
+        if ($exists) {
+            $stmt = $pdo->prepare("UPDATE force_logouts SET logout_limit = ? WHERE user_id = ?");
+            $stmt->execute([$logout_limit, $user_id]);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, ?)");
+            $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
         }
         
-        $success = 'User updated successfully!';
-        if ($has_error) {
-            $success .= ' (but username/email already exists - skipped)';
+        // 5. UPDATE BALANCE
+        if ($balance_amount > 0) {
+            if ($balance_type === 'add') {
+                $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+            } else {
+                $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
+            }
+            $stmt->execute([$balance_amount, $user_id]);
+            
+            $desc = $balance_type === 'add' ? 'Balance added by admin' : 'Balance deducted by admin';
+            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$user_id, 'balance_' . $balance_type, $balance_amount, $desc]);
         }
         
         // Refresh user data
