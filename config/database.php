@@ -109,11 +109,40 @@ function initializeDatabase() {
             FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
         )",
         
+        "CREATE TABLE IF NOT EXISTS key_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            key_id INTEGER NOT NULL,
+            request_type TEXT NOT NULL,
+            mod_name TEXT NOT NULL,
+            status TEXT DEFAULT 'pending',
+            reason TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (key_id) REFERENCES license_keys(id) ON DELETE CASCADE
+        )",
+        
+        "CREATE TABLE IF NOT EXISTS key_confirmations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            request_id INTEGER NOT NULL,
+            action_type TEXT NOT NULL,
+            message TEXT NOT NULL,
+            status TEXT DEFAULT 'unread',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (request_id) REFERENCES key_requests(id) ON DELETE CASCADE
+        )",
+        
         "CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)",
         "CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)",
         "CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_license_keys_status ON license_keys(status)",
         "CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_key_requests_user_id ON key_requests(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_key_requests_status ON key_requests(status)",
+        "CREATE INDEX IF NOT EXISTS idx_key_confirmations_user_id ON key_confirmations(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_key_confirmations_status ON key_confirmations(status)",
     ];
     
     foreach ($tables as $sql) {
