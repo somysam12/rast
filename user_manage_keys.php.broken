@@ -1,0 +1,474 @@
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+session_start();
+require_once 'config/database.php';
+
+// Simple helpers
+function formatCurrency($amount){
+    return '₹' . number_format((float)$amount, 2, '.', ',');
+}
+function formatDate($dt){
+    if(!$dt){ return '-'; }
+    return date('d M Y, h:i A', strtotime($dt));
+}
+
+// Require user login
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+// PDO connection
+try {
+    $pdo = getDBConnection();
+                    </script>
+                <?php endif; ?>
+                
+                <?php if ($error): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <?php echo htmlspecialchars($error); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+                
+                <!-- Filter -->
+                <div class="filter-card fade-in">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="mod_id" class="form-label">Filter by Mod:</label>
+                            <select class="form-control" id="mod_id" name="mod_id">
+                                <option value="">All Mods</option>
+                                <?php foreach ($mods as $mod): ?>
+                                <option value="<?php echo $mod['id']; ?>" 
+                                        <?php echo $modId == $mod['id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($mod['name']); ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-filter me-2"></i>Filter
+                            </button>
+                            <a href="user_manage_keys.php" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Available Keys -->
+                <div class="table-card fade-in">
+                    <h5><i class="fas fa-unlock me-2"></i>Available Keys</h5>
+                    <div class="row">
+                        <?php if (empty($availableKeys)): ?>
+                        <div class="col-12">
+                            <div class="empty-state">
+                                <i class="fas fa-key"></i>
+                                <h5>No Keys Available</h5>
+                                <p>No keys are currently available for the selected mod. Please try a different mod or check back later.</p>
+                            </div>
+                        </div>
+                        <?php else: ?>
+                            <?php 
+                            // Group keys by mod name
+                            $groupedKeys = [];
+                            foreach ($availableKeys as $key) {
+                                $groupedKeys[$key['mod_name']][] = $key;
+                            }
+                            ?>
+                            
+                            <?php foreach ($groupedKeys as $modName => $keys): ?>
+                            <div class="col-12 mb-4">
+                                <div class="key-card">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h5 style="color: var(--accent); font-weight: 700; margin: 0;">
+                                            <i class="fas fa-mobile-alt me-2"></i><?php echo htmlspecialchars($modName); ?>
+                                        </h5>
+                                        <span class="badge" style="background: var(--gradient-primary); color: white; font-size: 0.9rem;">
+                                            <?php echo count($keys); ?> Duration Options
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <?php foreach ($keys as $key): ?>
+                                        <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                            <div class="duration-option" style="border: 2px solid var(--line); border-radius: 8px; padding: 1rem; text-align: center; transition: all 0.3s ease; cursor: pointer;" 
+                                                 onclick="selectDuration(this, <?php echo $key['mod_id']; ?>, <?php echo $key['duration']; ?>, '<?php echo $key['duration_type']; ?>', <?php echo $key['price']; ?>)">
+                                                
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="radio" name="duration_<?php echo $key['mod_id']; ?>" 
+                                                           id="duration_<?php echo $key['mod_id']; ?>_<?php echo $key['duration']; ?>_<?php echo $key['duration_type']; ?>">
+                                                </div>
+                                                
+                                    <div class="mb-2">
+                                                    <span class="badge" style="background: var(--gradient-success); color: white; font-size: 0.7rem; padding: 4px 8px;">
+                                                        <?php echo $key['duration']; ?> <?php echo ucfirst($key['duration_type']); ?>
+                                        </span>
+                                    </div>
+                                                
+                                    <div class="mb-2">
+                                                    <div style="color: var(--muted); font-size: 0.8rem;">Price</div>
+                                                    <div style="color: var(--text); font-size: 1.1rem; font-weight: 700;"><?php echo formatCurrency($key['price']); ?></div>
+                                    </div>
+                                                
+                                                <div class="mb-1">
+                                                    <span class="badge" style="background: var(--gradient-info); color: white; font-size: 0.7rem; padding: 4px 8px;">
+                                                        Available: <?php echo $key['key_count']; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    
+                                    <div class="text-center mt-4">
+                                        <form method="POST" id="purchaseForm_<?php echo $keys[0]['mod_id']; ?>" style="display: none;">
+                                            <input type="hidden" name="purchase_key" value="1">
+                                            <input type="hidden" name="mod_id" id="selected_mod_id_<?php echo $keys[0]['mod_id']; ?>">
+                                            <input type="hidden" name="duration" id="selected_duration_<?php echo $keys[0]['mod_id']; ?>">
+                                            <input type="hidden" name="duration_type" id="selected_duration_type_<?php echo $keys[0]['mod_id']; ?>">
+                                            <input type="hidden" name="price" id="selected_price_<?php echo $keys[0]['mod_id']; ?>">
+                                            <button type="submit" class="btn btn-success btn-lg" 
+                                                    onclick="return confirmPurchase('<?php echo htmlspecialchars($modName); ?>')">
+                                                <i class="fas fa-shopping-cart me-2"></i>Purchase Selected License
+                                        </button>
+                                    </form>
+                                        <div id="selectMessage_<?php echo $keys[0]['mod_id']; ?>" class="text-muted">
+                                            <i class="fas fa-hand-pointer me-2"></i>Select a duration option above to purchase
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                
+                <!-- My Purchased Keys -->
+                <div class="table-card fade-in">
+                    <h5><i class="fas fa-shopping-bag me-2"></i>My Purchased Keys</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mod Name</th>
+                                    <th>License Key</th>
+                                    <th>Duration</th>
+                                    <th>Price</th>
+                                    <th>Purchased Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($purchasedKeys)): ?>
+                                <tr>
+                                    <td colspan="6" class="text-center" style="padding: 4rem 2rem;">
+                                        <div class="empty-state">
+                                            <i class="fas fa-shopping-bag"></i>
+                                            <h5>No Purchased Keys</h5>
+                                            <p>You haven't purchased any keys yet. Browse available keys above to get started!</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php else: ?>
+                                    <?php foreach ($purchasedKeys as $key): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($key['mod_name']); ?></td>
+                                        <td>
+                                            <div class="license-key"><?php echo htmlspecialchars($key['license_key']); ?></div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">
+                                                <?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?>
+                                            </span>
+                                        </td>
+                                        <td><?php echo formatCurrency($key['price']); ?></td>
+                                        <td><?php echo formatDate($key['sold_at']); ?></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')" 
+                                                    title="Copy Key">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dark mode functionality
+        function toggleDarkMode() {
+            const body = document.body;
+            const icon = document.getElementById('darkModeIcon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('darkModeIcon').className = 'fas fa-sun';
+            }
+        });
+        
+        // Duration selection functionality
+        function selectDuration(element, modId, duration, durationType, price) {
+            // Remove selected class from all options in this mod group
+            const modGroup = element.closest('.key-card');
+            const allOptions = modGroup.querySelectorAll('.duration-option');
+            allOptions.forEach(option => {
+                option.classList.remove('selected');
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio) radio.checked = false;
+            });
+            
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            const radio = element.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+            
+            // Update form values
+            document.getElementById('selected_mod_id_' + modId).value = modId;
+            document.getElementById('selected_duration_' + modId).value = duration;
+            document.getElementById('selected_duration_type_' + modId).value = durationType;
+            document.getElementById('selected_price_' + modId).value = price;
+            
+            // Show purchase form and hide message
+            document.getElementById('purchaseForm_' + modId).style.display = 'block';
+            document.getElementById('selectMessage_' + modId).style.display = 'none';
+        }
+        
+        // Confirm purchase
+        function confirmPurchase(modName) {
+            return confirm('Are you sure you want to purchase a license key for ' + modName + '?');
+        }
+        
+        // Toggle user dropdown
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            const arrow = document.querySelector('.dropdown-arrow');
+            
+            dropdown.classList.toggle('show');
+            arrow.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            const userSection = document.querySelector('.user-section');
+            
+            if (!userSection.contains(event.target)) {
+                dropdown.classList.remove('show');
+                document.querySelector('.dropdown-arrow').style.transform = 'rotate(0deg)';
+            }
+        });
+        
+        function toggleSidebar(){
+            var sidebar = document.querySelector('.sidebar');
+            var overlay = document.getElementById('overlay');
+            var mainContent = document.querySelector('.main-content');
+            var body = document.body;
+            
+            // Toggle sidebar visibility
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+            
+            // Prevent body scroll when sidebar is open on mobile
+            if (window.innerWidth <= 991) {
+                if (sidebar.classList.contains('show')) {
+                    body.style.overflow = 'hidden';
+                    // Ensure sidebar is clickable
+                    sidebar.style.pointerEvents = 'auto';
+                    sidebar.style.zIndex = '1002';
+                } else {
+                    body.style.overflow = '';
+                    sidebar.style.pointerEvents = 'none';
+                }
+            }
+            
+            if (window.innerWidth > 991) {
+                sidebar.classList.toggle('hidden');
+                mainContent.classList.toggle('full-width');
+            }
+            
+            // Add smooth transition
+            sidebar.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        }
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Create a temporary toast notification
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: var(--gradient-success);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 12px;
+                    box-shadow: var(--shadow-large);
+                    z-index: 9999;
+                    font-weight: 600;
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                `;
+                toast.innerHTML = '<i class="fas fa-check me-2"></i>License key copied to clipboard!';
+                document.body.appendChild(toast);
+                
+                // Animate in
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // Show Add Key button after copying
+                showAddKeyButton();
+                
+                // Remove toast after 3 seconds
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy license key. Please try again.');
+            });
+        }
+        
+        // Show Add Key button
+        function showAddKeyButton() {
+            const addKeyButton = document.getElementById('addKeyButton');
+            addKeyButton.classList.add('show');
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                addKeyButton.classList.remove('show');
+            }, 10000);
+        }
+        
+        // Navigate to generate page
+        function goToGeneratePage() {
+            window.location.href = 'user_generate.php';
+        }
+        
+        // Hide Add Key button when clicking outside
+        document.addEventListener('click', function(event) {
+            const addKeyButton = document.getElementById('addKeyButton');
+            if (!addKeyButton.contains(event.target) && addKeyButton.classList.contains('show')) {
+                addKeyButton.classList.remove('show');
+            }
+        });
+        // Ensure mobile header is visible on mobile devices
+        function checkMobileView() {
+            const mobileHeader = document.querySelector('.mobile-header');
+            const isMobile = window.innerWidth <= 991 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                mobileHeader.style.display = 'flex';
+                mobileHeader.style.position = 'fixed';
+                mobileHeader.style.top = '0';
+                mobileHeader.style.left = '0';
+                mobileHeader.style.right = '0';
+                mobileHeader.style.width = '100%';
+                mobileHeader.style.zIndex = '1001';
+            } else {
+                mobileHeader.style.display = 'none';
+            }
+        }
+        
+        // Check on load and resize
+        document.addEventListener('DOMContentLoaded', checkMobileView);
+        window.addEventListener('resize', checkMobileView);
+        
+        // Force mobile header visibility on small screens
+        setTimeout(() => {
+            if (window.innerWidth <= 991) {
+                const mobileHeader = document.querySelector('.mobile-header');
+                mobileHeader.style.display = 'flex';
+                mobileHeader.style.position = 'fixed';
+                mobileHeader.style.top = '0';
+                mobileHeader.style.left = '0';
+                mobileHeader.style.right = '0';
+                mobileHeader.style.width = '100%';
+                mobileHeader.style.zIndex = '1001';
+            }
+        }, 100);
+        
+        // Emergency mobile header fix
+        function forceMobileHeader() {
+            const mobileHeader = document.querySelector('.mobile-header');
+            if (mobileHeader && window.innerWidth <= 991) {
+                mobileHeader.style.cssText = `
+                    display: flex !important;
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    width: 100% !important;
+                    z-index: 1001 !important;
+                    background: var(--card) !important;
+                    padding: 1rem !important;
+                    box-shadow: 0 1px 0 rgba(0,0,0,.02) !important;
+                    border-bottom: 1px solid var(--line) !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                `;
+            }
+        }
+        
+        // Run on load and after a delay
+        document.addEventListener('DOMContentLoaded', forceMobileHeader);
+        setTimeout(forceMobileHeader, 500);
+        window.addEventListener('resize', forceMobileHeader);
+        
+        // Auto-close sidebar on link click (mobile)
+        document.querySelectorAll('.sidebar .nav-link').forEach(function(link){
+            link.addEventListener('click', function(e){
+                // Ensure the click event works
+                e.stopPropagation();
+                
+                if (window.innerWidth <= 991) {
+                    // Add small delay to ensure click registers
+                    setTimeout(() => {
+                        toggleSidebar();
+                    }, 100);
+                }
+            });
+            
+            // Add touch event support for mobile
+            link.addEventListener('touchend', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (window.innerWidth <= 991) {
+                    // Trigger click event
+                    link.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
