@@ -33,15 +33,41 @@ if(!$user){
     exit;
 }
 
-// Get user's purchased keys ONLY
-$purchasedKeys = [];
+// Get filter parameter
+$modFilter = $_GET['mod_id'] ?? '';
+
+// Get user's purchased mods for filter
+$purchasedMods = [];
 try {
-    $stmt = $pdo->prepare('SELECT lk.*, m.name AS mod_name
+    $stmt = $pdo->prepare('SELECT DISTINCT m.id, m.name 
                            FROM license_keys lk
                            LEFT JOIN mods m ON m.id = lk.mod_id
                            WHERE lk.sold_to = ?
-                           ORDER BY lk.sold_at DESC');
+                           ORDER BY m.name');
     $stmt->execute([$user['id']]);
+    $purchasedMods = $stmt->fetchAll();
+} catch (Throwable $e) {
+    $purchasedMods = [];
+}
+
+// Get user's purchased keys with filter
+$purchasedKeys = [];
+try {
+    if ($modFilter !== '' && ctype_digit((string)$modFilter)) {
+        $stmt = $pdo->prepare('SELECT lk.*, m.name AS mod_name
+                               FROM license_keys lk
+                               LEFT JOIN mods m ON m.id = lk.mod_id
+                               WHERE lk.sold_to = ? AND lk.mod_id = ?
+                               ORDER BY lk.sold_at DESC');
+        $stmt->execute([$user['id'], $modFilter]);
+    } else {
+        $stmt = $pdo->prepare('SELECT lk.*, m.name AS mod_name
+                               FROM license_keys lk
+                               LEFT JOIN mods m ON m.id = lk.mod_id
+                               WHERE lk.sold_to = ?
+                               ORDER BY lk.sold_at DESC');
+        $stmt->execute([$user['id']]);
+    }
     $purchasedKeys = $stmt->fetchAll();
 } catch (Throwable $e) {
     $purchasedKeys = [];
@@ -70,6 +96,8 @@ try {
         .page-header h2 { color: var(--purple); font-weight: 600; }
         .table-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2rem; }
         .table-card h5 { color: var(--purple); font-weight: 600; margin-bottom: 1.5rem; }
+        .filter-section { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .filter-section h6 { color: var(--text); font-weight: 600; margin-bottom: 1rem; }
         .table { border-radius: 12px; }
         .table thead th { background: var(--purple); color: white; border: none; padding: 1rem; }
         .table tbody td { padding: 1rem; border-bottom: 1px solid var(--border); }
@@ -124,6 +152,28 @@ try {
                     </div>
                 </div>
                 
+                <div class="filter-section">
+                    <h6><i class="fas fa-filter me-2"></i>Filter by Product</h6>
+                    <form method="GET" class="row g-2">
+                        <div class="col-md-8">
+                            <select class="form-control" name="mod_id" style="border-radius: 8px; border: 1px solid var(--border); padding: 0.75rem;">
+                                <option value="">All Products</option>
+                                <?php foreach ($purchasedMods as $mod): ?>
+                                <option value="<?php echo $mod['id']; ?>" <?php echo $modFilter == $mod['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($mod['name'] ?? 'Unknown'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1" style="border-radius: 8px;">
+                                <i class="fas fa-search me-2"></i>Filter
+                            </button>
+                            <a href="user_manage_keys.php" class="btn btn-outline-secondary" style="border-radius: 8px;">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="table-card">
                     <h5><i class="fas fa-shopping-bag me-2"></i>My Purchased Keys</h5>
                     <?php if (empty($purchasedKeys)): ?>
@@ -140,7 +190,7 @@ try {
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Mod Name</th>
+                                        <th>Keys</th>
                                         <th>License Key</th>
                                         <th>Duration</th>
                                         <th>Price</th>

@@ -104,15 +104,25 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $availableKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Get user's purchased keys
-$stmt = $pdo->prepare("SELECT lk.*, m.name as mod_name 
-                      FROM license_keys lk 
-                      LEFT JOIN mods m ON lk.mod_id = m.id 
-                      WHERE lk.sold_to = ? 
-                      ORDER BY lk.sold_at DESC");
+// Get filter parameter
+$modFilter = $_GET['mod_id'] ?? '';
+
+// Get user's purchased mods for filter
+$stmt = $pdo->prepare("SELECT DISTINCT m.id, m.name FROM license_keys lk LEFT JOIN mods m ON lk.mod_id = m.id WHERE lk.sold_to = ? ORDER BY m.name");
 $stmt->execute([$userId]);
+$purchasedMods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get user's purchased keys with filter
+if ($modFilter !== '' && ctype_digit((string)$modFilter)) {
+    $stmt = $pdo->prepare("SELECT lk.*, m.name as mod_name FROM license_keys lk LEFT JOIN mods m ON lk.mod_id = m.id WHERE lk.sold_to = ? AND lk.mod_id = ? ORDER BY lk.sold_at DESC");
+    $stmt->execute([$userId, $modFilter]);
+} else {
+    $stmt = $pdo->prepare("SELECT lk.*, m.name as mod_name FROM license_keys lk LEFT JOIN mods m ON lk.mod_id = m.id WHERE lk.sold_to = ? ORDER BY lk.sold_at DESC");
+    $stmt->execute([$userId]);
+}
 $purchasedKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Helper functions
 // Helper functions
 function formatCurrency($amount) {
     return '₹' . number_format($amount, 2, '.', ',');
@@ -650,6 +660,28 @@ function formatDate($date) {
                     </div>
                 </div>
                 
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h6 style="color: #1e293b; font-weight: 600; margin-bottom: 1rem;"><i class="fas fa-filter me-2"></i>Filter by Product</h6>
+                    <form method="GET" class="row g-2">
+                        <div class="col-md-8">
+                            <select class="form-control" name="mod_id" style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.75rem;">
+                                <option value="">All Products</option>
+                                <?php foreach ($purchasedMods as $mod): ?>
+                                <option value="<?php echo $mod['id']; ?>" <?php echo $modFilter == $mod['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($mod['name'] ?? 'Unknown'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1" style="border-radius: 8px;">
+                                <i class="fas fa-search me-2"></i>Filter
+                            </button>
+                            <a href="user_manage_keys_simple.php" class="btn btn-outline-secondary" style="border-radius: 8px;">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- My Purchased Keys -->
                 <div class="table-card">
                     <h5><i class="fas fa-shopping-bag me-2"></i>My Purchased Keys</h5>
@@ -657,7 +689,7 @@ function formatDate($date) {
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Mod Name</th>
+                                    <th>Keys</th>
                                     <th>License Key</th>
                                     <th>Duration</th>
                                     <th>Price</th>
