@@ -37,6 +37,9 @@ try {
         WHERE user_id = ? AND type = 'purchase' AND status = 'completed'");
     $stmt->execute([$userId]);
     $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $stats = [];
+}
         $pdo = getDBConnection();        $stmt = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(balance), 0) as total_balance, COALESCE(AVG(balance), 0) as avg_balance FROM users WHERE role = 'user'");        $userStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['count' => 0, 'total_balance' => 0, 'avg_balance' => 0];
 try {
     $stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
