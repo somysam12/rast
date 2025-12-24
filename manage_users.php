@@ -109,7 +109,6 @@ try {
             --border-light: #e2e8f0;
         }
     </style>
-    <link href="assets/css/responsive.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid" style="display: flex; min-height: 100vh;">

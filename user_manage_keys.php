@@ -111,7 +111,6 @@ try {
             .main-content { margin-left: 0; padding: 1rem; }
         }
     </style>
-    <link href="assets/css/responsive.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">

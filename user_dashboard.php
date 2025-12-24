@@ -720,7 +720,6 @@ function formatDate($date) {
             }
         }
     </style>
-    <link href="assets/css/responsive.css" rel="stylesheet">
 </head>
 <body>
     <!-- Modern Header -->

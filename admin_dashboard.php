@@ -496,7 +496,6 @@ try {
             }
         }
     </style>
-    <link href="assets/css/responsive.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle -->
