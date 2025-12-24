@@ -1,4 +1,4 @@
-modules = ["php-8.2", "web", "nodejs-20", "bash", "postgresql-16"]
+modules = ["php-8.2", "web", "nodejs-20", "bash"]
 [nix]
 channel = "stable-25_05"
 packages = ["unzip"]
