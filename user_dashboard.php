@@ -300,6 +300,8 @@ function formatDate($date) {
             padding: 2rem;
             min-height: 100vh;
             transition: margin-left 0.3s ease;
+        overflow-y: auto;
+        max-height: 100vh;
         }
         
         .main-content-with-header {
