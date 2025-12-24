@@ -41,3 +41,12 @@ externalPort = 3001
 [deployment]
 deploymentTarget = "autoscale"
 run = ["php", "-S", "0.0.0.0:5000"]
+
+[userenv]
+
+[userenv.shared]
+APP_URL = "https://silentmultipanel.vippanel.in"
+DB_HOST = "localhost"
+DB_NAME = "silentmu_isam"
+DB_USER = "silentmu_isam"
+DB_PASS = "silentmu_isam"

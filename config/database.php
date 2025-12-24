@@ -31,16 +31,16 @@ function getDBConnection() {
                 ]
             );
         }
-        // MySQL Connection (cPanel / Traditional Hosting)
-        else if (!empty(getenv('DB_HOST'))) {
-            $dsn = "mysql:host=" . getenv('DB_HOST') 
-                   . ";dbname=" . getenv('DB_NAME')
+        // MySQL Connection (cPanel / Traditional Hosting) with Environment Variables
+        else if (!empty(getenv('DB_HOST')) || !empty(getenv('DB_NAME'))) {
+            $dsn = "mysql:host=" . (getenv('DB_HOST') ?: 'localhost')
+                   . ";dbname=" . (getenv('DB_NAME') ?: 'silentmu_isam')
                    . ";charset=utf8mb4";
             
             $pdo = new PDO(
                 $dsn,
-                getenv('DB_USER'),
-                getenv('DB_PASS'),
+                getenv('DB_USER') ?: 'silentmu_isam',
+                getenv('DB_PASS') ?: 'silentmu_isam',
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -51,11 +51,10 @@ function getDBConnection() {
         // MySQL Connection - Default cPanel Credentials
         else {
             // cPanel MySQL Configuration
-            // Note: cPanel prefixes database name with your cPanel username
-            $host = 'localhost';
-            $database = 'cpses_si2afsulwr_silentmu_isam';  // cPanel prefixed name
-            $username = 'cpses_si2afsulwr_silentmu';       // cPanel prefixed username
-            $password = 'silentmu_isam';
+            $host = getenv('DB_HOST') ?: 'localhost';
+            $database = getenv('DB_NAME') ?: 'silentmu_isam';
+            $username = getenv('DB_USER') ?: 'silentmu_isam';
+            $password = getenv('DB_PASS') ?: 'silentmu_isam';
             
             $dsn = "mysql:host=" . $host 
                    . ";dbname=" . $database
