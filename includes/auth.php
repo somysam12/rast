@@ -73,7 +73,12 @@ function login($username, $password, $forceLogout = false) {
             $stmt->execute([$user['id'], session_id()]);
         }
         
-        $stmt = $pdo->prepare("INSERT INTO user_sessions (user_id, session_id, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE ip_address = VALUES(ip_address), user_agent = VALUES(user_agent), created_at = NOW()");
+        // Delete old session first (works on both SQLite and MySQL)
+        $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE session_id = ?");
+        $stmt->execute([session_id()]);
+        
+        // Insert new session
+        $stmt = $pdo->prepare("INSERT INTO user_sessions (user_id, session_id, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, NOW())");
         $stmt->execute([$user['id'], session_id(), $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '']);
         
         $_SESSION['user_id'] = $user['id'];
