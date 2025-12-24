@@ -10,6 +10,26 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $pdo = getDBConnection();
 $success = $error = '';
 
+// Handle delete
+if (isset($_GET['delete_id'])) {
+    $delete_id = intval($_GET['delete_id']);
+    try {
+        $stmt = $pdo->prepare("SELECT file_path FROM mod_apks WHERE id = ?");
+        $stmt->execute([$delete_id]);
+        $apk = $stmt->fetch();
+        
+        if ($apk && file_exists($apk['file_path'])) {
+            @unlink($apk['file_path']);
+        }
+        
+        $stmt = $pdo->prepare("DELETE FROM mod_apks WHERE id = ?");
+        $stmt->execute([$delete_id]);
+        $success = '✓ APK deleted successfully!';
+    } catch (Exception $e) {
+        $error = 'Error deleting APK: ' . $e->getMessage();
+    }
+}
+
 // Handle upload
 if ($_POST && isset($_FILES['apk_file'])) {
     $mod_id = $_POST['mod_id'] ?? '';
@@ -171,13 +191,20 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                             <td><?php echo round($u['file_size']/1024/1024, 2) . ' MB'; ?></td>
                                             <td><?php echo date('d M Y H:i', strtotime($u['uploaded_at'])); ?></td>
                                             <td>
-                                                <?php if (file_exists($u['file_path'])): ?>
-                                                    <a href="<?php echo htmlspecialchars($u['file_path']); ?>" class="btn btn-sm btn-success" download>
-                                                        <i class="fas fa-download"></i> Download
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <?php if (file_exists($u['file_path'])): ?>
+                                                        <a href="<?php echo htmlspecialchars($u['file_path']); ?>" class="btn btn-success" download>
+                                                            <i class="fas fa-download"></i> Download
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <span class="btn btn-outline-danger disabled">
+                                                            <i class="fas fa-exclamation"></i> Not Found
+                                                        </span>
+                                                    <?php endif; ?>
+                                                    <a href="?delete_id=<?php echo $u['id']; ?>" class="btn btn-danger" onclick="return confirm('Delete this APK?');">
+                                                        <i class="fas fa-trash"></i> Delete
                                                     </a>
-                                                <?php else: ?>
-                                                    <span class="text-danger"><i class="fas fa-exclamation"></i> Not Found</span>
-                                                <?php endif; ?>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
