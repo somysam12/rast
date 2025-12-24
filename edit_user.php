@@ -308,11 +308,11 @@ try {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                             <div class="form-group">
                                 <label class="form-label">Username</label>
-                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($user['username']); ?>" disabled>
+                                <input type="text" name="username" class="form-control" value="<?php echo htmlspecialchars($user["username"]); ?>" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" disabled>
+                                <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user["email"]); ?>" required>
                             </div>
                         </div>
 

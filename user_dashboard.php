@@ -897,9 +897,9 @@ function formatDate($date) {
                                 <table class="table table-sm">
                                     <thead>
                                         <tr>
-                                            <th>Type</th>
-                                            <th>Amount</th>
-                                            <th>Date</th>
+                                            <th style="width: 30%;">Type</th>
+                                            <th style="width: 30%;">Amount</th>
+                                            <th style="width: 40%;">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
