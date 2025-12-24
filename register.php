@@ -43,7 +43,7 @@ if ($_POST) {
             $referralType = null;
             
             // First check admin-generated referral codes
-            $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > NOW()");
+            $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > datetime('now')");
             $stmt->execute([$referralCode]);
             $adminReferral = $stmt->fetchColumn();
             
@@ -102,7 +102,7 @@ if ($_POST) {
                 
                 // Record referral transaction for referrer only
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', NOW())");
+                    $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', datetime('now'))");
                     $stmt->execute([$referredBy]);
                 } catch (Exception $e) {
                     // Ignore transaction errors
@@ -115,7 +115,7 @@ if ($_POST) {
             }
         } catch (Exception $e) {
             if (isset($pdo)) {
-                $pdo->rollBack();
+                if ($pdo->inTransaction()) { $pdo->rollBack(); }
             }
             $error = 'Registration failed. Please try again.';
         }

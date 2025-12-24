@@ -73,7 +73,7 @@ if ($_POST && isset($_POST['purchase_key'])) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) { $pdo->rollBack(); }
         $error = $e->getMessage();
     }
 }

@@ -73,7 +73,7 @@ if ($_POST) {
             }
         } catch (Exception $e) {
             if (isset($pdo)) {
-                $pdo->rollBack();
+                if ($pdo->inTransaction()) { $pdo->rollBack(); }
             }
             $error = 'Registration failed. Please try again.';
         }

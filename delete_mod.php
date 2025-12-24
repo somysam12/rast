@@ -38,11 +38,11 @@ if ($confirm == 1 && $_POST) {
             header('Location: manage_mods.php?success=Mod deleted successfully');
             exit();
         } else {
-            $pdo->rollBack();
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
             $error = 'Failed to delete mod';
         }
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) { $pdo->rollBack(); }
         $error = 'Error: ' . $e->getMessage();
     }
 }

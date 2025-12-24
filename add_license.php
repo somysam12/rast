@@ -97,7 +97,7 @@ if ($_POST) {
                     $success .= " $duplicateCount duplicate keys were skipped.";
                 }
             } catch (Exception $e) {
-                $pdo->rollBack();
+                if ($pdo->inTransaction()) { $pdo->rollBack(); }
                 $error = 'Failed to add license keys';
             }
         }
