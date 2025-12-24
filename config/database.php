@@ -55,7 +55,7 @@ function getDBConnection() {
         $host = getenv('DB_HOST') ?: 'localhost';
         $database = getenv('DB_NAME') ?: 'silentmu_silentdb';
         $username = getenv('DB_USER') ?: 'silentmu_isam';
-        $password = getenv('DB_PASS') ?: '844121@luvkush';
+        $password = getenv('DB_PASS') ?: '844121@LuvKush';
         
         $dsn = "mysql:host=" . $host 
                . ";dbname=" . $database

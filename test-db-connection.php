@@ -16,7 +16,7 @@ echo "Testing MySQL connection on cPanel...<br><br>";
 $host = 'localhost';
 $database = 'silentmu_silentdb';
 $username = 'silentmu_isam';
-$password = '844121@luvkush';
+$password = '844121@LuvKush';
 
 echo "Attempting to connect with:<br>";
 echo "Host: " . htmlspecialchars($host) . "<br>";
