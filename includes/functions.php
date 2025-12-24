@@ -20,7 +20,9 @@ function formatCurrency($amount) {
 
 function formatDate($date) {
     if (empty($date)) return 'N/A';
-    return date('d M Y H:i', strtotime($date));
+    $timestamp = strtotime($date);
+    if ($timestamp === false) return 'N/A';
+    return date('d M Y H:i', $timestamp);
 }
 
 function getModStats() {

@@ -231,7 +231,7 @@ function updateBalance($userId, $amount, $type = 'balance_add', $reference = nul
         $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
         $stmt->execute([$amount, $userId]);
         
-        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, reference, status) VALUES (?, ?, ?, ?, 'completed')");
+        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, reference, status, created_at) VALUES (?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP)");
         $stmt->execute([$userId, $amount, $type, $reference]);
         
         $pdo->commit();
