@@ -82,12 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $stmt = $pdo->prepare('UPDATE users SET balance = balance - ? WHERE id = ?');
             $stmt->execute([$price, $user['id']]);
 
-            $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = datetime('now') WHERE id = ?');
+            $stmt = $pdo->prepare("UPDATE license_keys SET sold_to = ?, sold_at = datetime('now') WHERE id = ?");
             $stmt->execute([$user['id'], $key['id']]);
 
             // Optional: record transaction if table exists
             try {
-                $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, "debit", ?, "License key purchase", datetime('now'))');
+                $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, "debit", ?, "License key purchase", datetime("now"))');
                 $stmt->execute([$user['id'], $price]);
             } catch (Throwable $ignored) {}
 
