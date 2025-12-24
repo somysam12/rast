@@ -15,8 +15,8 @@ try {
     
     // Get account statistics
     $stmt = $pdo->prepare("SELECT 
-        COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) as logins_today,
-        COUNT(CASE WHEN DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as logins_week,
+        COUNT(CASE WHEN date(created_at) = date('now') THEN 1 END) as logins_today,
+        COUNT(CASE WHEN DATE(created_at) >= date('now', '-7 days') THEN 1 END) as logins_week,
         COUNT(*) as total_sessions
         FROM users WHERE id = ?");
     $stmt->execute([$user['id']]);

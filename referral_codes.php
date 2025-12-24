@@ -102,8 +102,8 @@ try {
             COUNT(*) as total_codes,
             COUNT(CASE WHEN status = 'active' THEN 1 END) as active_codes,
             COUNT(CASE WHEN status = 'inactive' THEN 1 END) as inactive_codes,
-            COUNT(CASE WHEN expires_at > NOW() THEN 1 END) as valid_codes,
-            COUNT(CASE WHEN expires_at <= NOW() THEN 1 END) as expired_codes
+            COUNT(CASE WHEN expires_at > datetime('now') THEN 1 END) as valid_codes,
+            COUNT(CASE WHEN expires_at <= datetime('now') THEN 1 END) as expired_codes
             FROM referral_codes");
         $codeStats = $stmt->fetch(PDO::FETCH_ASSOC);
     } else {
