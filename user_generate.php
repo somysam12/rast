@@ -64,11 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $stmt = $pdo->prepare('UPDATE users SET balance = balance - ? WHERE id = ?');
             $stmt->execute([$price, $user['id']]);
 
-            $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = NOW() WHERE id = ?');
+            $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ?');
             $stmt->execute([$user['id'], $keyId]);
 
             try {
-                $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, "debit", ?, "License key purchase", NOW())');
+                $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, "debit", ?, "License key purchase", CURRENT_TIMESTAMP)');
                 $stmt->execute([$user['id'], $price]);
             } catch (Throwable $ignored) {}
 
@@ -85,17 +85,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
     }
 }
 
-// Get available keys
+// Get filter parameters
+$modId = $_GET['mod_id'] ?? '';
+
+// Get all active mods
+$mods = [];
+try {
+    $stmt = $pdo->query("SELECT id, name FROM mods WHERE status = 'active' ORDER BY name");
+    $mods = $stmt->fetchAll();
+} catch (Throwable $e) {}
+
+// Get available keys grouped by mod and duration
 $availableKeys = [];
 try {
-    $stmt = $pdo->query('SELECT lk.id, lk.mod_id, lk.duration, lk.duration_type, lk.price, m.name AS mod_name
-                          FROM license_keys lk
-                          LEFT JOIN mods m ON m.id = lk.mod_id
-                          WHERE lk.sold_to IS NULL
-                          ORDER BY lk.id DESC LIMIT 50');
+    if ($modId !== '' && ctype_digit((string)$modId)) {
+        $stmt = $pdo->prepare('SELECT m.name AS mod_name, lk.mod_id, lk.duration, lk.duration_type, lk.price, COUNT(*) as key_count, MIN(lk.id) as min_id
+                               FROM license_keys lk
+                               LEFT JOIN mods m ON m.id = lk.mod_id
+                               WHERE lk.sold_to IS NULL AND lk.mod_id = ?
+                               GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
+                               ORDER BY m.name, lk.duration');
+        $stmt->execute([$modId]);
+    } else {
+        $stmt = $pdo->query('SELECT m.name AS mod_name, lk.mod_id, lk.duration, lk.duration_type, lk.price, COUNT(*) as key_count, MIN(lk.id) as min_id
+                              FROM license_keys lk
+                              LEFT JOIN mods m ON m.id = lk.mod_id
+                              WHERE lk.sold_to IS NULL
+                              GROUP BY lk.mod_id, lk.duration, lk.duration_type, lk.price
+                              ORDER BY m.name, lk.duration');
+    }
     $availableKeys = $stmt->fetchAll();
 } catch (Throwable $e) {
     $availableKeys = [];
+}
+
+// Group keys by mod
+$keysByMod = [];
+foreach ($availableKeys as $key) {
+    $modName = $key['mod_name'] ?? 'Unknown';
+    if (!isset($keysByMod[$modName])) {
+        $keysByMod[$modName] = [];
+    }
+    $keysByMod[$modName][] = $key;
 }
 
 // Get user's purchased keys
@@ -126,26 +157,26 @@ try {
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
         .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; width: 280px; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; }
-        .sidebar .nav-link { color: var(--muted); padding: 12px 20px; margin: 4px 16px; border-radius: 8px; transition: all 0.2s; }
+        .sidebar .nav-link { color: var(--muted); padding: 12px 20px; margin: 4px 16px; border-radius: 8px; }
         .sidebar .nav-link:hover { background: #f3f4f6; color: var(--text); }
         .sidebar .nav-link.active { background: var(--purple); color: white; }
         .sidebar .nav-link i { width: 20px; margin-right: 12px; }
         .main-content { margin-left: 280px; padding: 2rem; }
         .page-header { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; }
         .page-header h2 { color: var(--purple); font-weight: 600; }
-        .table-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; }
-        .table-card h5 { color: var(--purple); font-weight: 600; margin-bottom: 1.5rem; }
-        .table { border-radius: 12px; }
-        .table thead th { background: var(--purple); color: white; border: none; padding: 1rem; }
-        .table tbody td { padding: 1rem; border-bottom: 1px solid var(--border); }
-        .license-key { font-family: 'Courier New', monospace; font-size: 0.9em; background: #f8fafc; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); word-break: break-all; }
-        .btn-primary { background: var(--purple); border: none; border-radius: 8px; padding: 0.5rem 1rem; color: white; }
-        .btn-primary:hover { background: #7c3aed; color: white; }
-        .btn-success { background: #10b981; border: none; border-radius: 8px; padding: 0.5rem 1rem; color: white; }
-        .btn-success:hover { background: #059669; color: white; }
-        .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
-        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+        .filter-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; }
+        .filter-card h4 { color: var(--text); font-weight: 600; margin-bottom: 1rem; }
+        .key-card { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
+        .key-card h4 { color: var(--purple); font-weight: 600; margin-bottom: 1rem; }
+        .duration-option { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        .duration-badge { background: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85em; }
+        .price { font-weight: 600; color: var(--text); font-size: 1.1em; }
+        .available { background: #0ea5e9; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85em; }
+        .btn-generate { background: #10b981; border: none; color: white; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
+        .btn-generate:hover { background: #059669; color: white; }
+        .empty-message { text-align: center; color: var(--muted); padding: 1rem; font-size: 0.95em; }
         .alert { border-radius: 8px; border: none; }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .main-content { margin-left: 0; padding: 1rem; }
@@ -157,9 +188,7 @@ try {
         <div class="row">
             <div class="col-md-3 col-lg-2 sidebar">
                 <div class="p-4 border-bottom">
-                    <h4 style="color: var(--purple); font-weight: 700; margin-bottom: 0;">
-                        <i class="fas fa-crown me-2"></i>SilentMultiPanel
-                    </h4>
+                    <h4 style="color: var(--purple); font-weight: 700; margin-bottom: 0;"><i class="fas fa-crown me-2"></i>SilentMultiPanel</h4>
                     <p class="text-muted small mb-0">User Panel</p>
                 </div>
                 <nav class="nav flex-column">
@@ -192,96 +221,89 @@ try {
                 </div>
                 
                 <?php if ($success): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+                <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
                 <?php endif; ?>
                 
                 <?php if ($error): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+                <div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
                 <?php endif; ?>
                 
+                <!-- Filter -->
+                <div class="filter-card">
+                    <h4>FILTER BY MOD:</h4>
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-8">
+                            <select class="form-control" name="mod_id" style="border-radius: 12px; border: 1px solid var(--border); padding: 0.75rem;">
+                                <option value="">All Mods</option>
+                                <?php foreach ($mods as $mod): ?>
+                                <option value="<?php echo $mod['id']; ?>" <?php echo $modId == $mod['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($mod['name']); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-generate w-100"><i class="fas fa-filter me-2"></i>Filter</button>
+                            <a href="user_generate.php" class="btn btn-secondary w-100 mt-2"><i class="fas fa-times me-2"></i>Clear</a>
+                        </div>
+                    </form>
+                </div>
+                
                 <!-- Available Keys -->
-                <div class="table-card">
-                    <h5><i class="fas fa-gift me-2"></i>Available Keys to Generate</h5>
-                    <?php if (empty($availableKeys)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-inbox" style="font-size: 3rem; color: var(--purple); opacity: 0.5; margin-bottom: 1rem;"></i>
-                            <h5>No Keys Available</h5>
-                            <p>No license keys available for purchase at this moment.</p>
-                        </div>
+                <div>
+                    <h5 style="color: var(--purple); font-weight: 600; margin-bottom: 1.5rem;"><i class="fas fa-lock me-2"></i>Available Keys</h5>
+                    
+                    <?php if (empty($keysByMod)): ?>
+                        <div class="alert alert-info">No available keys to purchase.</div>
                     <?php else: ?>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Mod Name</th>
-                                        <th>Duration</th>
-                                        <th>Price</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($availableKeys as $key): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?></td>
-                                        <td><span class="badge bg-primary"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span></td>
-                                        <td><?php echo formatCurrency($key['price']); ?></td>
-                                        <td>
-                                            <form method="POST" style="display: inline;">
-                                                <input type="hidden" name="key_id" value="<?php echo $key['id']; ?>">
-                                                <button type="submit" name="purchase_key" class="btn btn-sm btn-success">
-                                                    <i class="fas fa-shopping-cart me-1"></i>Generate
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                        <?php foreach ($keysByMod as $modName => $keys): ?>
+                        <div class="key-card">
+                            <h4><i class="fas fa-box me-2"></i><?php echo htmlspecialchars($modName); ?></h4>
+                            <div style="text-align: right; margin-bottom: 1rem;">
+                                <span class="badge bg-purple" style="background: var(--purple);"><?php echo count($keys); ?> Duration Options</span>
+                            </div>
+                            
+                            <?php foreach ($keys as $key): ?>
+                            <div class="duration-option">
+                                <div>
+                                    <span class="duration-badge"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span>
+                                    <div style="margin-top: 0.5rem;">
+                                        <div class="price"><?php echo formatCurrency($key['price']); ?></div>
+                                        <span class="available"><?php echo 'Available: ' . $key['key_count']; ?></span>
+                                    </div>
+                                </div>
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
+                                    <button type="submit" name="purchase_key" class="btn-generate">
+                                        <i class="fas fa-shopping-cart me-1"></i>Generate
+                                    </button>
+                                </form>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <div class="empty-message">Select a duration option above to purchase</div>
                         </div>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
                 
-                <!-- My Purchased Keys -->
-                <div class="table-card">
-                    <h5><i class="fas fa-shopping-bag me-2"></i>My Purchased Keys</h5>
+                <!-- Purchased Keys -->
+                <div style="margin-top: 2rem;">
+                    <h5 style="color: var(--purple); font-weight: 600; margin-bottom: 1.5rem;"><i class="fas fa-shopping-bag me-2"></i>My Purchased Keys</h5>
                     <?php if (empty($purchasedKeys)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-box" style="font-size: 3rem; color: var(--purple); opacity: 0.5; margin-bottom: 1rem;"></i>
-                            <h5>No Purchased Keys</h5>
-                            <p>You haven't purchased any keys yet. Generate one above!</p>
-                        </div>
+                        <div class="alert alert-info">No purchased keys yet. Generate one above!</div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Mod Name</th>
-                                        <th>License Key</th>
-                                        <th>Duration</th>
-                                        <th>Price</th>
-                                        <th>Date</th>
-                                        <th>Actions</th>
-                                    </tr>
+                            <table class="table" style="border-radius: 12px;">
+                                <thead style="background: var(--purple); color: white;">
+                                    <tr><th>Mod Name</th><th>License Key</th><th>Duration</th><th>Date</th><th>Actions</th></tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($purchasedKeys as $key): ?>
-                                    <tr>
+                                    <tr style="border-bottom: 1px solid var(--border);">
                                         <td><?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?></td>
-                                        <td><div class="license-key"><?php echo htmlspecialchars($key['license_key']); ?></div></td>
+                                        <td><code style="background: #f8fafc; padding: 0.5rem; border-radius: 6px;"><?php echo htmlspecialchars($key['license_key']); ?></code></td>
                                         <td><span class="badge bg-primary"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span></td>
-                                        <td><?php echo formatCurrency($key['price']); ?></td>
                                         <td><?php echo formatDate($key['sold_at']); ?></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')" title="Copy Key">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        </td>
+                                        <td><button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')"><i class="fas fa-copy"></i></button></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -296,13 +318,8 @@ try {
     <script>
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                const toast = document.createElement('div');
-                toast.className = 'alert alert-success position-fixed';
-                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
-                toast.innerHTML = '<i class="fas fa-check me-2"></i>License key copied!';
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
-            }).catch(() => alert('Could not copy. Please copy manually.'));
+                alert('License key copied to clipboard!');
+            }).catch(() => alert('Failed to copy'));
         }
     </script>
 </body>
