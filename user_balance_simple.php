@@ -26,7 +26,7 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Helper functions
 function formatCurrency($amount) {
-    return '₹' . number_format($amount, 2);
+    return '₹' . number_format($amount, 2, '.', ',');
 }
 
 function formatDate($date) {

@@ -1,4 +1,4 @@
-// Enhanced UI Components for Prince Panel
+// Enhanced UI Components for SilentMultiPanel Panel
 class EnhancedUI {
     constructor() {
         this.init();

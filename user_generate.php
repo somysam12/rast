@@ -7,7 +7,7 @@ require_once 'config/database.php';
 
 // Simple helpers
 function formatCurrency($amount){
-    return '₹' . number_format((float)$amount, 2);
+    return '₹' . number_format((float)$amount, 2, '.', ',');
 }
 function formatDate($dt){
     if(!$dt){ return '-'; }
@@ -511,7 +511,7 @@ try {
             <button class="mobile-toggle me-3" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Prince Panel</h5>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>SilentMultiPanel Panel</h5>
         </div>
         <div class="d-flex align-items-center">
             <span class="balance-badge d-none d-sm-inline"><?php echo formatCurrency($user['balance']); ?></span>
@@ -527,7 +527,7 @@ try {
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="p-4 border-bottom border-light">
                     <h4 class="mb-1" style="color: var(--purple); font-weight: 700;">
-                        <i class="fas fa-crown me-2"></i>Prince Panel
+                        <i class="fas fa-crown me-2"></i>SilentMultiPanel Panel
                     </h4>
                     <p class="text-muted small mb-0">User Dashboard</p>
                 </div>

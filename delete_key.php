@@ -77,7 +77,7 @@ if ($confirm == 1 && $_POST) {
                 <p><?php echo htmlspecialchars($key['license_key']); ?></p>
                 <p><strong>Mod:</strong> <?php echo htmlspecialchars($key['mod_name']); ?></p>
                 <p><strong>Duration:</strong> <?php echo $key['duration'] . ' ' . $key['duration_type']; ?></p>
-                <p><strong>Price:</strong> ₹<?php echo number_format($key['price'], 2); ?></p>
+                <p><strong>Price:</strong> ₹<?php echo number_format($key['price'], 2, '.', ','); ?></p>
                 <p style="margin-top: 10px;">
                     <strong>Status:</strong> 
                     <span class="status-badge status-<?php echo $key['status']; ?>">

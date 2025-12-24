@@ -1,4 +1,4 @@
-// Dark Mode Functionality for Prince Panel
+// Dark Mode Functionality for SilentMultiPanel Panel
 class DarkModeManager {
     constructor() {
         this.init();

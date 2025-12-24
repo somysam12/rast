@@ -7,7 +7,7 @@ require_once 'config/database.php';
 
 // Simple helpers
 function formatCurrency($amount){
-    return '₹' . number_format((float)$amount, 2);
+    return '₹' . number_format((float)$amount, 2, '.', ',');
 }
 function formatDate($dt){
     if(!$dt){ return '-'; }

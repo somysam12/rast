@@ -42,7 +42,7 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Prince Multi Panel</title>
+    <title>Login - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
@@ -385,7 +385,7 @@ if ($_POST) {
                                 <div class="mb-3">
                                     <i class="fas fa-crown fa-3x"></i>
                                 </div>
-                                <h3 class="mb-2">Prince Panel</h3>
+                                <h3 class="mb-2">SilentMultiPanel Panel</h3>
                                 <p class="mb-0">Welcome back! Sign in to your account</p>
                             </div>
                         </div>
