@@ -583,8 +583,8 @@ try {
                 <div class="page-header fade-in">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-2"><i class="fas fa-tachometer-alt me-2"></i>Dashboard Overview</h2>
-                            <p class="text-muted mb-0">Welcome back! Here's your system overview.</p>
+                            <h2 class="mb-2" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem;"><i class="fas fa-crown me-2" style="color: #8b5cf6; -webkit-text-fill-color: #8b5cf6;"></i>SilentMultiPanel</h2>
+                            <p class="text-muted mb-0">Welcome, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>!</p>
                         </div>
                         <div class="d-none d-md-flex align-items-center">
                             <div class="text-end me-3">
@@ -659,6 +659,42 @@ try {
                 </div>
                 
                 <!-- Recent Activity -->
+
+                <!-- All Users Section -->
+                <div class="table-card fade-in">
+                    <h5><i class="fas fa-users me-2"></i>All Users</h5>
+                    <div class="row">
+<?php
+try {
+    $stmt = $pdo->query("SELECT username, role FROM users WHERE role = 'user' ORDER BY username ASC");
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (empty($users)) {
+        echo '<div class="col-12"><p class="text-muted text-center py-4">No users registered yet</p></div>';
+    } else {
+        foreach ($users as $userItem):
+            $initials = strtoupper(substr($userItem['username'], 0, 2));
+            $roleDisplay = $userItem['role'] === 'user' ? 'User Account' : 'Administrator';
+?>
+                        <div class="col-md-4 col-lg-3 mb-3">
+                            <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--purple);"></div>
+                                <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem; margin: 0 auto 1rem; box-shadow: var(--shadow-medium);">
+                                    <?php echo $initials; ?>
+                                </div>
+                                <h6 style="color: var(--text-primary); font-weight: 600; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($userItem['username']); ?></h6>
+                                <small style="color: var(--text-secondary);"><?php echo $roleDisplay; ?></small>
+                            </div>
+                        </div>
+<?php
+        endforeach;
+    }
+} catch (Exception $e) {
+    echo '<div class="col-12"><div class="alert alert-warning">Unable to load users</div></div>';
+}
+?>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-lg-6 mb-4">
                         <div class="table-card fade-in">
@@ -848,13 +884,3 @@ try {
                         }
                     }, 50);
                 }
-            });
-        }
-        
-        // Trigger stats animation after page load
-        window.addEventListener('load', () => {
-            setTimeout(animateStats, 500);
-        });
-    </script>
-</body>
-</html>

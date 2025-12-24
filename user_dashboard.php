@@ -809,8 +809,8 @@ function formatDate($date) {
                 <div class="page-header fade-in">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-2"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
-                            <p class="text-muted mb-0">Welcome back! Here's what's happening with your account.</p>
+                            <h2 class="mb-2" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem;"><i class="fas fa-crown me-2" style="color: #7c3aed; -webkit-text-fill-color: #7c3aed;"></i>SilentMultiPanel</h2>
+                            <p class="text-muted mb-0">Welcome, <strong><?php echo htmlspecialchars($user['username']); ?></strong>!</p>
                         </div>
                         <div class="d-flex align-items-center">
                             <div class="text-end me-3">
