@@ -9,6 +9,11 @@ $pdo = getDBConnection();
 $message = '';
 $messageType = '';
 
+function formatDate($dt){
+    if(!$dt){ return '-'; }
+    return date('d M Y, h:i A', strtotime($dt));
+}
+
 // Handle admin action
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $requestId = $_POST['request_id'] ?? null;
@@ -17,7 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($requestId && in_array($action, ['approve', 'reject'])) {
         try {
             // Get request details
-            $stmt = $pdo->prepare("SELECT * FROM key_requests WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT kr.*, lk.license_key, lk.duration, lk.duration_type FROM key_requests kr 
+                                   LEFT JOIN license_keys lk ON lk.id = kr.key_id WHERE kr.id = ?");
             $stmt->execute([$requestId]);
             $request = $stmt->fetch(PDO::FETCH_ASSOC);
             
@@ -51,11 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Get pending requests with user info
+// Get pending requests with key details
 $pendingRequests = [];
 try {
-    $stmt = $pdo->query("SELECT kr.*, u.username FROM key_requests kr 
+    $stmt = $pdo->query("SELECT kr.*, u.username, lk.license_key, lk.duration, lk.duration_type FROM key_requests kr 
                         JOIN users u ON kr.user_id = u.id 
+                        LEFT JOIN license_keys lk ON lk.id = kr.key_id
                         WHERE kr.status = 'pending' 
                         ORDER BY kr.created_at DESC");
     $pendingRequests = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -126,149 +133,241 @@ try {
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            transition: all 0.3s ease;
         }
         
-        .request-card:hover {
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        .request-card.block {
+            border-left-color: #ef4444;
         }
         
-        .badge-custom {
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: inline-block;
+        .request-card.reset {
+            border-left-color: #f59e0b;
         }
         
-        .badge-block {
-            background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
+        .btn-back {
+            margin-bottom: 2rem;
         }
         
-        .badge-reset {
-            background: rgba(59, 130, 246, 0.1);
-            color: #2563eb;
+        .btn-back a {
+            color: var(--purple);
+            text-decoration: none;
+            font-weight: 600;
         }
         
-        .btn-approve, .btn-reject {
-            padding: 0.6rem 1.2rem;
-            border: none;
+        .btn-back a:hover {
+            text-decoration: underline;
+        }
+        
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .request-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .request-type-badge {
+            padding: 0.35rem 0.75rem;
             border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .request-type-badge.block {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .request-type-badge.reset {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .key-details {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .key-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--line);
+        }
+        
+        .key-detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .key-detail-label {
+            font-weight: 600;
+            color: var(--muted);
+        }
+        
+        .key-detail-value {
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .reason-box {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
         
         .btn-approve {
-            background: rgba(34, 197, 94, 0.1);
-            color: #16a34a;
-            border: 1px solid #16a34a;
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
         }
         
         .btn-approve:hover {
-            background: #16a34a;
-            color: white;
+            background: #059669;
         }
         
         .btn-reject {
-            background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
-            border: 1px solid #dc2626;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
         }
         
         .btn-reject:hover {
             background: #dc2626;
-            color: white;
         }
         
-        .btn-back {
+        .total-pending {
             background: var(--purple);
             color: white;
-            padding: 0.6rem 1.5rem;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .btn-back:hover {
-            background: var(--purple-600);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .alert-custom {
-            padding: 1rem;
+            padding: 1.5rem;
             border-radius: 8px;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid;
+            margin-bottom: 2rem;
+            text-align: center;
         }
         
-        .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border-color: #22c55e;
-            color: #16a34a;
+        .total-pending-number {
+            font-size: 2.5rem;
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
     <div class="navbar-custom">
         <div class="container-custom">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="margin: 0; color: var(--purple); font-weight: 700;">📋 Block And Reset Requests</h2>
-                <a href="admin_dashboard.php" class="btn-back">← Back</a>
-            </div>
+            <h1 style="color: var(--purple); margin: 0; font-weight: 700;">Block And Reset Requests</h1>
         </div>
     </div>
     
     <div class="container-custom">
+        <div class="btn-back">
+            <a href="admin_dashboard.php">← Back to Dashboard</a>
+        </div>
+        
         <?php if ($message): ?>
-            <div class="alert-custom alert-<?php echo $messageType; ?>">
-                <strong><?php echo $messageType === 'success' ? '✓' : '✕'; ?></strong> <?php echo $message; ?>
+            <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($message); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
         
-        <div class="card-custom">
-            <?php if (empty($pendingRequests)): ?>
-                <p style="color: var(--muted); text-align: center; font-size: 1.1rem;">No pending requests at this time.</p>
-            <?php else: ?>
-                <h3 style="margin-bottom: 1.5rem; color: var(--text);">Total Pending Requests: <?php echo count($pendingRequests); ?></h3>
-                
-                <?php foreach ($pendingRequests as $req): ?>
-                    <div class="request-card">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0; color: var(--text);">👤 <?php echo htmlspecialchars($req['username']); ?></h4>
-                                <p style="margin: 0.5rem 0; color: var(--muted); font-size: 0.9rem;">
-                                    <strong>Product:</strong> <?php echo htmlspecialchars($req['mod_name']); ?>
-                                </p>
-                                <p style="margin: 0.5rem 0; color: var(--muted); font-size: 0.85rem;">
-                                    <strong>Request Date:</strong> <?php echo date('d M Y H:i', strtotime($req['created_at'])); ?>
-                                </p>
+        <div class="total-pending">
+            <div>Total Pending Requests:</div>
+            <div class="total-pending-number"><?php echo count($pendingRequests); ?></div>
+        </div>
+        
+        <?php if (empty($pendingRequests)): ?>
+            <div class="card-custom text-center">
+                <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--purple); margin-bottom: 1rem; display: block;"></i>
+                <p style="color: var(--muted);">No pending requests at this moment.</p>
+            </div>
+        <?php else: ?>
+            <?php foreach ($pendingRequests as $request): ?>
+                <div class="request-card <?php echo htmlspecialchars($request['request_type']); ?>">
+                    <div class="request-header">
+                        <div class="request-user">
+                            <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <div><?php echo htmlspecialchars($request['username']); ?></div>
+                                <div style="font-size: 0.85em; color: var(--muted); font-weight: 400;">
+                                    Request Date: <?php echo formatDate($request['created_at']); ?>
+                                </div>
                             </div>
-                            <span class="badge-custom badge-<?php echo $req['request_type'] === 'block' ? 'block' : 'reset'; ?>">
-                                <?php echo $req['request_type'] === 'block' ? '🚫 BLOCK' : '↻ RESET'; ?>
-                            </span>
                         </div>
-                        
-                        <?php if ($req['reason']): ?>
-                            <p style="background: var(--line); padding: 0.75rem; border-radius: 6px; margin: 1rem 0; color: var(--text); font-size: 0.9rem;">
-                                <strong>Reason:</strong> <?php echo htmlspecialchars($req['reason']); ?>
-                            </p>
-                        <?php endif; ?>
-                        
-                        <form method="POST" style="display: flex; gap: 0.75rem;">
-                            <input type="hidden" name="request_id" value="<?php echo $req['id']; ?>">
-                            <button type="submit" name="action" value="approve" class="btn-approve">✓ Approve</button>
-                            <button type="submit" name="action" value="reject" class="btn-reject">✕ Reject</button>
+                        <span class="request-type-badge <?php echo htmlspecialchars($request['request_type']); ?>">
+                            <?php echo strtoupper($request['request_type']); ?>
+                        </span>
+                    </div>
+                    
+                    <!-- Key Details -->
+                    <div class="key-details">
+                        <div class="key-detail-row">
+                            <span class="key-detail-label">Product:</span>
+                            <span class="key-detail-value"><?php echo htmlspecialchars($request['mod_name']); ?></span>
+                        </div>
+                        <div class="key-detail-row">
+                            <span class="key-detail-label">Duration:</span>
+                            <span class="key-detail-value"><?php echo htmlspecialchars($request['duration'] . ' ' . ucfirst($request['duration_type'])); ?></span>
+                        </div>
+                        <div class="key-detail-row">
+                            <span class="key-detail-label">License Key:</span>
+                            <span class="key-detail-value"><?php echo htmlspecialchars(substr($request['license_key'], 0, 30)) . (strlen($request['license_key']) > 30 ? '...' : ''); ?></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Reason -->
+                    <div>
+                        <strong style="color: var(--muted);">Reason:</strong>
+                        <div class="reason-box">
+                            <?php echo htmlspecialchars($request['reason']); ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <form method="POST" style="display: inline;">
+                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                            <button type="submit" name="action" value="approve" class="btn-approve">
+                                <i class="fas fa-check me-2"></i>Approve
+                            </button>
+                        </form>
+                        <form method="POST" style="display: inline;">
+                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                            <button type="submit" name="action" value="reject" class="btn-reject">
+                                <i class="fas fa-times me-2"></i>Reject
+                            </button>
                         </form>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

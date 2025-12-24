@@ -35,15 +35,53 @@ if(!$user){
 
 $success = '';
 $error = '';
+$selectedKeyDetails = null;
+
+// Handle key lookup via API
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lookup_key'])) {
+    $licenseKey = trim($_POST['license_key'] ?? '');
+    if (empty($licenseKey)) {
+        $error = 'Please enter a license key.';
+    } else {
+        try {
+            $stmt = $pdo->prepare('SELECT lk.id, lk.license_key, lk.duration, lk.duration_type, lk.mod_id, m.name AS mod_name
+                                   FROM license_keys lk
+                                   LEFT JOIN mods m ON m.id = lk.mod_id
+                                   WHERE lk.license_key = ? AND lk.sold_to = ? LIMIT 1');
+            $stmt->execute([$licenseKey, $user['id']]);
+            $key = $stmt->fetch();
+            if(!$key){
+                $error = 'Key not found or you do not own this key.';
+            } else {
+                $selectedKeyDetails = $key;
+            }
+        } catch (Throwable $e) {
+            $error = 'Error looking up key: ' . $e->getMessage();
+        }
+    }
+}
 
 // Handle request submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
-    $keyId = (int)($_POST['key_id'] ?? 0);
+    $keySelection = $_POST['key_selection'] ?? ''; // 'dropdown' or 'pasted'
+    $keyId = null;
     $requestType = $_POST['request_type'] ?? '';
     $reason = trim($_POST['reason'] ?? '');
     
-    if ($keyId <= 0 || !in_array($requestType, ['block', 'reset'])) {
-        $error = 'Invalid request details.';
+    if ($keySelection === 'dropdown') {
+        $keyId = (int)($_POST['key_id'] ?? 0);
+    } elseif ($keySelection === 'pasted') {
+        $licenseKey = trim($_POST['license_key'] ?? '');
+        if (!empty($licenseKey)) {
+            $stmt = $pdo->prepare('SELECT id FROM license_keys WHERE license_key = ? AND sold_to = ? LIMIT 1');
+            $stmt->execute([$licenseKey, $user['id']]);
+            $key = $stmt->fetch();
+            $keyId = $key ? $key['id'] : null;
+        }
+    }
+    
+    if (!$keyId || !in_array($requestType, ['block', 'reset'])) {
+        $error = 'Invalid request details. Please select a key and request type.';
     } elseif (empty($reason)) {
         $error = 'Please provide a reason for your request.';
     } else {
@@ -79,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
 
             $pdo->commit();
             $success = 'Your ' . ucfirst($requestType) . ' request has been submitted. Admin will review it soon.';
+            $selectedKeyDetails = null;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
             $error = $e->getMessage();
@@ -103,8 +142,9 @@ try {
 // Get pending requests
 $pendingRequests = [];
 try {
-    $stmt = $pdo->prepare('SELECT kr.id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.created_at
+    $stmt = $pdo->prepare('SELECT kr.id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.created_at, lk.license_key, lk.duration, lk.duration_type
                            FROM key_requests kr
+                           LEFT JOIN license_keys lk ON lk.id = kr.key_id
                            WHERE kr.user_id = ? AND kr.status = "pending"
                            ORDER BY kr.created_at DESC');
     $stmt->execute([$user['id']]);
@@ -136,6 +176,10 @@ try {
         .page-header h2 { color: var(--purple); font-weight: 600; }
         .card-section { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; }
         .card-section h5 { color: var(--purple); font-weight: 600; margin-bottom: 1.5rem; }
+        .key-display { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+        .key-detail-item { margin: 0.5rem 0; }
+        .key-detail-label { font-weight: 600; color: var(--purple); }
+        .key-detail-value { color: var(--text); }
         .form-group { margin-bottom: 1rem; }
         .form-label { font-weight: 500; color: var(--text); margin-bottom: 0.5rem; }
         .form-control { border-radius: 8px; border: 1px solid var(--border); padding: 0.75rem; }
@@ -143,8 +187,10 @@ try {
         .btn { border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 500; }
         .btn-primary { background: var(--purple); border: none; color: white; }
         .btn-primary:hover { background: #7c3aed; color: white; }
-        .btn-danger { background: #ef4444; border: none; color: white; }
-        .btn-danger:hover { background: #dc2626; color: white; }
+        .tab-content { margin-top: 1.5rem; }
+        .nav-tabs { border-bottom: 2px solid var(--border); }
+        .nav-tabs .nav-link { color: var(--muted); border: none; border-bottom: 2px solid transparent; }
+        .nav-tabs .nav-link.active { color: var(--purple); border-bottom-color: var(--purple); background: none; }
         .table { border-radius: 12px; }
         .table thead th { background: var(--purple); color: white; border: none; padding: 1rem; }
         .table tbody td { padding: 1rem; border-bottom: 1px solid var(--border); }
@@ -208,40 +254,109 @@ try {
                 <!-- Submit Request Form -->
                 <div class="card-section">
                     <h5><i class="fas fa-plus-circle me-2"></i>Submit New Request</h5>
-                    <form method="POST">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Select License Key *</label>
-                                    <select class="form-control" name="key_id" required>
-                                        <option value="">-- Select a key --</option>
-                                        <?php foreach ($purchasedKeys as $key): ?>
-                                        <option value="<?php echo $key['id']; ?>">
-                                            <?php echo htmlspecialchars($key['mod_name']); ?> - <?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?>
-                                        </option>
-                                        <?php endforeach; ?>
-                                    </select>
+                    
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="dropdown-tab" data-bs-toggle="tab" data-bs-target="#dropdown-pane" type="button" role="tab">Select from List</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="paste-tab" data-bs-toggle="tab" data-bs-target="#paste-pane" type="button" role="tab">Paste License Key</button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <!-- Dropdown Tab -->
+                        <div class="tab-pane fade show active" id="dropdown-pane" role="tabpanel">
+                            <form method="POST">
+                                <input type="hidden" name="key_selection" value="dropdown">
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Select License Key *</label>
+                                            <select class="form-control" name="key_id" required>
+                                                <option value="">-- Select a key --</option>
+                                                <?php foreach ($purchasedKeys as $key): ?>
+                                                <option value="<?php echo $key['id']; ?>">
+                                                    <?php echo htmlspecialchars($key['mod_name']); ?> - <?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?>
+                                                </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Request Type *</label>
+                                            <select class="form-control" name="request_type" required>
+                                                <option value="">-- Select type --</option>
+                                                <option value="block">Block Key</option>
+                                                <option value="reset">Reset Key</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label">Request Type *</label>
-                                    <select class="form-control" name="request_type" required>
-                                        <option value="">-- Select type --</option>
-                                        <option value="block">Block Key</option>
-                                        <option value="reset">Reset Key</option>
-                                    </select>
+                                    <label class="form-label">Reason for Request *</label>
+                                    <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
                                 </div>
-                            </div>
+                                <button type="submit" name="submit_request" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Request
+                                </button>
+                            </form>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Reason for Request *</label>
-                            <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
+                        
+                        <!-- Paste Tab -->
+                        <div class="tab-pane fade" id="paste-pane" role="tabpanel">
+                            <form method="POST">
+                                <div class="form-group mt-4">
+                                    <label class="form-label">Paste Your License Key *</label>
+                                    <input type="text" class="form-control" name="license_key" placeholder="Paste your license key here..." required>
+                                </div>
+                                <button type="submit" name="lookup_key" class="btn btn-primary mb-4">
+                                    <i class="fas fa-search me-2"></i>Lookup Key
+                                </button>
+                                
+                                <?php if ($selectedKeyDetails): ?>
+                                <div class="key-display">
+                                    <strong><i class="fas fa-check-circle me-2" style="color: #10b981;"></i>Key Found!</strong>
+                                    <div class="key-detail-item mt-2">
+                                        <span class="key-detail-label">Product:</span>
+                                        <span class="key-detail-value"><?php echo htmlspecialchars($selectedKeyDetails['mod_name']); ?></span>
+                                    </div>
+                                    <div class="key-detail-item">
+                                        <span class="key-detail-label">Duration:</span>
+                                        <span class="key-detail-value"><?php echo $selectedKeyDetails['duration'] . ' ' . ucfirst($selectedKeyDetails['duration_type']); ?></span>
+                                    </div>
+                                    <div class="key-detail-item">
+                                        <span class="key-detail-label">License Key:</span>
+                                        <span class="key-detail-value" style="font-family: monospace;"><?php echo htmlspecialchars($selectedKeyDetails['license_key']); ?></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Request Type *</label>
+                                            <select class="form-control" name="request_type" required>
+                                                <option value="">-- Select type --</option>
+                                                <option value="block">Block Key</option>
+                                                <option value="reset">Reset Key</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Reason for Request *</label>
+                                    <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
+                                </div>
+                                <input type="hidden" name="key_selection" value="pasted">
+                                <input type="hidden" name="license_key" value="<?php echo htmlspecialchars($selectedKeyDetails['license_key']); ?>">
+                                <button type="submit" name="submit_request" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Request
+                                </button>
+                                <?php endif; ?>
+                            </form>
                         </div>
-                        <button type="submit" name="submit_request" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-2"></i>Submit Request
-                        </button>
-                    </form>
+                    </div>
                 </div>
                 
                 <!-- Pending Requests -->
@@ -257,9 +372,10 @@ try {
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Mod Name</th>
+                                        <th>Product</th>
+                                        <th>License Key</th>
+                                        <th>Duration</th>
                                         <th>Request Type</th>
-                                        <th>Reason</th>
                                         <th>Status</th>
                                         <th>Submitted On</th>
                                     </tr>
@@ -268,9 +384,10 @@ try {
                                     <?php foreach ($pendingRequests as $req): ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($req['mod_name']); ?></td>
+                                        <td><code style="background: #f8fafc; padding: 0.5rem; border-radius: 6px; font-size: 0.85em;"><?php echo htmlspecialchars(substr($req['license_key'], 0, 20)) . '...'; ?></code></td>
+                                        <td><span class="badge bg-info"><?php echo $req['duration'] . ' ' . ucfirst($req['duration_type']); ?></span></td>
                                         <td><span class="badge bg-warning text-dark"><?php echo ucfirst($req['request_type']); ?></span></td>
-                                        <td><?php echo htmlspecialchars(substr($req['reason'], 0, 50)) . (strlen($req['reason']) > 50 ? '...' : ''); ?></td>
-                                        <td><span class="badge bg-info">Pending</span></td>
+                                        <td><span class="badge bg-secondary">Pending</span></td>
                                         <td><?php echo formatDate($req['created_at']); ?></td>
                                     </tr>
                                     <?php endforeach; ?>
