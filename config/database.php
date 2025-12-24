@@ -1,8 +1,6 @@
 <?php
-// Support both PostgreSQL (Render/Production) and SQLite (Local Development)
-// Automatically detect environment
-
-$isProduction = !empty(getenv('DATABASE_URL'));
+// Auto-detect database type based on environment
+// Supports: PostgreSQL (Render), MySQL (cPanel), SQLite (Local Replit)
 
 function getDBConnection() {
     static $pdo = null;
@@ -14,8 +12,8 @@ function getDBConnection() {
     try {
         $databaseUrl = getenv('DATABASE_URL');
         
-        if (!empty($databaseUrl)) {
-            // PostgreSQL Connection (Render Production)
+        // PostgreSQL Connection (Render Production)
+        if (!empty($databaseUrl) && strpos($databaseUrl, 'postgresql') !== false) {
             $dbUrl = parse_url($databaseUrl);
             
             $dsn = "pgsql:host=" . $dbUrl['host']
@@ -32,8 +30,26 @@ function getDBConnection() {
                     PDO::ATTR_TIMEOUT => 5
                 ]
             );
-        } else {
-            // SQLite Connection (Local Development)
+        }
+        // MySQL Connection (cPanel / Traditional Hosting)
+        else if (!empty(getenv('DB_HOST'))) {
+            $dsn = "mysql:host=" . getenv('DB_HOST') 
+                   . ";dbname=" . getenv('DB_NAME')
+                   . ";charset=utf8mb4";
+            
+            $pdo = new PDO(
+                $dsn,
+                getenv('DB_USER'),
+                getenv('DB_PASS'),
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+                ]
+            );
+        }
+        // SQLite Connection (Local Development on Replit)
+        else {
             $dataDir = '/home/runner/workspace/data';
             
             if (!is_dir($dataDir)) {
@@ -58,44 +74,50 @@ function getDBConnection() {
 
 function initializeDatabase() {
     $databaseUrl = getenv('DATABASE_URL');
-    $isPostgres = !empty($databaseUrl);
+    $isPostgres = !empty($databaseUrl) && strpos($databaseUrl, 'postgresql') !== false;
+    $isMysql = !empty(getenv('DB_HOST'));
     
-    // Skip initialization check for PostgreSQL (tables won't exist on first run)
-    // Only use file check for SQLite
-    if (!$isPostgres && file_exists('/home/runner/workspace/data/.initialized')) {
+    // Skip file check for hosted databases
+    if (!$isPostgres && !$isMysql && file_exists('/home/runner/workspace/data/.initialized')) {
         return;
     }
     
     $pdo = getDBConnection();
     
-    // Check if tables already exist (for PostgreSQL)
-    if ($isPostgres) {
+    // Check if tables already exist (for hosted databases)
+    if ($isPostgres || $isMysql) {
         try {
-            $stmt = $pdo->query("SELECT to_regclass('public.users')");
-            if ($stmt->fetchColumn() !== null) {
-                return; // Tables already exist
+            if ($isPostgres) {
+                $stmt = $pdo->query("SELECT to_regclass('public.users')");
+                if ($stmt->fetchColumn() !== null) {
+                    return; // Tables exist
+                }
+            } else {
+                $stmt = $pdo->query("SELECT 1 FROM users LIMIT 1");
+                return; // If query succeeds, tables exist
             }
         } catch (Exception $e) {
             // Tables don't exist, continue with creation
         }
     }
     
+    // SQL compatible with all three database types
     $tables = [
         "CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             username VARCHAR(255) UNIQUE NOT NULL,
             email VARCHAR(255) UNIQUE NOT NULL,
             password VARCHAR(255) NOT NULL,
             balance DECIMAL(10,2) DEFAULT 0.00,
             role VARCHAR(50) DEFAULT 'user',
             referral_code VARCHAR(255) UNIQUE,
-            referred_by INTEGER,
+            referred_by INT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )",
         
         "CREATE TABLE IF NOT EXISTS user_sessions (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL,
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
             session_id VARCHAR(255) UNIQUE NOT NULL,
             ip_address VARCHAR(45),
             user_agent TEXT,
@@ -104,7 +126,7 @@ function initializeDatabase() {
         )",
         
         "CREATE TABLE IF NOT EXISTS mods (
-            id SERIAL PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             description TEXT,
             status VARCHAR(50) DEFAULT 'active',
@@ -112,23 +134,25 @@ function initializeDatabase() {
         )",
         
         "CREATE TABLE IF NOT EXISTS license_keys (
-            id SERIAL PRIMARY KEY,
-            mod_id INTEGER NOT NULL,
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            mod_id INT NOT NULL,
             license_key VARCHAR(255) UNIQUE NOT NULL,
-            duration INTEGER NOT NULL,
+            duration INT NOT NULL,
             duration_type VARCHAR(50) DEFAULT 'days',
             price DECIMAL(10,2) NOT NULL,
             status VARCHAR(50) DEFAULT 'available',
-            sold_to INTEGER,
-            sold_at TIMESTAMP,
+            sold_to INT,
+            sold_at TIMESTAMP NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (mod_id) REFERENCES mods(id) ON DELETE CASCADE,
-            FOREIGN KEY (sold_to) REFERENCES users(id) ON DELETE SET NULL
+            FOREIGN KEY (sold_to) REFERENCES users(id) ON DELETE SET NULL,
+            INDEX idx_status (status),
+            INDEX idx_sold_to (sold_to)
         )",
         
         "CREATE TABLE IF NOT EXISTS mod_apks (
-            id SERIAL PRIMARY KEY,
-            mod_id INTEGER NOT NULL,
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            mod_id INT NOT NULL,
             file_name VARCHAR(255) NOT NULL,
             file_path TEXT NOT NULL,
             file_size BIGINT NOT NULL,
@@ -137,21 +161,22 @@ function initializeDatabase() {
         )",
         
         "CREATE TABLE IF NOT EXISTS transactions (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL,
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
             amount DECIMAL(10,2) NOT NULL,
             type VARCHAR(50) NOT NULL,
             reference VARCHAR(255),
             description TEXT,
             status VARCHAR(50) DEFAULT 'completed',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            INDEX idx_user_id (user_id)
         )",
         
         "CREATE TABLE IF NOT EXISTS referral_codes (
-            id SERIAL PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             code VARCHAR(255) UNIQUE NOT NULL,
-            created_by INTEGER NOT NULL,
+            created_by INT NOT NULL,
             expires_at TIMESTAMP NOT NULL,
             status VARCHAR(50) DEFAULT 'active',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -159,66 +184,52 @@ function initializeDatabase() {
         )",
         
         "CREATE TABLE IF NOT EXISTS key_requests (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            key_id INTEGER NOT NULL,
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            key_id INT NOT NULL,
             request_type VARCHAR(50) NOT NULL,
             mod_name VARCHAR(255) NOT NULL,
             status VARCHAR(50) DEFAULT 'pending',
             reason TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (key_id) REFERENCES license_keys(id) ON DELETE CASCADE
+            FOREIGN KEY (key_id) REFERENCES license_keys(id) ON DELETE CASCADE,
+            INDEX idx_status (status),
+            INDEX idx_user_id (user_id)
         )",
         
         "CREATE TABLE IF NOT EXISTS key_confirmations (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            request_id INTEGER NOT NULL,
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            request_id INT NOT NULL,
             action_type VARCHAR(50) NOT NULL,
             message TEXT NOT NULL,
             status VARCHAR(50) DEFAULT 'unread',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (request_id) REFERENCES key_requests(id) ON DELETE CASCADE
+            FOREIGN KEY (request_id) REFERENCES key_requests(id) ON DELETE CASCADE,
+            INDEX idx_status (status)
         )",
         
         "CREATE TABLE IF NOT EXISTS force_logouts (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            logged_out_by INTEGER NOT NULL,
-            logout_limit INTEGER DEFAULT 0,
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            logged_out_by INT NOT NULL,
+            logout_limit INT DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (logged_out_by) REFERENCES users(id) ON DELETE CASCADE
         )"
     ];
     
-    // Create indexes
-    $indexes = [
-        "CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)",
-        "CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)",
-        "CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)",
-        "CREATE INDEX IF NOT EXISTS idx_license_keys_status ON license_keys(status)",
-        "CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id)",
-        "CREATE INDEX IF NOT EXISTS idx_key_requests_user_id ON key_requests(user_id)",
-        "CREATE INDEX IF NOT EXISTS idx_key_requests_status ON key_requests(status)",
-        "CREATE INDEX IF NOT EXISTS idx_key_confirmations_user_id ON key_confirmations(user_id)",
-        "CREATE INDEX IF NOT EXISTS idx_key_confirmations_status ON key_confirmations(status)"
-    ];
-    
     try {
         // Create tables
         foreach ($tables as $sql) {
-            $pdo->exec($sql);
-        }
-        
-        // Create indexes
-        foreach ($indexes as $sql) {
             try {
                 $pdo->exec($sql);
             } catch (Exception $e) {
-                // Index might already exist, ignore
+                // Table might already exist, continue
+                error_log("Table creation info: " . $e->getMessage());
             }
         }
         
@@ -235,12 +246,11 @@ function initializeDatabase() {
         }
         
         // Mark as initialized for SQLite
-        if (!$isPostgres) {
+        if (!$isPostgres && !$isMysql) {
             @touch('/home/runner/workspace/data/.initialized');
         }
     } catch (Exception $e) {
         error_log("Database initialization error: " . $e->getMessage());
-        // Don't die here, let the app continue
     }
 }
 
