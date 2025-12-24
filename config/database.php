@@ -76,7 +76,14 @@ function getDBConnection() {
         
     } catch(PDOException $e) {
         error_log("Database Connection Error: " . $e->getMessage());
-        die("Database connection failed. Please check your configuration.\n");
+        // Show detailed error for debugging
+        $errorMsg = "Database connection failed.\n\n";
+        $errorMsg .= "Error: " . $e->getMessage() . "\n\n";
+        $errorMsg .= "To debug:\n";
+        $errorMsg .= "1. Check test-db-connection.php in browser\n";
+        $errorMsg .= "2. Verify credentials: silentmu_isam / 844121@luvkush\n";
+        $errorMsg .= "3. Verify database: silentmu_silentdb\n";
+        die($errorMsg);
     }
 }
 
