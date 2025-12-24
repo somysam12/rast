@@ -31,26 +31,9 @@ function getDBConnection() {
                 ]
             );
         }
-        // MySQL Connection (cPanel / Traditional Hosting) with Environment Variables
-        else if (!empty(getenv('DB_HOST')) || !empty(getenv('DB_NAME'))) {
-            $dsn = "mysql:host=" . (getenv('DB_HOST') ?: 'localhost')
-                   . ";dbname=" . (getenv('DB_NAME') ?: 'silentmu_isam')
-                   . ";charset=utf8mb4";
-            
-            $pdo = new PDO(
-                $dsn,
-                getenv('DB_USER') ?: 'silentmu_isam',
-                getenv('DB_PASS') ?: 'silentmu_isam',
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
-                ]
-            );
-        }
-        // MySQL Connection - Default cPanel Credentials
+        // MySQL Connection (cPanel / Traditional Hosting)
         else {
-            // cPanel MySQL Configuration
+            // Try with environment variables first, fallback to defaults
             $host = getenv('DB_HOST') ?: 'localhost';
             $database = getenv('DB_NAME') ?: 'silentmu_isam';
             $username = getenv('DB_USER') ?: 'silentmu_isam';
@@ -70,9 +53,11 @@ function getDBConnection() {
                     PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
                 ]
             );
+            return $pdo;
         }
+        
         // SQLite Connection (Local Development on Replit)
-        else {
+        if (true) {
             $dataDir = '/home/runner/workspace/data';
             
             if (!is_dir($dataDir)) {

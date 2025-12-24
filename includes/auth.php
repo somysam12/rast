@@ -73,7 +73,7 @@ function login($username, $password, $forceLogout = false) {
             $stmt->execute([$user['id'], session_id()]);
         }
         
-        $stmt = $pdo->prepare("INSERT OR REPLACE INTO user_sessions (user_id, session_id, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, datetime('now'))");
+        $stmt = $pdo->prepare("INSERT INTO user_sessions (user_id, session_id, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE ip_address = VALUES(ip_address), user_agent = VALUES(user_agent), created_at = NOW()");
         $stmt->execute([$user['id'], session_id(), $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '']);
         
         $_SESSION['user_id'] = $user['id'];
@@ -94,7 +94,7 @@ function register($username, $email, $password, $referralCode = null) {
     $referralType = null;
     
     if ($referralCode) {
-        $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > datetime('now') LIMIT 1");
+        $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND expires_at > NOW() LIMIT 1");
         $stmt->execute([$referralCode]);
         $adminReferral = $stmt->fetchColumn();
         
@@ -136,7 +136,7 @@ function register($username, $email, $password, $referralCode = null) {
             $stmt->execute([$referredBy]);
             
             try {
-                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus', datetime('now'))");
+                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus', NOW())");
                 $stmt->execute([$referredBy]);
             } catch (Exception $e) {}
         }
@@ -169,7 +169,7 @@ function forceLogoutAllDevices($userId) {
 
 function cleanupExpiredSessions() {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE created_at < datetime('now', '-24 hours')");
+    $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE created_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)");
     $stmt->execute();
 }
 

@@ -162,7 +162,7 @@ function purchaseLicenseKey($userId, $keyId) {
         
         if (!$user || $user['balance'] < $key['price']) throw new Exception("Insufficient balance");
         
-        $stmt = $pdo->prepare("UPDATE license_keys SET status = 'sold', sold_to = ?, sold_at = datetime('now') WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE license_keys SET status = 'sold', sold_to = ?, sold_at = NOW() WHERE id = ?");
         $stmt->execute([$userId, $keyId]);
         
         $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
