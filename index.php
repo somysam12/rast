@@ -308,9 +308,6 @@ if ($isLoggedIn) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#features">Features</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="#about">About</a>
                     </li>
                     <?php if ($isLoggedIn): ?>
@@ -373,98 +370,12 @@ if ($isLoggedIn) {
     
     <section class="stats-section" id="about">
         <div class="container">
-            <div class="row text-center">
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="stat-card fade-in">
-                        <div class="stat-number">1000+</div>
-                        <h6 class="text-muted">Active Users</h6>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="stat-card fade-in">
-                        <div class="stat-number">50+</div>
-                        <h6 class="text-muted">Mod APKs</h6>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="stat-card fade-in">
-                        <div class="stat-number">99.9%</div>
-                        <h6 class="text-muted">Uptime</h6>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="stat-card fade-in">
-                        <div class="stat-number">24/7</div>
-                        <h6 class="text-muted">Support</h6>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <section class="py-5" id="features">
-        <div class="container">
-            <div class="row mb-5">
-                <div class="col-lg-8 mx-auto text-center">
-                    <h2 class="display-5 fw-bold mb-3 fade-in">Powerful Features</h2>
-                    <p class="lead text-muted fade-in">Everything you need to manage mod APKs professionally</p>
-                </div>
-            </div>
-            
-            <div class="row g-4">
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card fade-in">
-                        <div class="feature-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h5 class="mb-3">User Management</h5>
-                        <p class="text-muted">Complete user lifecycle management with roles, permissions, and referral system.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card fade-in">
-                        <div class="feature-icon">
-                            <i class="fas fa-key"></i>
-                        </div>
-                        <h5 class="mb-3">License Keys</h5>
-                        <p class="text-muted">Generate, manage, and distribute license keys with advanced tracking and analytics.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card fade-in">
-                        <div class="feature-icon">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <h5 class="mb-3">APK Management</h5>
-                        <p class="text-muted">Upload, organize, and distribute mod APKs with version control and metadata.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card fade-in">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h5 class="mb-3">Analytics</h5>
-                        <p class="text-muted">Comprehensive analytics and reporting for downloads, users, and revenue.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card fade-in">
-                        <div class="feature-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <h5 class="mb-3">Payment System</h5>
-                        <p class="text-muted">Integrated payment processing with balance management and transaction history.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card fade-in">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h5 class="mb-3">Security</h5>
-                        <p class="text-muted">Enterprise-grade security with encryption, secure authentication, and audit logs.</p>
-                    </div>
+            <div class="row align-items-center justify-content-center">
+                <div class="col-lg-8 text-center fade-in">
+                    <h1 class="display-3 fw-bold mb-4" style="background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        <i class="fas fa-crown me-3" style="color: var(--purple);"></i>SilentMultiPanel
+                    </h1>
+                    <p class="lead text-muted mb-0">Best Multipanel And Instant Support</p>
                 </div>
             </div>
         </div>
