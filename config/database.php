@@ -54,7 +54,7 @@ function getDBConnection() {
         // Use environment variables if available, otherwise use hardcoded cPanel credentials
         $host = getenv('DB_HOST') ?: 'localhost';
         $database = getenv('DB_NAME') ?: 'silentmu_silentdb';
-        $username = getenv('DB_USER') ?: 'silentmu_silentdb';
+        $username = getenv('DB_USER') ?: 'silentmu_isam';
         $password = getenv('DB_PASS') ?: '844121@luvkush';
         
         $dsn = "mysql:host=" . $host 
