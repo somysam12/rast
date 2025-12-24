@@ -1,11 +1,9 @@
 <?php
 require_once 'includes/auth.php';
 
-// Check if user is already logged in
 $isLoggedIn = isLoggedIn();
 $isAdmin = $isLoggedIn && isAdmin();
 
-// Get redirect URL for logged in users
 $dashboardUrl = '';
 if ($isLoggedIn) {
     $dashboardUrl = $isAdmin ? 'admin_dashboard.php' : 'user_dashboard.php';
@@ -16,8 +14,8 @@ if ($isLoggedIn) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi Panel - Premium Mod APK Manager</title>
-    <meta name="description" content="Professional Mod APK management system with secure distribution and user management.">
+    <title>SilentMultiPanel - Best Multipanel And Instant Support</title>
+    <meta name="description" content="SilentMultiPanel - Best Multipanel And Instant Support">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
@@ -65,6 +63,21 @@ if ($isLoggedIn) {
             position: relative;
             z-index: 2;
             color: white;
+        }
+        
+        .hero-image {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
         .feature-card {
@@ -213,7 +226,6 @@ if ($isLoggedIn) {
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        /* Dark theme styles */
         [data-theme="dark"] {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
@@ -281,16 +293,14 @@ if ($isLoggedIn) {
     </style>
 </head>
 <body>
-    <!-- Theme Toggle -->
     <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
     
-    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-custom" id="navbar">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-crown me-2"></i>Multi Panel
+                <i class="fas fa-crown me-2"></i>SilentMultiPanel
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -324,18 +334,17 @@ if ($isLoggedIn) {
         </div>
     </nav>
     
-    <!-- Hero Section -->
     <section class="hero-section">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="hero-content">
                         <h1 class="display-4 fw-bold mb-4 fade-in">
-                            Premium Mod APK
-                            <span class="d-block text-warning">Management System</span>
+                            Welcome To
+                            <span class="d-block" style="color: #fbbf24;">SilentMultiPanel</span>
                         </h1>
                         <p class="lead mb-5 fade-in">
-                            Secure, professional, and feature-rich platform for managing mod APK distribution with advanced user management and analytics.
+                            Best Multipanel And Instant Support.
                         </p>
                         <div class="d-flex flex-wrap gap-3 fade-in">
                             <?php if ($isLoggedIn): ?>
@@ -354,25 +363,14 @@ if ($isLoggedIn) {
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="text-center">
-                        <div class="position-relative">
-                            <div class="glass-card p-4 fade-in" style="max-width: 400px; margin: 0 auto;">
-                                <div class="text-center">
-                                    <div class="feature-icon mx-auto mb-3">
-                                        <i class="fas fa-shield-alt"></i>
-                                    </div>
-                                    <h4 class="text-white mb-3">Secure & Reliable</h4>
-                                    <p class="text-white-50 mb-0">Enterprise-grade security with advanced encryption and user management</p>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="hero-image fade-in">
+                        <img src="assets/images/hero-logo.jpg" alt="SilentMultiPanel Hero" style="max-width: 400px;">
                     </div>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- Stats Section -->
     <section class="stats-section" id="about">
         <div class="container">
             <div class="row text-center">
@@ -404,7 +402,6 @@ if ($isLoggedIn) {
         </div>
     </section>
     
-    <!-- Features Section -->
     <section class="py-5" id="features">
         <div class="container">
             <div class="row mb-5">
@@ -473,16 +470,15 @@ if ($isLoggedIn) {
         </div>
     </section>
     
-    <!-- Footer -->
     <footer class="bg-dark text-white py-4">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5><i class="fas fa-crown me-2"></i>Multi Panel</h5>
-                    <p class="text-muted">Professional Mod APK Management System</p>
+                    <h5><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
+                    <p class="text-muted">Best Multipanel And Instant Support</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="text-muted mb-0">&copy; 2024 Multi Panel. All rights reserved.</p>
+                    <p class="text-muted mb-0">&copy; 2024 SilentMultiPanel. All rights reserved.</p>
                 </div>
             </div>
         </div>
@@ -490,7 +486,6 @@ if ($isLoggedIn) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Dark mode functionality
         function toggleDarkMode() {
             const body = document.body;
             const icon = document.getElementById('darkModeIcon');
@@ -506,14 +501,12 @@ if ($isLoggedIn) {
             }
         }
         
-        // Load saved theme
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
             document.getElementById('darkModeIcon').className = 'fas fa-sun';
         }
         
-        // Navbar scroll effect
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 50) {
@@ -523,7 +516,6 @@ if ($isLoggedIn) {
             }
         });
         
-        // Fade in animation on scroll
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -537,14 +529,12 @@ if ($isLoggedIn) {
             });
         }, observerOptions);
         
-        // Observe all fade-in elements
         document.addEventListener('DOMContentLoaded', function() {
             const fadeElements = document.querySelectorAll('.fade-in');
             fadeElements.forEach(el => {
                 observer.observe(el);
             });
             
-            // Add some delay to hero elements
             const heroElements = document.querySelectorAll('.hero-content .fade-in');
             heroElements.forEach((el, index) => {
                 setTimeout(() => {
@@ -553,7 +543,6 @@ if ($isLoggedIn) {
             });
         });
         
-        // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
