@@ -68,28 +68,456 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --sidebar-bg: #ffffff;
+            --purple: #8b5cf6;
+            --purple-light: #a78bfa;
+            --purple-dark: #7c3aed;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-light: #e2e8f0;
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --sidebar-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-light: #334155;
+        }
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-light);
+            height: 100vh;
+            position: fixed;
+            width: 280px;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateX(0);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar .nav-link {
+            color: var(--text-secondary);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 2px 12px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: var(--purple);
+            color: white;
+            transform: translateX(2px);
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1rem;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+            overflow-y: auto;
+            
+        }
+        
+        .main-content.full-width {
+            margin-left: 0;
+        }
+        
+        .mobile-header {
+            display: none;
+            background: var(--card-bg);
+            padding: 1rem;
+            box-shadow: var(--shadow-medium);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .mobile-toggle {
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-large);
+        }
+        
+        .stats-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        .stats-card.total-mods::before { background: var(--purple); }
+        .stats-card.license-keys::before { background: #059669; }
+        .stats-card.total-users::before { background: #0ea5e9; }
+        .stats-card.sold-licenses::before { background: #f59e0b; }
+        
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-large);
+        }
+        
+        .stats-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        .stats-icon.total-mods { background: var(--purple); }
+        .stats-icon.license-keys { background: #059669; }
+        .stats-icon.total-users { background: #0ea5e9; }
+        .stats-icon.sold-licenses { background: #f59e0b; }
+        
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+        
+        .table-card:hover {
+            box-shadow: var(--shadow-large);
+        }
+        
+        .table-card h5 {
+            color: var(--purple);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .page-header {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-light);
+        }
+        
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 1rem;
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+            background: var(--card-bg);
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(139, 92, 246, 0.05);
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            border: none;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-primary);
+        }
+        
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-medium);
+            color: var(--text-secondary);
+        }
+        
+            color: var(--purple);
+            box-shadow: var(--shadow-large);
+            transform: translateY(-1px);
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mobile Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                transform: translateX(-100%);
+                background: var(--sidebar-bg);
+                border-right: none;
+                box-shadow: var(--shadow-large);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            overflow-y: auto;
+            overflow-x: hidden;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .mobile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .page-header {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .stats-card {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .stats-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.3rem;
+            }
+            
+            .table-card {
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+            
+            .table-card h5 {
+                font-size: 1rem;
+            }
+            
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+            }
+            
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            
+            .table thead th,
+            .table tbody td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+            
+            .page-header {
+                padding: 1rem;
+            }
+            
+            .stats-card {
+                padding: 1rem;
+            }
+            
+            .stats-card h3 {
+                font-size: 1.5rem;
+            }
+            
+            .table-card {
+                padding: 0.75rem;
+            }
+            
+            .table {
+                font-size: 0.8rem;
+            }
+            
+            .table thead th,
+            .table tbody td {
+                padding: 0.5rem 0.25rem;
+            }
+            
+            .sidebar .nav-link {
+                padding: 10px 16px;
+                margin: 2px 8px;
+                font-size: 0.85rem;
+            }
+            
+            .sidebar .nav-link i {
+                width: 18px;
+                margin-right: 10px;
+            }
+        }
+        
+        /* Landscape tablet optimization */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+            
+            .main-content {
+                margin-left: 250px;
+            }
+            
+            .stats-card {
+                padding: 1.75rem;
+            }
+        }
+    </style>
+    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Theme Toggle -->
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
+    
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="d-flex align-items-center">
             <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
                 <i class="fas fa-bars"></i>
             </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: #8b5cf6;"></i>Multi Panel</h5>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
         </div>
         <div class="d-flex align-items-center">
             <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: #8b5cf6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
                 <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
             </div>
         </div>
     </div>
-
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
-
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
@@ -160,7 +588,7 @@ try {
                                 <div class="fw-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></div>
                                 <small class="text-muted">Administrator</small>
                             </div>
-                            <div class="user-avatar" style="width: 48px; height: 48px; background: #8b5cf6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                            <div class="user-avatar">
                                 <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
                             </div>
                         </div>
@@ -172,12 +600,12 @@ try {
                     <div class="col-lg-3 col-md-6 mb-3">
                         <div class="stats-card total-mods">
                             <div class="text-center">
-                                <div class="stats-icon total-mods mx-auto" style="background: #8b5cf6; color: white; width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem;">
+                                <div class="stats-icon total-mods mx-auto">
                                     <i class="fas fa-box"></i>
                                 </div>
                                 <h6 class="text-muted mb-2">Total Mods</h6>
                                 <h3 class="mb-0 fw-bold"><?php echo $stats['total_mods']; ?></h3>
-                                <small style="color: #8b5cf6;">
+                                <small style="color: var(--purple);">
                                     <i class="fas fa-chart-line me-1"></i>Active mods
                                 </small>
                             </div>
@@ -186,7 +614,7 @@ try {
                     <div class="col-lg-3 col-md-6 mb-3">
                         <div class="stats-card license-keys">
                             <div class="text-center">
-                                <div class="stats-icon license-keys mx-auto" style="background: #059669; color: white; width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem;">
+                                <div class="stats-icon license-keys mx-auto">
                                     <i class="fas fa-key"></i>
                                 </div>
                                 <h6 class="text-muted mb-2">License Keys</h6>
@@ -200,7 +628,7 @@ try {
                     <div class="col-lg-3 col-md-6 mb-3">
                         <div class="stats-card total-users">
                             <div class="text-center">
-                                <div class="stats-icon total-users mx-auto" style="background: #0ea5e9; color: white; width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem;">
+                                <div class="stats-icon total-users mx-auto">
                                     <i class="fas fa-users"></i>
                                 </div>
                                 <h6 class="text-muted mb-2">Total Users</h6>
@@ -214,61 +642,138 @@ try {
                     <div class="col-lg-3 col-md-6 mb-3">
                         <div class="stats-card sold-licenses">
                             <div class="text-center">
-                                <div class="stats-icon sold-licenses mx-auto" style="background: #f59e0b; color: white; width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem;">
+                                <div class="stats-icon sold-licenses mx-auto">
                                     <i class="fas fa-shopping-cart"></i>
                                 </div>
                                 <h6 class="text-muted mb-2">Sold Licenses</h6>
                                 <h3 class="mb-0 fw-bold"><?php echo $stats['sold_keys']; ?></h3>
                                 <small style="color: #f59e0b;">
-                                    <i class="fas fa-check-circle me-1"></i>Keys sold
+                                    <i class="fas fa-coins me-1"></i>Revenue generated
                                 </small>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Recent Activity -->
 
-                <div class="row fade-in">
-                    <div class="col-md-6 mb-4">
-                        <div class="table-card">
+                <!-- All Users Section -->
+                <div class="table-card fade-in">
+                    <h5><i class="fas fa-users me-2"></i>All Users</h5>
+                    <div class="row">
+<?php
+try {
+    $stmt = $pdo->query("SELECT username, role FROM users WHERE role = 'user' ORDER BY username ASC");
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (empty($users)) {
+        echo '<div class="col-12"><p class="text-muted text-center py-4">No users registered yet</p></div>';
+    } else {
+        foreach ($users as $userItem):
+            $initials = strtoupper(substr($userItem['username'], 0, 2));
+            $roleDisplay = $userItem['role'] === 'user' ? 'User Account' : 'Administrator';
+?>
+                        <div class="col-md-4 col-lg-3 mb-3">
+                            <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--purple);"></div>
+                                <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem; margin: 0 auto 1rem; box-shadow: var(--shadow-medium);">
+                                    <?php echo $initials; ?>
+                                </div>
+                                <h6 style="color: var(--text-primary); font-weight: 600; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($userItem['username']); ?></h6>
+                                <small style="color: var(--text-secondary);"><?php echo $roleDisplay; ?></small>
+                            </div>
+                        </div>
+<?php
+        endforeach;
+    }
+} catch (Exception $e) {
+    echo '<div class="col-12"><div class="alert alert-warning">Unable to load users</div></div>';
+}
+?>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="table-card fade-in">
                             <h5><i class="fas fa-box me-2"></i>Recent Mods</h5>
                             <div class="table-responsive">
-                                <table class="table">
+                                <table class="table table-hover">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
-                                            <th>Status</th>
+                                            <th class="d-none d-sm-table-cell">Upload Date</th>
+                                            <th class="d-sm-none">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($recentMods as $mod): ?>
+                                        <?php if (empty($recentMods)): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($mod['name']); ?></td>
-                                            <td><span class="badge bg-<?php echo $mod['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($mod['status']); ?></span></td>
+                                            <td colspan="2" class="text-center text-muted py-4">
+                                                <i class="fas fa-box fa-2x mb-2 d-block opacity-50"></i>
+                                                No mods uploaded yet
+                                            </td>
                                         </tr>
-                                        <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <?php foreach ($recentMods as $mod): ?>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; background: var(--purple) !important;">
+                                                            <i class="fas fa-mobile-alt text-white"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-semibold"><?php echo htmlspecialchars($mod['name']); ?></div>
+                                                            <small class="text-muted d-sm-none"><?php echo formatDate($mod['created_at']); ?></small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="d-none d-sm-table-cell"><?php echo formatDate($mod['created_at']); ?></td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-4">
-                        <div class="table-card">
+                    <div class="col-lg-6 mb-4">
+                        <div class="table-card fade-in">
                             <h5><i class="fas fa-users me-2"></i>Recent Users</h5>
                             <div class="table-responsive">
-                                <table class="table">
+                                <table class="table table-hover">
                                     <thead>
                                         <tr>
                                             <th>Username</th>
-                                            <th>Balance</th>
+                                            <th class="d-none d-sm-table-cell">Join Date</th>
+                                            <th class="d-sm-none">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($recentUsers as $user): ?>
+                                        <?php if (empty($recentUsers)): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($user['username']); ?></td>
-                                            <td>$<?php echo number_format($user['balance'], 2); ?></td>
+                                            <td colspan="2" class="text-center text-muted py-4">
+                                                <i class="fas fa-users fa-2x mb-2 d-block opacity-50"></i>
+                                                No users registered yet
+                                            </td>
                                         </tr>
-                                        <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <?php foreach ($recentUsers as $user): ?>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="bg-info rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; background: #0ea5e9 !important;">
+                                                            <span class="text-white fw-bold" style="font-size: 0.8rem;"><?php echo strtoupper(substr($user['username'], 0, 2)); ?></span>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-semibold"><?php echo htmlspecialchars($user['username']); ?></div>
+                                                            <small class="text-muted d-sm-none"><?php echo formatDate($user['created_at']); ?></small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="d-none d-sm-table-cell"><?php echo formatDate($user['created_at']); ?></td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -280,27 +785,48 @@ try {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/enhanced-ui.js"></script>
     <script>
-        function toggleSidebar(e) {
-            if (e) e.preventDefault();
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (sidebar) sidebar.classList.toggle('show');
-            if (overlay) overlay.classList.toggle('show');
-        }
-
-        // Close sidebar when clicking overlay
-        document.addEventListener('DOMContentLoaded', function() {
-            const overlay = document.getElementById('overlay');
-            if (overlay) {
-                overlay.addEventListener('click', function() {
-                    const sidebar = document.getElementById('sidebar');
-                    sidebar.classList.remove('show');
-                    this.classList.remove('show');
-                });
+        // Mobile sidebar toggle
+        // Mobile Navigation (optimized)
+                    document.body.style.overflow = "";
+                }
             }
-            
-            // Fade in animations
+        }
+        // Mobile nav links - close sidebar and allow navigation
+        document.addEventListener("DOMContentLoaded", function() {
+            const links = document.querySelectorAll(".sidebar .nav-link");
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            links.forEach(link => {
+                link.addEventListener("click", function() {
+                    if (window.innerWidth <= 991) {
+                        document.body.style.overflow = "";
+                    }
+                });
+            });
+            if (overlay) {
+            }
+        });
+        window.addEventListener("resize", function() {
+            if (window.innerWidth > 991) {
+                const sidebar = document.querySelector(".sidebar");
+                const overlay = document.querySelector(".mobile-overlay");
+                document.body.style.overflow = "";
+            }
+        });
+        
+        // Close sidebar when clicking on nav links on mobile
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+        
+        // Fade in animations
+        document.addEventListener('DOMContentLoaded', function() {
             const fadeElements = document.querySelectorAll('.fade-in');
             fadeElements.forEach((el, index) => {
                 setTimeout(() => {
@@ -308,6 +834,23 @@ try {
                 }, index * 100);
             });
         });
-    </script>
-</body>
-</html>
+        
+        // Stats animation on load - simplified
+        function animateStats() {
+            const statsNumbers = document.querySelectorAll('.stats-card h3');
+            statsNumbers.forEach(stat => {
+                const finalValue = parseInt(stat.textContent);
+                if (finalValue > 0) {
+                    let currentValue = 0;
+                    const increment = Math.max(1, Math.floor(finalValue / 20));
+                    
+                    const timer = setInterval(() => {
+                        currentValue += increment;
+                        if (currentValue >= finalValue) {
+                            stat.textContent = finalValue;
+                            clearInterval(timer);
+                        } else {
+                            stat.textContent = currentValue;
+                        }
+                    }, 50);
+                }
