@@ -842,52 +842,48 @@ if ($_POST) {
         document.addEventListener('DOMContentLoaded', initTheme);
         
         // Mobile menu functionality
+        // Mobile Navigation (optimized)
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            const mainContent = document.querySelector('.main-content');
-            const body = document.body;
-            
-            // Toggle sidebar visibility
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-            
-            // Prevent body scroll when sidebar is open on mobile
-            if (window.innerWidth <= 768) {
-                if (sidebar.classList.contains('show')) {
-                    body.style.overflow = 'hidden';
-                    // Ensure sidebar is clickable
-                    sidebar.style.pointerEvents = 'auto';
-                    sidebar.style.zIndex = '1002';
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            if (!sidebar || !overlay) return;
+            sidebar.classList.toggle("show");
+            overlay.classList.toggle("show");
+            if (window.innerWidth <= 991) {
+                if (sidebar.classList.contains("show")) {
+                    document.body.style.overflow = "hidden";
                 } else {
-                    body.style.overflow = '';
-                    sidebar.style.pointerEvents = 'none';
+                    document.body.style.overflow = "";
                 }
             }
-            
-            if (window.innerWidth > 768) {
-                sidebar.classList.toggle('hidden');
-                mainContent.classList.toggle('full-width');
-            }
-            
-            // Add smooth transition
-            sidebar.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
         }
-        
-        // Close sidebar when clicking on nav links on mobile
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    // Ensure the click event works
-                    e.stopPropagation();
-                    
-                    if (window.innerWidth <= 768) {
-                        // Add small delay to ensure click registers
-                        setTimeout(() => {
-                            toggleSidebar();
-                        }, 100);
+        // Mobile nav links - close sidebar and allow navigation
+        document.addEventListener("DOMContentLoaded", function() {
+            const links = document.querySelectorAll(".sidebar .nav-link");
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            links.forEach(link => {
+                link.addEventListener("click", function() {
+                    if (window.innerWidth <= 991) {
+                        sidebar.classList.remove("show");
+                        overlay.classList.remove("show");
+                        document.body.style.overflow = "";
                     }
                 });
+            });
+            if (overlay) {
+                overlay.addEventListener("click", toggleSidebar);
+            }
+        });
+        window.addEventListener("resize", function() {
+            if (window.innerWidth > 991) {
+                const sidebar = document.querySelector(".sidebar");
+                const overlay = document.querySelector(".mobile-overlay");
+                sidebar.classList.remove("show");
+                overlay.classList.remove("show");
+                document.body.style.overflow = "";
+            }
+        });
                 
                 // Add touch event support for mobile
                 link.addEventListener('touchend', (e) => {

@@ -472,54 +472,46 @@ if ($_POST) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Mobile sidebar toggle
+        // Mobile Navigation (optimized)
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            
-            if (window.innerWidth > 768) {
-                sidebar.classList.toggle('hidden');
-                mainContent.classList.toggle('full-width');
-            } else {
-                sidebar.classList.toggle('show');
-            }
-        }
-        
-        // Dark mode functionality
-        function toggleDarkMode() {
-            const body = document.body;
-            const icon = document.getElementById('darkModeIcon');
-            
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                icon.className = 'fas fa-sun';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-        
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            document.getElementById('darkModeIcon').className = 'fas fa-sun';
-        }
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            
-            if (window.innerWidth > 768) {
-                sidebar.classList.remove('show');
-                if (!sidebar.classList.contains('hidden')) {
-                    mainContent.classList.remove('full-width');
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            if (!sidebar || !overlay) return;
+            sidebar.classList.toggle("show");
+            overlay.classList.toggle("show");
+            if (window.innerWidth <= 991) {
+                if (sidebar.classList.contains("show")) {
+                    document.body.style.overflow = "hidden";
+                } else {
+                    document.body.style.overflow = "";
                 }
-            } else {
-                sidebar.classList.remove('show');
-                mainContent.classList.remove('full-width');
+            }
+        }
+        // Mobile nav links - close sidebar and allow navigation
+        document.addEventListener("DOMContentLoaded", function() {
+            const links = document.querySelectorAll(".sidebar .nav-link");
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            links.forEach(link => {
+                link.addEventListener("click", function() {
+                    if (window.innerWidth <= 991) {
+                        sidebar.classList.remove("show");
+                        overlay.classList.remove("show");
+                        document.body.style.overflow = "";
+                    }
+                });
+            });
+            if (overlay) {
+                overlay.addEventListener("click", toggleSidebar);
+            }
+        });
+        window.addEventListener("resize", function() {
+            if (window.innerWidth > 991) {
+                const sidebar = document.querySelector(".sidebar");
+                const overlay = document.querySelector(".mobile-overlay");
+                sidebar.classList.remove("show");
+                overlay.classList.remove("show");
+                document.body.style.overflow = "";
             }
         });
         

@@ -654,21 +654,48 @@ function formatDate($date) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Mobile Navigation (optimized)
         function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.overlay');
-            
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-        }
-        
-        // Close sidebar when clicking on nav links on mobile
-        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 991.98) {
-                    toggleSidebar();
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            if (!sidebar || !overlay) return;
+            sidebar.classList.toggle("show");
+            overlay.classList.toggle("show");
+            if (window.innerWidth <= 991) {
+                if (sidebar.classList.contains("show")) {
+                    document.body.style.overflow = "hidden";
+                } else {
+                    document.body.style.overflow = "";
                 }
+            }
+        }
+        // Mobile nav links - close sidebar and allow navigation
+        document.addEventListener("DOMContentLoaded", function() {
+            const links = document.querySelectorAll(".sidebar .nav-link");
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            links.forEach(link => {
+                link.addEventListener("click", function() {
+                    if (window.innerWidth <= 991) {
+                        sidebar.classList.remove("show");
+                        overlay.classList.remove("show");
+                        document.body.style.overflow = "";
+                    }
+                });
             });
+            if (overlay) {
+                overlay.addEventListener("click", toggleSidebar);
+            }
+        });
+        window.addEventListener("resize", function() {
+            if (window.innerWidth > 991) {
+                const sidebar = document.querySelector(".sidebar");
+                const overlay = document.querySelector(".mobile-overlay");
+                sidebar.classList.remove("show");
+                overlay.classList.remove("show");
+                document.body.style.overflow = "";
+            }
+        });
         });
         
         // Handle window resize
