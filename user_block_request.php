@@ -25,24 +25,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_lookup'])) {
         $stmt = $pdo->prepare('SELECT lk.id, lk.license_key, lk.duration, lk.duration_type, lk.mod_id, m.name AS mod_name
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
-                               WHERE lk.license_key = ? AND lk.sold_to = ? LIMIT 1');
-        $stmt->execute([$licenseKey, $_SESSION['user_id']]);
-        $key = $stmt->fetch();
+                               WHERE lk.sold_to = ? AND (lk.license_key LIKE ? OR m.name LIKE ?) 
+                               LIMIT 10');
+        $searchTerm = "%" . $licenseKey . "%";
+        $stmt->execute([$_SESSION['user_id'], $searchTerm, $searchTerm]);
+        $keys = $stmt->fetchAll();
         
-        if (!$key) {
-            echo json_encode(['success' => false, 'message' => 'Key not found or you do not own this key']);
+        if (empty($keys)) {
+            echo json_encode(['success' => false, 'message' => 'No matching keys found in your account']);
             exit;
         }
         
         echo json_encode([
             'success' => true,
-            'key' => [
-                'id' => $key['id'],
-                'license_key' => $key['license_key'],
-                'mod_name' => $key['mod_name'] ?? 'Unknown',
-                'duration' => $key['duration'],
-                'duration_type' => ucfirst($key['duration_type'])
-            ]
+            'keys' => array_map(function($k) {
+                return [
+                    'id' => $k['id'],
+                    'license_key' => $k['license_key'],
+                    'mod_name' => $k['mod_name'] ?? 'Unknown',
+                    'duration' => $k['duration'],
+                    'duration_type' => ucfirst($k['duration_type'])
+                ];
+            }, $keys)
         ]);
         exit;
     } catch (Throwable $e) {
@@ -318,11 +322,12 @@ try {
                         <label class="form-label">Search License Key</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-purple"></i></span>
-                            <input type="text" id="licenseSearchInput" class="form-control border-start-0 ps-0" placeholder="Paste license key here to verify ownership..." style="box-shadow: none;">
+                            <input type="text" id="licenseSearchInput" class="form-control border-start-0 ps-0" placeholder="Type or paste license key..." style="box-shadow: none;">
                         </div>
+                        <div id="searchResults" class="list-group mt-2 shadow-sm" style="display: none; position: absolute; width: calc(100% - 4rem); z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
                         <div id="searchLoading" class="text-center mt-3" style="display: none;">
                             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                            <span class="ms-2">Verifying key...</span>
+                            <span class="ms-2">Searching...</span>
                         </div>
                         <div id="searchError" class="alert alert-danger mt-3 py-2" style="display: none;"></div>
                     </div>
@@ -334,7 +339,7 @@ try {
                         <div id="selectedKeyDisplay" class="key-display shadow-sm border-0" style="display: none; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0 !important;">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <div class="badge bg-primary mb-2">Verified Ownership</div>
+                                    <div class="badge bg-primary mb-2">Selected License</div>
                                     <h5 class="mb-1 text-dark" id="displayModName" style="font-weight: 700;"></h5>
                                     <p class="text-muted small mb-3">
                                         <i class="fas fa-clock me-1"></i>Duration: <span id="displayDuration" class="fw-bold text-dark"></span>
@@ -384,6 +389,7 @@ try {
 
                 <script>
                 const searchInput = document.getElementById('licenseSearchInput');
+                const resultsDiv = document.getElementById('searchResults');
                 const loading = document.getElementById('searchLoading');
                 const errorDiv = document.getElementById('searchError');
                 const display = document.getElementById('selectedKeyDisplay');
@@ -393,26 +399,26 @@ try {
                 let searchTimeout;
                 searchInput.addEventListener('input', function() {
                     clearTimeout(searchTimeout);
-                    const key = this.value.trim();
+                    const query = this.value.trim();
                     
-                    if (key.length < 10) {
-                        hideDetails();
+                    if (query.length < 3) {
+                        resultsDiv.style.display = 'none';
                         return;
                     }
 
                     searchTimeout = setTimeout(() => {
-                        performLookup(key);
-                    }, 500);
+                        performSearch(query);
+                    }, 300);
                 });
 
-                function performLookup(key) {
+                function performSearch(query) {
                     loading.style.display = 'block';
                     errorDiv.style.display = 'none';
-                    hideDetails();
+                    resultsDiv.style.display = 'none';
 
                     const formData = new FormData();
                     formData.append('ajax_lookup', '1');
-                    formData.append('license_key', key);
+                    formData.append('license_key', query);
 
                     fetch('user_block_request.php', {
                         method: 'POST',
@@ -422,15 +428,34 @@ try {
                     .then(data => {
                         loading.style.display = 'none';
                         if (data.success) {
-                            showDetails(data.key);
+                            resultsDiv.innerHTML = '';
+                            data.keys.forEach(key => {
+                                const item = document.createElement('a');
+                                item.href = 'javascript:void(0)';
+                                item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                                item.innerHTML = `
+                                    <div>
+                                        <div class="fw-bold">${key.mod_name}</div>
+                                        <small class="text-muted">${key.license_key}</small>
+                                    </div>
+                                    <span class="badge bg-purple rounded-pill">${key.duration} ${key.duration_type}</span>
+                                `;
+                                item.onclick = () => {
+                                    showDetails(key);
+                                    resultsDiv.style.display = 'none';
+                                    searchInput.value = key.license_key;
+                                };
+                                resultsDiv.appendChild(item);
+                            });
+                            resultsDiv.style.display = 'block';
                         } else {
-                            errorDiv.textContent = data.message;
-                            errorDiv.style.display = 'block';
+                            resultsDiv.innerHTML = '<div class="list-group-item text-muted">No matching license key found</div>';
+                            resultsDiv.style.display = 'block';
                         }
                     })
                     .catch(err => {
                         loading.style.display = 'none';
-                        errorDiv.textContent = 'Connection error. Please try again.';
+                        errorDiv.textContent = 'Search error. Please try again.';
                         errorDiv.style.display = 'block';
                     });
                 }
@@ -455,7 +480,15 @@ try {
                     searchInput.value = '';
                     hideDetails();
                     errorDiv.style.display = 'none';
+                    resultsDiv.style.display = 'none';
                 }
+
+                // Close search results when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                        resultsDiv.style.display = 'none';
+                    }
+                });
                 </script>
                 
                 <!-- Pending Requests -->
