@@ -37,7 +37,7 @@ if ($_POST && isset($_FILES['apk_file'])) {
     
     if (!$mod_id) {
         $error = 'Please select a mod';
-    } elseif ($file['error']) {
+    } elseif ($file['error'] !== UPLOAD_ERR_OK) {
         $error = 'Upload error: ' . $file['error'];
     } else {
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -142,11 +142,11 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                         </div>
                     <?php endif; ?>
                     
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" id="uploadForm">
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Select Mod</label>
-                                <select name="mod_id" class="form-control" required>
+                                <select name="mod_id" class="form-control" id="modSelect" required>
                                     <option value="">-- Choose Mod --</option>
                                     <?php foreach ($mods as $m): ?>
                                         <option value="<?php echo $m['id']; ?>"><?php echo htmlspecialchars($m['name']); ?></option>
@@ -155,12 +155,26 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Choose APK File</label>
-                                <input type="file" name="apk_file" class="form-control" accept=".apk" required>
+                                <input type="file" name="apk_file" class="form-control" id="apkFile" accept=".apk" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Indicator -->
+                        <div id="uploadProgressContainer" style="display: none; margin-bottom: 2rem;">
+                            <div class="progress" style="height: 24px;">
+                                <div id="uploadProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%; transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                            </div>
+                            <div style="margin-top: 1rem; text-align: center;">
+                                <p style="margin: 0; font-size: 0.95rem; color: #64748b;">
+                                    <span id="uploadedMB">0</span> MB / <span id="totalMB">0</span> MB
+                                    <br>
+                                    <small id="uploadSpeed" style="color: #94a3b8;">Calculating speed...</small>
+                                </p>
                             </div>
                         </div>
                         
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary btn-lg" id="uploadBtn">
                                 <i class="fas fa-upload me-2"></i>Upload APK
                             </button>
                         </div>
@@ -218,5 +232,110 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="assets/js/menu-logic.js"></script></body>
+    <script src="assets/js/menu-logic.js"></script>
+    
+    <script>
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const apkFile = document.getElementById('apkFile');
+        const modSelect = document.getElementById('modSelect');
+        const uploadBtn = document.getElementById('uploadBtn');
+        
+        // Validate selections
+        if (!modSelect.value) {
+            e.preventDefault();
+            alert('Please select a mod');
+            return;
+        }
+        
+        if (!apkFile.files || apkFile.files.length === 0) {
+            e.preventDefault();
+            alert('Please select an APK file');
+            return;
+        }
+        
+        const file = apkFile.files[0];
+        const totalBytes = file.size;
+        const totalMB = (totalBytes / 1024 / 1024).toFixed(2);
+        
+        // Show progress indicator
+        document.getElementById('uploadProgressContainer').style.display = 'block';
+        document.getElementById('totalMB').textContent = totalMB;
+        uploadBtn.disabled = true;
+        
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                const uploadedMB = (e.loaded / 1024 / 1024).toFixed(2);
+                
+                document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
+                document.getElementById('uploadProgressBar').textContent = Math.round(percentComplete) + '%';
+                document.getElementById('uploadedMB').textContent = uploadedMB;
+                
+                // Calculate speed
+                if (!window.uploadStartTime) {
+                    window.uploadStartTime = Date.now();
+                }
+                const elapsedSeconds = (Date.now() - window.uploadStartTime) / 1000;
+                const speedMBps = (uploadedMB / elapsedSeconds).toFixed(2);
+                const remainingBytes = e.total - e.loaded;
+                const remainingSeconds = remainingBytes / (e.loaded / elapsedSeconds);
+                const remainingTime = formatTime(remainingSeconds);
+                
+                document.getElementById('uploadSpeed').textContent = speedMBps + ' MB/s | Time left: ' + remainingTime;
+            }
+        });
+        
+        xhr.addEventListener('loadstart', function() {
+            window.uploadStartTime = Date.now();
+        });
+        
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                // Show success animation
+                document.getElementById('uploadProgressBar').className = 'progress-bar bg-success';
+                document.getElementById('uploadProgressBar').style.width = '100%';
+                document.getElementById('uploadProgressBar').textContent = '100%';
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                alert('Upload failed. Please try again.');
+                uploadBtn.disabled = false;
+                document.getElementById('uploadProgressContainer').style.display = 'none';
+                delete window.uploadStartTime;
+            }
+        });
+        
+        xhr.addEventListener('error', function() {
+            alert('Upload error. Please check your connection and try again.');
+            uploadBtn.disabled = false;
+            document.getElementById('uploadProgressContainer').style.display = 'none';
+            delete window.uploadStartTime;
+        });
+        
+        xhr.open('POST', 'upload_mod.php');
+        xhr.send(formData);
+    });
+    
+    function formatTime(seconds) {
+        if (isNaN(seconds) || seconds < 0) return '-- ';
+        if (seconds < 60) return Math.round(seconds) + 's';
+        if (seconds < 3600) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.round(seconds % 60);
+            return minutes + 'm ' + secs + 's';
+        }
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return hours + 'h ' + minutes + 'm';
+    }
+    </script>
+</body>
 </html>
