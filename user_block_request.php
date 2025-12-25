@@ -84,7 +84,8 @@ if(!$user){
     exit;
 }
 
-$success = '';
+$success = $_SESSION['success'] ?? '';
+unset($_SESSION['success']);
 $error = '';
 $selectedKeyDetails = null;
 
@@ -155,7 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
             $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ? AND user_id = ? AND status = "pending"');
             $stmt->execute([$requestId, $_SESSION['user_id']]);
             if ($stmt->rowCount() > 0) {
-                $success = 'Request cancelled successfully.';
+                $_SESSION['success'] = 'Request cancelled successfully.';
+                header('Location: user_block_request.php');
+                exit;
             } else {
                 $error = 'Request not found or already processed.';
             }
