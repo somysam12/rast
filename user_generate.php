@@ -114,6 +114,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             if (!empty($lastKeys)) {
                 $keysString = implode("\n", $lastKeys);
                 $success .= "<div id='autoCopyData' data-keys='" . htmlspecialchars($keysString) . "' data-count='" . count($lastKeys) . "' style='display:none;'></div>";
+                // Modals for mobile copy
+                $success .= "
+                <div id='copyModal' style='display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px;'>
+                    <div style='background:#1e293b; color:white; padding:30px; border-radius:20px; text-align:center; max-width:400px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); border:1px solid #334155;'>
+                        <div style='font-size:3rem; color:#8b5cf6; margin-bottom:20px;'><i class='fas fa-check-circle'></i></div>
+                        <h3 style='margin-bottom:10px; font-weight:700;'>Success!</h3>
+                        <p style='margin-bottom:25px; opacity:0.8;'>Your key(s) are ready. Tap the button below to copy them.</p>
+                        <button onclick='manualCopyAndClose()' style='background:#8b5cf6; color:white; border:none; padding:15px 30px; border-radius:12px; font-weight:700; width:100%; font-size:1.1rem; cursor:pointer; transition:all 0.2s;'>
+                            <i class='fas fa-copy me-2'></i>COPY KEYS
+                        </button>
+                    </div>
+                </div>";
             }
 
             $stmt = $pdo->prepare('SELECT id, username, role, balance FROM users WHERE id = ? LIMIT 1');
@@ -499,16 +511,21 @@ try {
         // Auto-copy on load if purchase just happened
         window.addEventListener('load', function() {
             const copyData = document.getElementById('autoCopyData');
-            if (copyData) {
-                const keys = copyData.getAttribute('data-keys');
-                if (keys) {
-                    // Slight delay to ensure page is fully ready and user interaction context is "fresh"
-                    setTimeout(() => {
-                        copyToClipboard(keys, true);
-                    }, 800);
-                }
+            const copyModal = document.getElementById('copyModal');
+            if (copyData && copyModal) {
+                copyModal.style.display = 'flex';
             }
         });
+
+        function manualCopyAndClose() {
+            const copyData = document.getElementById('autoCopyData');
+            const copyModal = document.getElementById('copyModal');
+            if (copyData) {
+                const keys = copyData.getAttribute('data-keys');
+                copyToClipboard(keys, true);
+                if (copyModal) copyModal.style.display = 'none';
+            }
+        }
     </script>
     <script src="assets/js/dark-mode.js"></script>
 </body>
