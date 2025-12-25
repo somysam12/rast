@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             // Purchase each key
             $keysSold = 0;
             foreach ($keysToSell as $keyData) {
-                $stmt = $pdo->prepare('UPDATE license_keys SET sold_to = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ?');
+                $stmt = $pdo->prepare("UPDATE license_keys SET status = 'sold', sold_to = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ?");
                 $stmt->execute([$user['id'], $keyData['id']]);
                 $keysSold++;
             }

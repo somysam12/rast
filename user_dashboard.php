@@ -31,11 +31,12 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $stats = ['total_purchases' => 0, 'total_spent' => 0];
 try {
+    // Get actual purchased keys count and total spent from license_keys and transactions
     $stmt = $pdo->prepare("SELECT 
-        COUNT(*) as total_purchases,
-        SUM(ABS(amount)) as total_spent
-        FROM transactions 
-        WHERE user_id = ? AND type = 'purchase' AND status = 'completed'");
+        COUNT(DISTINCT lk.id) as total_purchases,
+        COALESCE(SUM(lk.price), 0) as total_spent
+        FROM license_keys lk
+        WHERE lk.sold_to = ?");
     $stmt->execute([$userId]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($result) {
@@ -782,9 +783,7 @@ function formatDate($date) {
                     <a class="nav-link" href="user_generate.php">
                         <i class="fas fa-plus"></i>Generate
                     </a>
-                    <a class="nav-link" href="user_balance.php">
-                        <i class="fas fa-wallet"></i>Balance
-                    </a>
+                    <a class="nav-link" href="user_transactions.php">
                     <a class="nav-link" href="user_transactions.php">
                         <i class="fas fa-exchange-alt"></i>Transaction
                     </a>

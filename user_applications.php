@@ -348,7 +348,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <a class="nav-link" href="user_generate.php">
                         <i class="fas fa-plus"></i>Generate
                     </a>
-                    <a class="nav-link" href="user_balance.php">
+                    <a class="nav-link" href="user_transactions.php">
                         <i class="fas fa-wallet"></i>Balance
                     </a>
                     <a class="nav-link" href="user_transactions.php">
