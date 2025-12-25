@@ -106,9 +106,9 @@ try {
         .btn-primary:hover { background: #7c3aed; color: white; }
         .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
         .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
-        @media (max-width: 768px) {
+        @media (max-width: 991.98px) {
             .sidebar { display: none; }
-            .main-content { margin-left: 0; padding: 1rem; }
+            .main-content { margin-left: 0; padding: 1rem; padding-top: 20px !important; }
         }
     </style>
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">

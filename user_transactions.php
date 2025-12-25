@@ -476,8 +476,8 @@ function formatDate($date) {
                     <a class="nav-link" href="user_transactions.php">
                         <i class="fas fa-wallet"></i>Balance
                     </a>
-                    <a class="nav-link active" href="user_transactions.php">
-                        <i class="fas fa-exchange-alt"></i>Transaction
+                    <a class="nav-link" href="user_block_request.php">
+                        <i class="fas fa-ban"></i>Block & Reset
                     </a>
                     <a class="nav-link" href="user_applications.php">
                         <i class="fas fa-mobile-alt"></i>Applications

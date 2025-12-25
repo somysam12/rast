@@ -269,9 +269,9 @@ try {
         .empty-message { text-align: center; color: var(--muted); padding: 1rem; font-size: 0.95em; }
         .alert { border-radius: 8px; border: none; }
         .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
-        @media (max-width: 768px) {
+        @media (max-width: 991.98px) {
             .sidebar { display: none; }
-            .main-content { margin-left: 0; padding: 1rem; padding-top: 100px; }
+            .main-content { margin-left: 0; padding: 1rem; padding-top: 20px !important; }
             
             /* Fix Back Button Spacing */
             .back-btn-container {
