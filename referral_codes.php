@@ -32,15 +32,27 @@ try {
 if ($_POST && isset($_POST['generate_code']) && $pdo) {
     try {
         $expiryDays = (int)$_POST['expiry_days'];
+        $bonusAmount = (float)($_POST["bonus_amount"] ?? 50.00);
+        $usageLimit = (int)($_POST["usage_limit"] ?? 1);
+        $bonusAmount = (float)($_POST["bonus_amount"] ?? 50.00);
+        $usageLimit = (int)($_POST["usage_limit"] ?? 1);
         
+        } elseif ($bonusAmount < 0) {
+            $error = "Bonus amount cannot be negative";
+        } elseif ($usageLimit <= 0) {
+            $error = "Usage limit must be at least 1";
         if ($expiryDays <= 0) {
+        } elseif ($bonusAmount < 0) {
+            $error = "Bonus amount cannot be negative";
+        } elseif ($usageLimit <= 0) {
+            $error = "Usage limit must be at least 1";
             $error = 'Please enter a valid expiry period';
         } else {
             $code = generateReferralCode();
             $expiresAt = date('Y-m-d H:i:s', strtotime("+$expiryDays days"));
             
-            $stmt = $pdo->prepare("INSERT INTO referral_codes (code, created_by, expires_at) VALUES (?, ?, ?)");
-            if ($stmt->execute([$code, $_SESSION['user_id'], $expiresAt])) {
+            $stmt = $pdo->prepare("INSERT INTO referral_codes (code, created_by, expires_at, bonus_amount, usage_limit) VALUES (?, ?, ?, ?, ?)");
+            if ($stmt->execute([$code, $_SESSION["user_id"], $expiresAt, $bonusAmount, $usageLimit])) {
                 $success = "Referral code generated successfully: $code";
             } else {
                 $error = 'Failed to generate referral code';

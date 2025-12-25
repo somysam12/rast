@@ -54,16 +54,19 @@ if ($_POST) {
                     $stmt->execute([$referralCode]);
                     $refData = $stmt->fetch(PDO::FETCH_ASSOC);
                     
-                    if ($refData) {
-                        if ($refData['status'] !== 'active') {
-                            $error = 'This referral code has already been used or is inactive';
-                        } elseif ($refData['expires_at'] !== null && strtotime($refData['expires_at']) < time()) {
-                            $error = 'This referral code has expired';
+                        if ($refData) {
+                            if ($refData['status'] !== 'active') {
+                                $error = 'This referral code has already been used or is inactive';
+                            } elseif ($refData['expires_at'] !== null && strtotime($refData['expires_at']) < time()) {
+                                $error = 'This referral code has expired';
+                            } elseif ($refData['usage_limit'] !== null && $refData['usage_count'] >= $refData['usage_limit']) {
+                                $error = 'This referral code usage limit has been reached';
+                            } else {
+                                $referredBy = $refData['created_by'];
+                                $referralType = 'admin';
+                                $bonusAmount = $refData['bonus_amount'] ?? 50.00;
+                            }
                         } else {
-                            $referredBy = $refData['created_by'];
-                            $referralType = 'admin';
-                        }
-                    } else {
                         // Check user-generated referral codes
                         $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user' LIMIT 1");
                         $stmt->execute([$referralCode]);
@@ -93,10 +96,14 @@ if ($_POST) {
                     
                     // Handle referral bonuses only if referral code was used
                     if ($referredBy) {
-                        // Deactivate the referral code after use (one-time use only)
+                        $bonusToGive = $bonusAmount ?? 50.00;
+                        
+                        // Update usage count and deactivate if limit reached
                         if ($referralType === 'admin') {
-                            // Deactivate admin-generated referral code
-                            $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = ?");
+                            $stmt = $pdo->prepare("UPDATE referral_codes SET usage_count = usage_count + 1 WHERE code = ?");
+                            $stmt->execute([$referralCode]);
+                            
+                            $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = ? AND usage_count >= usage_limit");
                             $stmt->execute([$referralCode]);
                         } else if ($referralType === 'user') {
                             // For user codes, generate new code for referrer
@@ -106,13 +113,13 @@ if ($_POST) {
                         }
                         
                         // Give bonus to referrer
-                        $stmt = $pdo->prepare("UPDATE users SET balance = balance + 50 WHERE id = ?");
-                        $stmt->execute([$referredBy]);
+                        $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+                        $stmt->execute([$bonusToGive, $referredBy]);
                         
                         // Record referral transaction for referrer
                         try {
-                            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', CURRENT_TIMESTAMP)");
-                            $stmt->execute([$referredBy]);
+                            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', ?, 'Referral bonus for referring new user', CURRENT_TIMESTAMP)");
+                            $stmt->execute([$referredBy, $bonusToGive]);
                         } catch (Exception $e) {
                             // Ignore transaction errors
                         }
