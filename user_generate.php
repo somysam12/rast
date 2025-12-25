@@ -200,7 +200,28 @@ try {
         .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
         @media (max-width: 768px) {
             .sidebar { display: none; }
-            .main-content { margin-left: 0; padding: 1rem; }
+            .main-content { margin-left: 0; padding: 1rem; padding-top: 80px; }
+            .page-header { padding: 1.25rem; }
+            .page-header h2 { font-size: 1.5rem; word-break: break-word; overflow-wrap: break-word; }
+            .page-header .d-flex { flex-direction: column; gap: 0.75rem; }
+            .back-button { padding: 0.6rem 1rem; font-size: 0.9rem; }
+            .key-card { padding: 1rem; }
+            .duration-option { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+            .filter-card { padding: 1.25rem; }
+            input[type="number"] { width: 60px !important; }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content { padding: 0.75rem; padding-top: 75px; }
+            .page-header { padding: 1rem; margin-bottom: 1rem; }
+            .page-header h2 { font-size: 1.25rem; }
+            .back-button { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+            div[style*="position: absolute"] { position: static !important; margin-bottom: 1rem; }
+            .key-card { padding: 0.75rem; margin-bottom: 0.75rem; }
+            .filter-card { padding: 1rem; }
+            .duration-option form { width: 100%; }
+            input[type="number"] { width: 50px !important; padding: 0.4rem !important; }
+            .btn-generate { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -208,8 +229,8 @@ try {
     <div class="container-fluid">
         <div class="row" style="position: relative;">
             <div style="position: absolute; top: 20px; left: 20px; z-index: 999;">
-                <a href="user_dashboard.php" class="btn btn-primary" style="border-radius: 8px; padding: 0.6rem 1.2rem;">
-                    <i class="fas fa-arrow-left me-2"></i>Back
+                <a href="user_dashboard.php" class="back-button" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <i class="fas fa-arrow-left" style="font-size: 1rem;"></i><span>Back</span>
                 </a>
             </div>
             <div class="col-md-3 col-lg-2 sidebar">
