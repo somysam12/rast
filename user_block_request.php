@@ -87,47 +87,19 @@ $success = '';
 $error = '';
 $selectedKeyDetails = null;
 
-// Handle key lookup via API
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lookup_key'])) {
-    $licenseKey = trim($_POST['license_key'] ?? '');
-    if (empty($licenseKey)) {
-        $error = 'Please enter a license key.';
-    } else {
-        try {
-            $stmt = $pdo->prepare('SELECT lk.id, lk.license_key, lk.duration, lk.duration_type, lk.mod_id, m.name AS mod_name
-                                   FROM license_keys lk
-                                   LEFT JOIN mods m ON m.id = lk.mod_id
-                                   WHERE lk.license_key = ? AND lk.sold_to = ? LIMIT 1');
-            $stmt->execute([$licenseKey, $user['id']]);
-            $key = $stmt->fetch();
-            if(!$key){
-                $error = 'Key not found or you do not own this key.';
-            } else {
-                $selectedKeyDetails = $key;
-            }
-        } catch (Throwable $e) {
-            $error = 'Error looking up key: ' . $e->getMessage();
-        }
-    }
-}
-
 // Handle request submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
-    $keySelection = $_POST['key_selection'] ?? ''; // 'dropdown' or 'pasted'
+    $keySelection = 'pasted';
     $keyId = null;
     $requestType = $_POST['request_type'] ?? '';
     $reason = trim($_POST['reason'] ?? '');
-    
-    if ($keySelection === 'dropdown') {
-        $keyId = (int)($_POST['key_id'] ?? 0);
-    } elseif ($keySelection === 'pasted') {
-        $licenseKey = trim($_POST['license_key'] ?? '');
-        if (!empty($licenseKey)) {
-            $stmt = $pdo->prepare('SELECT id FROM license_keys WHERE license_key = ? AND sold_to = ? LIMIT 1');
-            $stmt->execute([$licenseKey, $user['id']]);
-            $key = $stmt->fetch();
-            $keyId = $key ? $key['id'] : null;
-        }
+    $licenseKey = trim($_POST['license_key'] ?? '');
+
+    if (!empty($licenseKey)) {
+        $stmt = $pdo->prepare('SELECT id FROM license_keys WHERE license_key = ? AND sold_to = ? LIMIT 1');
+        $stmt->execute([$licenseKey, $user['id']]);
+        $key = $stmt->fetch();
+        $keyId = $key ? $key['id'] : null;
     }
     
     if (!$keyId || !in_array($requestType, ['block', 'reset'])) {
@@ -167,7 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
 
             $pdo->commit();
             $success = 'Your ' . ucfirst($requestType) . ' request has been submitted. Admin will review it soon.';
-            $selectedKeyDetails = null;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
             $error = $e->getMessage();
@@ -189,26 +160,15 @@ try {
     $purchasedKeys = [];
 }
 
-// Get pending requests with search
-$searchQuery = trim($_GET['search'] ?? '');
+// Get pending requests
 $pendingRequests = [];
 try {
-    if (!empty($searchQuery)) {
-        $stmt = $pdo->prepare('SELECT kr.id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.created_at, lk.license_key, lk.duration, lk.duration_type
-                               FROM key_requests kr
-                               LEFT JOIN license_keys lk ON lk.id = kr.key_id
-                               WHERE kr.user_id = ? AND kr.status = "pending" AND (kr.mod_name LIKE ? OR lk.license_key LIKE ?)
-                               ORDER BY kr.created_at DESC');
-        $searchTerm = '%' . $searchQuery . '%';
-        $stmt->execute([$user['id'], $searchTerm, $searchTerm]);
-    } else {
-        $stmt = $pdo->prepare('SELECT kr.id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.created_at, lk.license_key, lk.duration, lk.duration_type
-                               FROM key_requests kr
-                               LEFT JOIN license_keys lk ON lk.id = kr.key_id
-                               WHERE kr.user_id = ? AND kr.status = "pending"
-                               ORDER BY kr.created_at DESC');
-        $stmt->execute([$user['id']]);
-    }
+    $stmt = $pdo->prepare('SELECT kr.id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.created_at, lk.license_key, lk.duration, lk.duration_type
+                           FROM key_requests kr
+                           LEFT JOIN license_keys lk ON lk.id = kr.key_id
+                           WHERE kr.user_id = ? AND kr.status = "pending"
+                           ORDER BY kr.created_at DESC');
+    $stmt->execute([$user['id']]);
     $pendingRequests = $stmt->fetchAll();
 } catch (Throwable $e) {
     $pendingRequests = [];
@@ -222,6 +182,7 @@ try {
     <title>Block & Reset Requests - Mod APK Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
@@ -248,10 +209,6 @@ try {
         .btn { border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 500; }
         .btn-primary { background: var(--purple); border: none; color: white; }
         .btn-primary:hover { background: #7c3aed; color: white; }
-        .tab-content { margin-top: 1.5rem; }
-        .nav-tabs { border-bottom: 2px solid var(--border); }
-        .nav-tabs .nav-link { color: var(--muted); border: none; border-bottom: 2px solid transparent; }
-        .nav-tabs .nav-link.active { color: var(--purple); border-bottom-color: var(--purple); background: none; }
         .table { border-radius: 12px; }
         .table thead th { background: var(--purple); color: white; border: none; padding: 1rem; }
         .table tbody td { padding: 1rem; border-bottom: 1px solid var(--border); }
@@ -259,6 +216,10 @@ try {
         .empty-state { text-align: center; padding: 2rem; color: var(--muted); }
         .alert { border-radius: 8px; border: none; }
         .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+        .bg-purple-soft { background: #f3e8ff; }
+        .text-purple { color: #8b5cf6; }
+        .cursor-pointer { cursor: pointer; }
+        .hover-shadow:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.2s; }
         @media (max-width: 991.98px) {
             .sidebar { display: none; }
             .main-content { margin-left: 0; padding: 1rem; padding-top: 20px !important; }
@@ -292,9 +253,14 @@ try {
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2"><i class="fas fa-ban me-2"></i>Block & Reset</h2>
-                            <p class="text-muted mb-0">Submit block or reset requests for your license keys</p>
+                        <div class="d-flex align-items-center">
+                            <a href="user_dashboard.php" class="btn btn-outline-primary btn-sm me-3" title="Back to Dashboard">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                            <div>
+                                <h2 class="mb-2"><i class="fas fa-ban me-2"></i>Block & Reset</h2>
+                                <p class="text-muted mb-0">Submit block or reset requests for your license keys</p>
+                            </div>
                         </div>
                         <div class="d-none d-md-flex align-items-center">
                             <div class="text-end me-3">
@@ -329,11 +295,28 @@ try {
                             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                             <span class="ms-2">Searching...</span>
                         </div>
-                        <div id="searchError" class="alert alert-danger mt-3 py-2" style="display: none;"></div>
+                    </div>
+
+                    <div id="userKeysList" class="mb-4">
+                        <label class="form-label text-muted small uppercase fw-bold">Your Available Licenses</label>
+                        <div class="row g-2" id="keysContainer">
+                            <?php foreach ($purchasedKeys as $key): ?>
+                            <div class="col-md-6 key-item" data-key="<?php echo htmlspecialchars($key['license_key']); ?>" data-mod="<?php echo htmlspecialchars($key['mod_name']); ?>">
+                                <div class="p-3 border rounded bg-light hover-shadow cursor-pointer" onclick="selectFromList('<?php echo addslashes($key['license_key']); ?>')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="fw-bold text-dark"><?php echo htmlspecialchars($key['mod_name']); ?></div>
+                                            <code class="small text-muted"><?php echo htmlspecialchars($key['license_key']); ?></code>
+                                        </div>
+                                        <span class="badge bg-purple-soft text-purple"><?php echo $key['duration'] . ' ' . $key['duration_type']; ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
 
                     <form method="POST" id="requestForm">
-                        <input type="hidden" name="key_selection" value="pasted">
                         <input type="hidden" name="license_key" id="verifiedLicenseKey">
                         
                         <div id="selectedKeyDisplay" class="key-display shadow-sm border-0" style="display: none; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0 !important;">
@@ -391,16 +374,27 @@ try {
                 const searchInput = document.getElementById('licenseSearchInput');
                 const resultsDiv = document.getElementById('searchResults');
                 const loading = document.getElementById('searchLoading');
-                const errorDiv = document.getElementById('searchError');
                 const display = document.getElementById('selectedKeyDisplay');
                 const requestDetails = document.getElementById('requestDetails');
                 const verifiedKeyInput = document.getElementById('verifiedLicenseKey');
+                const keyItems = document.querySelectorAll('.key-item');
 
                 let searchTimeout;
                 searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    const query = this.value.trim();
+                    const query = this.value.trim().toLowerCase();
                     
+                    // Filter the existing list visually
+                    keyItems.forEach(item => {
+                        const key = item.getAttribute('data-key').toLowerCase();
+                        const mod = item.getAttribute('data-mod').toLowerCase();
+                        if (key.includes(query) || mod.includes(query)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    clearTimeout(searchTimeout);
                     if (query.length < 3) {
                         resultsDiv.style.display = 'none';
                         return;
@@ -413,7 +407,6 @@ try {
 
                 function performSearch(query) {
                     loading.style.display = 'block';
-                    errorDiv.style.display = 'none';
                     resultsDiv.style.display = 'none';
 
                     const formData = new FormData();
@@ -449,14 +442,23 @@ try {
                             });
                             resultsDiv.style.display = 'block';
                         } else {
+                            if (query.length > 5 && !document.querySelector('.swal2-container')) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'This key is wrong or not generated from your account!',
+                                    confirmButtonColor: '#8b5cf6',
+                                    timer: 3000,
+                                    timerProgressBar: true
+                                });
+                            }
                             resultsDiv.innerHTML = '<div class="list-group-item text-muted">No matching license key found</div>';
                             resultsDiv.style.display = 'block';
                         }
                     })
                     .catch(err => {
                         loading.style.display = 'none';
-                        errorDiv.textContent = 'Search error. Please try again.';
-                        errorDiv.style.display = 'block';
+                        console.error('Search error:', err);
                     });
                 }
 
@@ -479,11 +481,16 @@ try {
                 function clearSelection() {
                     searchInput.value = '';
                     hideDetails();
-                    errorDiv.style.display = 'none';
                     resultsDiv.style.display = 'none';
+                    keyItems.forEach(item => item.style.display = 'block');
                 }
 
-                // Close search results when clicking outside
+                function selectFromList(key) {
+                    searchInput.value = key;
+                    const event = new Event('input');
+                    searchInput.dispatchEvent(event);
+                }
+
                 document.addEventListener('click', function(e) {
                     if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
                         resultsDiv.style.display = 'none';
@@ -494,114 +501,43 @@ try {
                 <!-- Pending Requests -->
                 <div class="card-section">
                     <h5><i class="fas fa-hourglass-half me-2"></i>Pending Requests</h5>
-                    <form method="GET" class="mb-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" name="search" placeholder="Search by mod name or license key..." value="<?php echo htmlspecialchars($searchQuery); ?>">
-                            <button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i>Search</button>
-                            <?php if (!empty($searchQuery)): ?>
-                            <a href="user_block_request.php" class="btn btn-secondary"><i class="fas fa-times me-1"></i>Clear</a>
-                            <?php endif; ?>
-                        </div>
-                    </form>
-                    <?php if (empty($pendingRequests)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-inbox" style="font-size: 3rem; color: var(--purple); opacity: 0.5; margin-bottom: 1rem;"></i>
-                            <p>No pending requests</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>License Key</th>
-                                        <th>Duration</th>
-                                        <th>Request Type</th>
-                                        <th>Status</th>
-                                        <th>Submitted On</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($pendingRequests as $req): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($req['mod_name']); ?></td>
-                                        <td><code style="background: #f8fafc; padding: 0.5rem; border-radius: 6px; font-size: 0.85em;"><?php echo htmlspecialchars(substr($req['license_key'], 0, 20)) . '...'; ?></code></td>
-                                        <td><span class="badge bg-info"><?php echo $req['duration'] . ' ' . ucfirst($req['duration_type']); ?></span></td>
-                                        <td><span class="badge bg-warning text-dark"><?php echo ucfirst($req['request_type']); ?></span></td>
-                                        <td><span class="badge bg-secondary">Pending</span></td>
-                                        <td><?php echo formatDate($req['created_at']); ?></td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>License Key</th>
+                                    <th>Duration</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($pendingRequests as $req): ?>
+                                <tr>
+                                    <td class="fw-bold text-dark"><?php echo htmlspecialchars($req['mod_name']); ?></td>
+                                    <td><code class="text-primary"><?php echo htmlspecialchars($req['license_key']); ?></code></td>
+                                    <td><span class="badge bg-light text-dark border"><?php echo $req['duration'] . ' ' . $req['duration_type']; ?></span></td>
+                                    <td>
+                                        <span class="badge bg-<?php echo $req['request_type'] === 'block' ? 'danger' : 'primary'; ?>">
+                                            <?php echo ucfirst($req['request_type']); ?>
+                                        </span>
+                                    </td>
+                                    <td><small class="text-muted"><?php echo formatDate($req['created_at']); ?></small></td>
+                                </tr>
+                                <?php endforeach; ?>
+                                <?php if (empty($pendingRequests)): ?>
+                                <tr>
+                                    <td colspan="5" class="empty-state">No pending requests found.</td>
+                                </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById('lookupBtn').addEventListener('click', async function() {
-            const keyInput = document.getElementById('pasteKeyInput').value.trim();
-            const container = document.getElementById('keyResultContainer');
-            const form = document.getElementById('pasteForm');
-            
-            if (!keyInput) {
-                container.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Please enter a license key</div>';
-                return;
-            }
-            
-            try {
-                const formData = new FormData();
-                formData.append('ajax_lookup', '1');
-                formData.append('license_key', keyInput);
-                
-                const response = await fetch('user_block_request.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const key = data.key;
-                    container.innerHTML = `
-                        <div class="key-display">
-                            <strong><i class="fas fa-check-circle me-2" style="color: #10b981;"></i>Key Found!</strong>
-                            <div class="key-detail-item mt-2">
-                                <span class="key-detail-label">Product:</span>
-                                <span class="key-detail-value">${key.mod_name}</span>
-                            </div>
-                            <div class="key-detail-item">
-                                <span class="key-detail-label">Duration:</span>
-                                <span class="key-detail-value">${key.duration} ${key.duration_type}</span>
-                            </div>
-                            <div class="key-detail-item">
-                                <span class="key-detail-label">License Key:</span>
-                                <span class="key-detail-value" style="font-family: monospace;">${key.license_key}</span>
-                            </div>
-                        </div>
-                    `;
-                    document.getElementById('licenseKeyHidden').value = key.license_key;
-                    form.style.display = 'block';
-                } else {
-                    container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${data.message}</div>`;
-                    form.style.display = 'none';
-                }
-            } catch (error) {
-                container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}</div>`;
-                form.style.display = 'none';
-            }
-        });
-        
-        document.getElementById('pasteKeyInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('lookupBtn').click();
-            }
-        });
-    </script>
-    <script src="assets/js/dark-mode.js"></script>
-<script src="assets/js/menu-logic.js"></script></body>
+</body>
 </html>
