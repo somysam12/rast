@@ -1,13 +1,14 @@
 // Simple Dark Mode Toggle - No Auto-Detection
 function toggleDarkMode() {
+    const body = document.body;
     const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme') || 'light';
+    const currentTheme = html.getAttribute('data-theme') || body.getAttribute('data-theme') || 'light';
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
     html.setAttribute('data-theme', newTheme);
+    body.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
     
-    // Update icons on all relevant pages
     const icons = document.querySelectorAll('#darkModeIcon, .fa-moon, .fa-sun');
     icons.forEach(icon => {
         if (newTheme === 'dark') {
@@ -20,25 +21,24 @@ function toggleDarkMode() {
     });
 }
 
-// Load saved theme on page load only
 function applySavedTheme() {
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem('theme') || 'light';
     const html = document.documentElement;
+    const body = document.body;
     const icons = document.querySelectorAll('#darkModeIcon, .fa-moon, .fa-sun');
     
-    if (savedTheme === 'dark') {
-        html.setAttribute('data-theme', 'dark');
-        icons.forEach(icon => {
+    html.setAttribute('data-theme', savedTheme);
+    body.setAttribute('data-theme', savedTheme);
+    
+    icons.forEach(icon => {
+        if (savedTheme === 'dark') {
             icon.classList.remove('fa-moon');
             icon.classList.add('fa-sun');
-        });
-    } else {
-        html.setAttribute('data-theme', 'light');
-        icons.forEach(icon => {
+        } else {
             icon.classList.remove('fa-sun');
             icon.classList.add('fa-moon');
-        });
-    }
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', applySavedTheme);
