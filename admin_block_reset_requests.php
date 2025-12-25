@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 $pendingRequests = [];
 try {
     // Only show requests that exist in the key_requests table and have pending status
-    $stmt = $pdo->query("SELECT kr.*, u.username, lk.license_key, lk.duration, lk.duration_type 
+    $stmt = $pdo->query("SELECT kr.id, kr.user_id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.status, kr.created_at, u.username, lk.license_key, lk.duration, lk.duration_type 
                         FROM key_requests kr 
                         INNER JOIN users u ON kr.user_id = u.id 
                         LEFT JOIN license_keys lk ON lk.id = kr.key_id

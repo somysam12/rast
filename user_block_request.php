@@ -160,8 +160,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
             $stmt->execute([$requestId]);
 
             // Delete the request itself - force delete regardless of status to ensure sync
-            $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ? AND user_id = ?');
-            $stmt->execute([$requestId, $_SESSION['user_id']]);
+            $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ?');
+            $stmt->execute([$requestId]);
             
             $pdo->commit();
             $_SESSION['success'] = 'Request cancelled and deleted successfully.';
