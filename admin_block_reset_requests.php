@@ -60,11 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 // Get pending requests with key details
 $pendingRequests = [];
 try {
-    // Explicitly exclude any requests that might have been partially deleted or corrupted
-    $stmt = $pdo->query("SELECT kr.*, u.username, lk.license_key, lk.duration, lk.duration_type FROM key_requests kr 
-                        JOIN users u ON kr.user_id = u.id 
+    // Only show requests that exist in the key_requests table and have pending status
+    $stmt = $pdo->query("SELECT kr.*, u.username, lk.license_key, lk.duration, lk.duration_type 
+                        FROM key_requests kr 
+                        INNER JOIN users u ON kr.user_id = u.id 
                         LEFT JOIN license_keys lk ON lk.id = kr.key_id
-                        WHERE kr.status = 'pending' AND kr.id IN (SELECT id FROM key_requests)
+                        WHERE kr.status = 'pending'
                         ORDER BY kr.created_at DESC");
     $pendingRequests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {

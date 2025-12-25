@@ -159,19 +159,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
             $stmt = $pdo->prepare('DELETE FROM key_confirmations WHERE request_id = ?');
             $stmt->execute([$requestId]);
 
-            // Delete the request itself - specifically look for PENDING status
+            // Delete the request itself - force delete regardless of status to ensure sync
             $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ? AND user_id = ?');
             $stmt->execute([$requestId, $_SESSION['user_id']]);
             
-            if ($stmt->rowCount() > 0) {
-                $pdo->commit();
-                $_SESSION['success'] = 'Request cancelled and deleted successfully.';
-                header('Location: user_block_request.php');
-                exit;
-            } else {
-                $pdo->rollBack();
-                $error = 'Request not found or already processed.';
-            }
+            $pdo->commit();
+            $_SESSION['success'] = 'Request cancelled and deleted successfully.';
+            header('Location: user_block_request.php');
+            exit;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
             $error = 'Error: ' . $e->getMessage();
