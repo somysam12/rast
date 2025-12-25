@@ -24,10 +24,10 @@ if ($_POST) {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm_password'];
-    $referralCode = trim($_POST['referral_code']);
+    $referralCode = trim($_POST['referral_code'] ?? '');
     
-    if (empty($username) || empty($email) || empty($password) || empty($confirmPassword) || empty($referralCode)) {
-        $error = 'Please fill in all required fields including referral code';
+    if (empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
+        $error = 'Please fill in all required fields';
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match';
     } elseif (strlen($password) < 6) {
@@ -38,89 +38,92 @@ if ($_POST) {
         try {
             $pdo = getDBConnection();
             
-            // First check if referral code is valid (check both user codes and admin codes)
-            $referredBy = null;
-            $referralType = null;
+            // Check if username or email already exists
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
+            $stmt->execute([$username, $email]);
             
-            // First check admin-generated referral codes
-            $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND (expires_at IS NULL OR expires_at > NOW())");
-            $stmt->execute([$referralCode]);
-            $adminReferral = $stmt->fetchColumn();
-            
-            if ($adminReferral) {
-                $referredBy = $adminReferral;
-                $referralType = 'admin';
+            if ($stmt->fetchColumn() > 0) {
+                $error = 'Username or email already exists';
             } else {
-                // Check user-generated referral codes
-                $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user'");
-                $stmt->execute([$referralCode]);
-                $referredBy = $stmt->fetchColumn();
-                if ($referredBy) {
-                    $referralType = 'user';
-                }
-            }
-            
-            if (!$referredBy) {
-                $error = 'Invalid or expired referral code. You must have a valid referral code to register.';
-            } else {
-                // Check if username or email already exists
-                $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
-                $stmt->execute([$username, $email]);
+                // Check if referral code is provided and valid
+                $referredBy = null;
+                $referralType = null;
                 
-                if ($stmt->fetchColumn() > 0) {
-                    $error = 'Username or email already exists';
-                } else {
-                
-                // Generate unique referral code for new user
-                $userReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
-                
-                $pdo->beginTransaction();
-                
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy]);
-                
-                $userId = $pdo->lastInsertId();
-                // Set default force logout limit to 1 for new users
-                $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, 1)");
-                $stmt->execute([$userId, 1]);
-                
-                // Deactivate the referral code after use (one-time use only)
-                if ($referralType === 'admin') {
-                    // Deactivate admin-generated referral code
-                    $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = ?");
+                if (!empty($referralCode)) {
+                    // First check admin-generated referral codes
+                    $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)");
                     $stmt->execute([$referralCode]);
-                } else if ($referralType === 'user') {
-                    // For user codes, we'll track usage in a separate table or mark as used
-                    // For now, we'll deactivate the user's referral code and generate a new one
-                    $newUserReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
-                    $stmt = $pdo->prepare("UPDATE users SET referral_code = ? WHERE id = ?");
-                    $stmt->execute([$newUserReferralCode, $referredBy]);
+                    $adminReferral = $stmt->fetchColumn();
+                    
+                    if ($adminReferral) {
+                        $referredBy = $adminReferral;
+                        $referralType = 'admin';
+                    } else {
+                        // Check user-generated referral codes
+                        $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user' LIMIT 1");
+                        $stmt->execute([$referralCode]);
+                        $referredBy = $stmt->fetchColumn();
+                        if ($referredBy) {
+                            $referralType = 'user';
+                        } else {
+                            $error = 'Invalid or expired referral code';
+                        }
+                    }
                 }
                 
-                // New user starts with ₹0 balance (no welcome bonus)
-                // Only give bonus to referrer
-                $stmt = $pdo->prepare("UPDATE users SET balance = balance + 50 WHERE id = ?");
-                $stmt->execute([$referredBy]);
-                
-                // Record referral transaction for referrer only
-                try {
-                    $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', NOW())");
-                    $stmt->execute([$referredBy]);
-                } catch (Exception $e) {
-                    // Ignore transaction errors
-                }
-                
-                $pdo->commit();
-                $success = 'Registration successful! You can now login.';
-                header('refresh:2;url=login.php');
+                if (!$error) {
+                    // Generate unique referral code for new user
+                    $userReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
+                    
+                    $pdo->beginTransaction();
+                    
+                    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                    $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy]);
+                    
+                    $userId = $pdo->lastInsertId();
+                    
+                    // Set default force logout limit to 1 for new users
+                    $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, 1)");
+                    $stmt->execute([$userId, 1]);
+                    
+                    // Handle referral bonuses only if referral code was used
+                    if ($referredBy) {
+                        // Deactivate the referral code after use (one-time use only)
+                        if ($referralType === 'admin') {
+                            // Deactivate admin-generated referral code
+                            $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = ?");
+                            $stmt->execute([$referralCode]);
+                        } else if ($referralType === 'user') {
+                            // For user codes, generate new code for referrer
+                            $newUserReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
+                            $stmt = $pdo->prepare("UPDATE users SET referral_code = ? WHERE id = ?");
+                            $stmt->execute([$newUserReferralCode, $referredBy]);
+                        }
+                        
+                        // Give bonus to referrer
+                        $stmt = $pdo->prepare("UPDATE users SET balance = balance + 50 WHERE id = ?");
+                        $stmt->execute([$referredBy]);
+                        
+                        // Record referral transaction for referrer
+                        try {
+                            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', 50, 'Referral bonus for referring new user', CURRENT_TIMESTAMP)");
+                            $stmt->execute([$referredBy]);
+                        } catch (Exception $e) {
+                            // Ignore transaction errors
+                        }
+                    }
+                    
+                    $pdo->commit();
+                    $success = 'Registration successful! You can now login.';
+                    header('refresh:2;url=login.php');
                 }
             }
         } catch (Exception $e) {
             if (isset($pdo)) {
                 if ($pdo->inTransaction()) { $pdo->rollBack(); }
             }
-            $error = 'Registration failed. Please try again.';
+            $error = 'Registration failed: ' . $e->getMessage();
         }
     }
 }
@@ -373,7 +376,7 @@ if ($_POST) {
             
             .form-control {
                 padding: 10px 14px;
-                font-size: 16px; /* Prevent zoom on iOS */
+                font-size: 16px;
             }
             
             .btn-register {
@@ -394,7 +397,6 @@ if ($_POST) {
     </style>
 </head>
 <body>
-    <!-- Theme Toggle -->
     <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
@@ -406,7 +408,7 @@ if ($_POST) {
                     <div class="register-header">
                         <i class="fas fa-user-plus fa-3x mb-3"></i>
                         <h3>Create Account</h3>
-                        <p class="mb-0">Join SilentMultiPanel Panel today</p>
+                        <p class="mb-0">Join SilentMultiPanel today</p>
                     </div>
                     <div class="register-body">
                         <?php if ($error): ?>
@@ -423,11 +425,6 @@ if ($_POST) {
                             </div>
                         <?php endif; ?>
                         
-                        <div class="alert alert-warning" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Important:</strong> Registration is only allowed with a valid referral code. Each referral code can only be used once. New users start with ₹0 balance.
-                        </div>
-                        
                         <form method="POST">
                             <div class="row">
                                 <div class="col-md-6">
@@ -436,7 +433,7 @@ if ($_POST) {
                                             <i class="fas fa-user me-2"></i>Username *
                                         </label>
                                         <input type="text" class="form-control" id="username" name="username" 
-                                               value="<?php echo htmlspecialchars($username ?? ''); ?>" required>
+                                               value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -445,7 +442,7 @@ if ($_POST) {
                                             <i class="fas fa-envelope me-2"></i>Email *
                                         </label>
                                         <input type="email" class="form-control" id="email" name="email" 
-                                               value="<?php echo htmlspecialchars($email ?? ''); ?>" required>
+                                               value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" required>
                                     </div>
                                 </div>
                             </div>
@@ -471,15 +468,15 @@ if ($_POST) {
                             
                             <div class="mb-3">
                                 <label for="referral_code" class="form-label">
-                                    <i class="fas fa-gift me-2"></i>Referral Code *
+                                    <i class="fas fa-gift me-2"></i>Referral Code (Optional)
                                 </label>
                                 <input type="text" class="form-control" id="referral_code" name="referral_code" 
-                                       value="<?php echo htmlspecialchars($referralCode ?? ''); ?>" 
-                                       placeholder="Enter your referral code" required>
+                                       value="<?php echo htmlspecialchars($_POST['referral_code'] ?? ''); ?>" 
+                                       placeholder="Enter referral code if you have one">
                                 <div class="referral-info">
                                     <small class="text-muted">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        <strong>Registration is only possible with a valid referral code.</strong> Each referral code can only be used once. New users start with ₹0 balance.
+                                        Have a referral code? Enter it here to give both you and the referrer bonuses. It's optional!
                                     </small>
                                 </div>
                             </div>
@@ -502,7 +499,6 @@ if ($_POST) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Dark mode functionality
         function toggleDarkMode() {
             const body = document.body;
             const icon = document.getElementById('darkModeIcon');
@@ -518,42 +514,11 @@ if ($_POST) {
             }
         }
         
-        // Load saved theme
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
             document.getElementById('darkModeIcon').className = 'fas fa-sun';
         }
-        
-        // Form validation enhancement
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('confirm_password');
-            
-            function validatePasswords() {
-                if (password.value !== confirmPassword.value) {
-                    confirmPassword.setCustomValidity('Passwords do not match');
-                } else {
-                    confirmPassword.setCustomValidity('');
-                }
-            }
-            
-            password.addEventListener('input', validatePasswords);
-            confirmPassword.addEventListener('input', validatePasswords);
-            
-            // Auto-hide alerts
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    alert.style.opacity = '0';
-                    alert.style.transform = 'translateY(-10px)';
-                    setTimeout(() => {
-                        alert.style.display = 'none';
-                    }, 300);
-                }, 5000);
-            });
-        });
     </script>
 </body>
 </html>
