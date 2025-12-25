@@ -341,7 +341,7 @@ function formatDate($date) {
         }
         
         /* Mobile Responsive Design */
-        @media (max-width: 768px) {
+        @media (max-width: 991.98px) {
             .sidebar {
                 width: 100%;
                 transform: translateX(-100%);
@@ -355,6 +355,7 @@ function formatDate($date) {
             .main-content {
                 margin-left: 0;
                 padding: 1rem;
+                padding-top: 20px !important;
             }
             
             .mobile-header {
@@ -473,14 +474,17 @@ function formatDate($date) {
                     <a class="nav-link" href="user_generate.php">
                         <i class="fas fa-plus"></i>Generate
                     </a>
-                    <a class="nav-link" href="user_transactions.php">
-                        <i class="fas fa-wallet"></i>Balance
+                    <a class="nav-link active" href="user_transactions.php">
+                        <i class="fas fa-exchange-alt"></i>Transaction
+                    </a>
+                    <a class="nav-link" href="user_applications.php">
+                        <i class="fas fa-mobile-alt"></i>Applications
                     </a>
                     <a class="nav-link" href="user_block_request.php">
                         <i class="fas fa-ban"></i>Block & Reset
                     </a>
-                    <a class="nav-link" href="user_applications.php">
-                        <i class="fas fa-mobile-alt"></i>Applications
+                    <a class="nav-link" href="user_notifications.php">
+                        <i class="fas fa-bell"></i>Notifications
                     </a>
                     <a class="nav-link" href="user_settings.php">
                         <i class="fas fa-cog"></i>Settings
