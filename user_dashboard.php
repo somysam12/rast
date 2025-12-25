@@ -252,8 +252,10 @@ function formatDate($date) {
             height: 100vh;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             transform: translateX(0);
-        overflow-y: auto;
-        overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
         
         .sidebar.hidden {
@@ -263,7 +265,7 @@ function formatDate($date) {
         .sidebar .nav-link {
             color: #6b7280;
             padding: 12px 20px;
-            margin: 4px 16px;
+            margin: 8px 16px;
             transition: all 0.3s ease;
             position: relative;
             z-index: 1003;
@@ -272,7 +274,16 @@ function formatDate($date) {
             display: flex;
             align-items: center;
             font-weight: 500;
-            border-radius: 8px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: #f3f4f6;
+            color: #374151;
+            border-color: #e5e7eb;
+            transform: translateX(5px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         .sidebar .nav-link i {
@@ -283,22 +294,42 @@ function formatDate($date) {
             transition: all 0.3s ease;
         }
         
-        .sidebar .nav-link:hover {
-            background: #f3f4f6;
-            color: #374151;
-        }
-        
         .sidebar .nav-link:hover i {
-            color: #374151;
+            color: #7c3aed;
         }
         
         .sidebar .nav-link.active {
             background: #7c3aed;
             color: white;
+            border-color: #6d28d9;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
         }
         
         .sidebar .nav-link.active i {
             color: white;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .signature-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .signature-name {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
         }
         
         /* Main Content */
@@ -816,6 +847,12 @@ function formatDate($date) {
                         <i class="fas fa-sign-out-alt"></i>Logout
                     </a>
                 </nav>
+                <!-- Sidebar Footer Signature -->
+                <div class="sidebar-footer">
+                    <p class="signature-text">
+                        Made With ❤️ By <span class="signature-name">@tGsHaitaan</span>
+                    </p>
+                </div>
             </div>
             
             <!-- Main Content -->
