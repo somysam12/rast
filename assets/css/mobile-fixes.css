@@ -1,80 +1,109 @@
-/* ===== COMPREHENSIVE MOBILE FIXES ===== */
-
-/* Theme Toggle - Make it visible and large on all phones */
-.theme-toggle {
-    position: fixed !important;
-    top: 15px !important;
-    right: 15px !important;
-    width: 56px !important;
-    height: 56px !important;
-    border-radius: 50% !important;
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
-    border: none !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    color: white !important;
-    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4) !important;
-    transition: all 0.3s ease !important;
-    z-index: 2001 !important;
-    font-size: 1.5rem !important;
+/* Global Mobile Fixes for SilentMultiPanel */
+:root {
+    --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
-.theme-toggle:hover {
-    transform: scale(1.1) !important;
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6) !important;
-}
-
-/* Sidebar - Ensure links are clickable */
-.sidebar .nav-link {
-    cursor: pointer !important;
-    text-decoration: none !important;
-    display: block !important;
-    pointer-events: auto !important;
-}
-
-.sidebar.show {
-    z-index: 1000 !important;
-    pointer-events: auto !important;
-}
-
-.mobile-overlay {
-    z-index: 999 !important;
-}
-
-.mobile-overlay.show {
-    pointer-events: auto !important;
-}
-
-/* Back Buttons - Stylish gradient */
-.back-button {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
-    color: white !important;
-    border: none !important;
-}
-
-/* Text Wrapping */
-.page-header h2, .page-header h1 {
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-}
-
-/* Mobile layouts */
+/* Fix overlapping and spacing issues on mobile */
 @media (max-width: 768px) {
-    .theme-toggle {
+    .main-content {
+        padding-top: 85px !important;
+        margin-left: 0 !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+    /* Header & Logo Overlap Fix */
+    .modern-header, .mobile-header {
+        height: 70px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0 15px !important;
+        background: var(--card) !important;
+        border-bottom: 1px solid var(--line) !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1002 !important;
+    }
+
+    /* Logo Text wrapping fix */
+    .modern-header h2, .mobile-header h5, .sidebar-brand h4, .sidebar h4, .logo-text {
+        font-size: 1.1rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 180px !important;
+        margin: 0 !important;
+    }
+
+    /* Dark Mode Button Positioning */
+    #theme-toggle, .theme-toggle {
+        position: fixed !important;
         top: 12px !important;
         right: 12px !important;
-        width: 50px !important;
-        height: 50px !important;
-        font-size: 1.2rem !important;
+        z-index: 2005 !important;
+        width: 46px !important;
+        height: 46px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        background: var(--purple-gradient) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4) !important;
+        border: none !important;
+    }
+
+    /* Back Button Spacing Fix */
+    .back-btn-container, div[style*="position: absolute"][style*="top: 20px"] {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin-bottom: 25px !important;
+        display: block !important;
+        z-index: 10 !important;
+    }
+    
+    .back-button {
+        display: inline-flex !important;
+        padding: 10px 20px !important;
+        font-size: 0.95rem !important;
+        margin-top: 10px !important;
+        width: auto !important;
+    }
+
+    /* Font Adjustments to prevent overlap */
+    .page-header h2 {
+        font-size: 1.5rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .amount-text, .balance-card h2, .stats-card h2, .stats-card h3 {
+        font-size: 1.6rem !important;
+        word-break: break-all !important;
+    }
+
+    /* Sidebar Fixes */
+    .sidebar {
+        width: 280px !important;
+        z-index: 1010 !important;
+    }
+    
+    .sidebar .nav-link {
+        padding: 15px 20px !important;
+        font-size: 1rem !important;
     }
 }
 
 @media (max-width: 480px) {
-    .theme-toggle {
-        width: 48px !important;
-        height: 48px !important;
-        font-size: 1rem !important;
+    .page-header h2 {
+        font-size: 1.3rem !important;
+    }
+    
+    .modern-header h2, .mobile-header h5 {
+        font-size: 1.05rem !important;
+        max-width: 160px !important;
     }
 }

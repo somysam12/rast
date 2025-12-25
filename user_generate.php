@@ -271,7 +271,17 @@ try {
         .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
         @media (max-width: 768px) {
             .sidebar { display: none; }
-            .main-content { margin-left: 0; padding: 1rem; padding-top: 80px; }
+            .main-content { margin-left: 0; padding: 1rem; padding-top: 100px; }
+            
+            /* Fix Back Button Spacing */
+            .back-btn-container {
+                position: relative !important;
+                top: 0 !important;
+                left: 0 !important;
+                margin-bottom: 15px !important;
+                z-index: 10;
+            }
+            
             .page-header { padding: 1.25rem; }
             .page-header h2 { font-size: 1.5rem; word-break: break-word; overflow-wrap: break-word; }
             .page-header .d-flex { flex-direction: column; gap: 0.75rem; }
@@ -302,7 +312,7 @@ try {
 <body>
     <div class="container-fluid">
         <div class="row" style="position: relative;">
-            <div style="position: absolute; top: 20px; left: 20px; z-index: 999;">
+            <div class="back-btn-container" style="position: absolute; top: 20px; left: 20px; z-index: 999;">
                 <a href="user_dashboard.php" class="back-button" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                     <i class="fas fa-arrow-left" style="font-size: 1rem;"></i><span>Back</span>
                 </a>
