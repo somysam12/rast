@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_lookup'])) {
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
                                WHERE lk.sold_to = ? AND (lk.license_key LIKE ? OR m.name LIKE ?) 
+                               GROUP BY lk.id
                                LIMIT 10');
         $searchTerm = "%" . $licenseKey . "%";
         $stmt->execute([$_SESSION['user_id'], $searchTerm, $searchTerm]);
@@ -146,6 +147,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
     }
 }
 
+// Handle request cancellation
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
+    $requestId = $_POST['request_id'] ?? '';
+    if (ctype_digit((string)$requestId)) {
+        try {
+            $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ? AND user_id = ? AND status = "pending"');
+            $stmt->execute([$requestId, $_SESSION['user_id']]);
+            if ($stmt->rowCount() > 0) {
+                $success = 'Request cancelled successfully.';
+            } else {
+                $error = 'Request not found or already processed.';
+            }
+        } catch (Throwable $e) {
+            $error = 'Error: ' . $e->getMessage();
+        }
+    }
+}
+
 // Get user's purchased keys
 $purchasedKeys = [];
 try {
@@ -185,20 +204,47 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .back-btn-anim { 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            width: 40px; 
-            height: 40px; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            width: 45px; 
+            height: 45px; 
             display: flex; 
             align-items: center; 
             justify-content: center;
-            border-radius: 8px;
-            border: 1px solid var(--border);
+            border-radius: 12px;
+            border: 2px solid var(--border);
             color: var(--purple);
             background: white;
             text-decoration: none;
             margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
         }
-        .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
+        .back-btn-anim:hover { 
+            transform: translateX(-5px) scale(1.05); 
+            background: var(--purple); 
+            color: white; 
+            border-color: var(--purple);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        .back-btn-anim:active {
+            transform: scale(0.9) translateX(-2px);
+            transition: all 0.1s;
+        }
+        .back-btn-anim::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.5s;
+        }
+        .back-btn-anim:active::after {
+            transform: scale(2);
+            transition: 0s;
+        }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
         * { font-family: 'Inter', sans-serif; }
@@ -537,6 +583,7 @@ try {
                                     <th>Duration</th>
                                     <th>Type</th>
                                     <th>Date</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -544,18 +591,26 @@ try {
                                 <tr>
                                     <td class="fw-bold text-dark"><?php echo htmlspecialchars($req['mod_name']); ?></td>
                                     <td><code class="text-primary"><?php echo htmlspecialchars($req['license_key']); ?></code></td>
-                                    <td><span class="badge bg-light text-dark border"><?php echo $req['duration'] . ' ' . $req['duration_type']; ?></span></td>
+                                    <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($req['duration'] . ' ' . $req['duration_type']); ?></span></td>
                                     <td>
                                         <span class="badge bg-<?php echo $req['request_type'] === 'block' ? 'danger' : 'primary'; ?>">
-                                            <?php echo ucfirst($req['request_type']); ?>
+                                            <?php echo ucfirst(htmlspecialchars($req['request_type'])); ?>
                                         </span>
                                     </td>
                                     <td><small class="text-muted"><?php echo formatDate($req['created_at']); ?></small></td>
+                                    <td>
+                                        <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this request?');" style="display:inline;">
+                                            <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($req['id']); ?>">
+                                            <button type="submit" name="cancel_request" class="btn btn-sm btn-outline-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 6px;">
+                                                <i class="fas fa-times me-1"></i> Cancel
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php if (empty($pendingRequests)): ?>
                                 <tr>
-                                    <td colspan="5" class="empty-state">No pending requests found.</td>
+                                    <td colspan="6" class="empty-state">No pending requests found.</td>
                                 </tr>
                                 <?php endif; ?>
                             </tbody>
