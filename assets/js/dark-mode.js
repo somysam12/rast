@@ -19,6 +19,15 @@ function toggleDarkMode() {
             icon.classList.add('fa-moon');
         }
     });
+
+    // Tap Animation
+    const btn = document.querySelector('.theme-toggle');
+    if (btn) {
+        btn.style.transform = 'scale(0.8) rotate(45deg)';
+        setTimeout(() => {
+            btn.style.transform = '';
+        }, 200);
+    }
 }
 
 function applySavedTheme() {

@@ -300,7 +300,8 @@ if ($isLoggedIn) {
     <link href="assets/css/dark-mode.css" rel="stylesheet">
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+    <!-- Global Theme Toggle -->
+    <button class="theme-toggle" id="global-theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
     
