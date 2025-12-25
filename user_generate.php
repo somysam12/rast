@@ -101,7 +101,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             } catch (Throwable $ignored) {}
 
             $pdo->commit();
+            
+            // Get the keys that were just sold to auto-copy
+            $lastKeys = [];
+            try {
+                $stmt = $pdo->prepare('SELECT license_key FROM license_keys WHERE sold_to = ? ORDER BY sold_at DESC LIMIT ?');
+                $stmt->execute([$user['id'], $quantity]);
+                $lastKeys = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            } catch (Throwable $ignored) {}
+            
             $success = 'Purchased ' . $keysSold . ' license key(s) successfully!';
+            if (!empty($lastKeys)) {
+                $keysString = implode("\n", $lastKeys);
+                $success .= "<script>
+                    setTimeout(() => {
+                        const keys = " . json_encode($keysString) . ";
+                        navigator.clipboard.writeText(keys).then(() => {
+                            alert('Success! ' + " . count($lastKeys) . " + ' key(s) purchased and copied to clipboard:\\n' + keys);
+                        }).catch(() => {
+                            console.log('Clipboard copy failed');
+                        });
+                    }, 500);
+                </script>";
+            }
 
             $stmt = $pdo->prepare('SELECT id, username, role, balance FROM users WHERE id = ? LIMIT 1');
             $stmt->execute([$user['id']]);
@@ -279,7 +301,7 @@ try {
                 </div>
                 
                 <?php if ($success): ?>
-                <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i><?php echo $success; ?><button type="button" class="btn-close" data-bs-alert="alert"></button></div>
                 <?php endif; ?>
                 
                 <?php if ($error): ?>
