@@ -79,11 +79,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $stmt = $pdo->prepare('UPDATE users SET balance = balance - ? WHERE id = ?');
             $stmt->execute([$totalPrice, $user['id']]);
 
-            // Purchase each key
+            // Purchased each key
             $keysSold = 0;
+            $allPurchasedKeys = [];
             foreach ($keysToSell as $keyData) {
                 $stmt = $pdo->prepare("UPDATE license_keys SET status = 'sold', sold_to = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ?");
                 $stmt->execute([$user['id'], $keyData['id']]);
+                
+                // Get the actual key string
+                $stmt_key = $pdo->prepare('SELECT license_key FROM license_keys WHERE id = ?');
+                $stmt_key->execute([$keyData['id']]);
+                $allPurchasedKeys[] = $stmt_key->fetchColumn();
+                
                 $keysSold++;
             }
 
@@ -102,31 +109,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
 
             $pdo->commit();
             
-            // Get the keys that were just sold to auto-copy
-            $lastKeys = [];
-            try {
-                $stmt = $pdo->prepare('SELECT license_key FROM license_keys WHERE sold_to = ? ORDER BY sold_at DESC LIMIT ?');
-                $stmt->execute([$user['id'], $quantity]);
-                $lastKeys = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            } catch (Throwable $ignored) {}
+            $keysString = implode("\\n", $allPurchasedKeys);
+            $success = "Purchased $keysSold license key(s) successfully!";
             
-            $success = 'Purchased ' . $keysSold . ' license key(s) successfully!';
-            if (!empty($lastKeys)) {
-                $keysString = implode("\n", $lastKeys);
-                $success .= "<div id='autoCopyData' data-keys='" . htmlspecialchars($keysString) . "' data-count='" . count($lastKeys) . "' style='display:none;'></div>";
-                // Modals for mobile copy
-                $success .= "
-                <div id='copyModal' style='display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px;'>
-                    <div style='background:#1e293b; color:white; padding:30px; border-radius:20px; text-align:center; max-width:400px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); border:1px solid #334155;'>
-                        <div style='font-size:3rem; color:#8b5cf6; margin-bottom:20px;'><i class='fas fa-check-circle'></i></div>
-                        <h3 style='margin-bottom:10px; font-weight:700;'>Success!</h3>
-                        <p style='margin-bottom:25px; opacity:0.8;'>Your key(s) are ready. Tap the button below to copy them.</p>
-                        <button onclick='manualCopyAndClose()' style='background:#8b5cf6; color:white; border:none; padding:15px 30px; border-radius:12px; font-weight:700; width:100%; font-size:1.1rem; cursor:pointer; transition:all 0.2s;'>
-                            <i class='fas fa-copy me-2'></i>COPY KEYS
-                        </button>
-                    </div>
-                </div>";
-            }
+            echo "<script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const keys = `" . $keysString . "`;
+                    navigator.clipboard.writeText(keys).then(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Purchased & Copied!',
+                            text: '$keysSold license key(s) generated and copied to clipboard!',
+                            showConfirmButton: true,
+                            confirmButtonText: 'Great!',
+                            confirmButtonColor: '#8b5cf6',
+                            background: '#ffffff',
+                            iconColor: '#8b5cf6',
+                            customClass: {
+                                title: 'text-purple',
+                                popup: 'rounded-12'
+                            }
+                        });
+                    });
+                });
+            </script>";
 
             $stmt = $pdo->prepare('SELECT id, username, role, balance FROM users WHERE id = ? LIMIT 1');
             $stmt->execute([$user['id']]);
@@ -204,7 +210,23 @@ try {
     <title>Generate - Mod APK Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        .back-btn-anim { 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            width: 40px; 
+            height: 40px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--purple);
+            background: white;
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+        }
+        .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
         * { font-family: 'Inter', sans-serif; }
@@ -336,6 +358,9 @@ try {
             </div>
             
             <div class="col-md-9 col-lg-10 main-content">
+                <a href="user_dashboard.php" class="back-btn-anim" title="Back to Dashboard">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>

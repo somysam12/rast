@@ -82,8 +82,21 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        .back-btn-anim { 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            width: 40px; 
+            height: 40px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--purple);
+            background: white;
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+        }
+        .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
         :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
@@ -152,11 +165,9 @@ try {
             </div>
             
             <div class="col-md-9 col-lg-10 main-content">
-                <div style="margin-bottom: 1.5rem;">
-                    <a href="user_dashboard.php" class="btn btn-primary" style="border-radius: 8px; padding: 0.6rem 1.2rem;">
-                        <i class="fas fa-arrow-left me-2"></i>Back
-                    </a>
-                </div>
+                <a href="user_dashboard.php" class="back-btn-anim" title="Back to Dashboard">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>

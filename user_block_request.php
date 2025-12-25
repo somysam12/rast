@@ -184,6 +184,21 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        .back-btn-anim { 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            width: 40px; 
+            height: 40px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--purple);
+            background: white;
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+        }
+        .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
         * { font-family: 'Inter', sans-serif; }
@@ -263,12 +278,12 @@ try {
             </div>
             
             <div class="col-md-9 col-lg-10 main-content">
+                <a href="user_dashboard.php" class="back-btn-anim" title="Back to Dashboard">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
-                            <a href="user_dashboard.php" class="btn btn-outline-primary btn-sm me-3" title="Back to Dashboard">
-                                <i class="fas fa-arrow-left"></i>
-                            </a>
                             <div>
                                 <h2 class="mb-2"><i class="fas fa-ban me-2"></i>Block & Reset</h2>
                                 <p class="text-muted mb-0">Submit block or reset requests for your license keys</p>
