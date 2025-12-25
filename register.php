@@ -26,12 +26,12 @@ if ($_POST) {
     $confirmPassword = $_POST['confirm_password'];
     $referralCode = trim($_POST['referral_code'] ?? '');
     
-    if (empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
-        $error = 'Please fill in all required fields';
+    if (empty($username) || empty($email) || empty($password) || empty($confirmPassword) || empty($referralCode)) {
+        $error = 'Please fill in all required fields including Referral Code';
+    } elseif (strlen($password) < 8) {
+        $error = 'Password must be at least 8 digits long';
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match';
-    } elseif (strlen($password) < 6) {
-        $error = 'Password must be at least 6 characters long';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address';
     } else {
@@ -49,15 +49,20 @@ if ($_POST) {
                 $referredBy = null;
                 $referralType = null;
                 
-                if (!empty($referralCode)) {
                     // First check admin-generated referral codes
-                    $stmt = $pdo->prepare("SELECT created_by FROM referral_codes WHERE code = ? AND status = 'active' AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)");
+                    $stmt = $pdo->prepare("SELECT created_by, status, expires_at FROM referral_codes WHERE code = ?");
                     $stmt->execute([$referralCode]);
-                    $adminReferral = $stmt->fetchColumn();
+                    $refData = $stmt->fetch(PDO::FETCH_ASSOC);
                     
-                    if ($adminReferral) {
-                        $referredBy = $adminReferral;
-                        $referralType = 'admin';
+                    if ($refData) {
+                        if ($refData['status'] !== 'active') {
+                            $error = 'This referral code has already been used or is inactive';
+                        } elseif ($refData['expires_at'] !== null && strtotime($refData['expires_at']) < time()) {
+                            $error = 'This referral code has expired';
+                        } else {
+                            $referredBy = $refData['created_by'];
+                            $referralType = 'admin';
+                        }
                     } else {
                         // Check user-generated referral codes
                         $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user' LIMIT 1");
@@ -66,10 +71,9 @@ if ($_POST) {
                         if ($referredBy) {
                             $referralType = 'user';
                         } else {
-                            $error = 'Invalid or expired referral code';
+                            $error = 'Wrong referral code! Please enter a valid code.';
                         }
                     }
-                }
                 
                 if (!$error) {
                     // Generate unique referral code for new user
@@ -466,15 +470,15 @@ if ($_POST) {
                             
                             <div class="mb-3">
                                 <label for="referral_code" class="form-label">
-                                    <i class="fas fa-gift me-2"></i>Referral Code (Optional)
+                                    <i class="fas fa-gift me-2"></i>Referral Code *
                                 </label>
                                 <input type="text" class="form-control" id="referral_code" name="referral_code" 
                                        value="<?php echo htmlspecialchars($_POST['referral_code'] ?? ''); ?>" 
-                                       placeholder="Enter referral code if you have one">
+                                       placeholder="Enter referral code" required>
                                 <div class="referral-info">
                                     <small class="text-muted">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        Have a referral code? Enter it here to give both you and the referrer bonuses. It's optional!
+                                        Referral code is mandatory. Please enter a valid code to proceed.
                                     </small>
                                 </div>
                             </div>
