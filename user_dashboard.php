@@ -980,24 +980,7 @@ function formatDate($date) {
         });
         
         // Close sidebar when clicking on nav links on mobile
-        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (window.innerWidth <= 991) {
-                    toggleSidebar();
-                }
-            });
-            
-            // Add touch event for better mobile experience
-            link.addEventListener('touchend', (e) => {
-                e.stopPropagation();
-                if (window.innerWidth <= 991) {
-                    toggleSidebar();
-                }
-            });
-        });
-        
-        // Handle window resize
+        // Navigation handled by DOMContentLoaded listener above
         window.addEventListener('resize', () => {
             if (window.innerWidth > 991) {
                 document.querySelector('.sidebar').classList.remove('show');
