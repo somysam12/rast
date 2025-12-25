@@ -105,6 +105,7 @@ foreach ($notifications as $notif) {
         }
     </style>
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-mode.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">
@@ -202,5 +203,6 @@ foreach ($notifications as $notif) {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/dark-mode.js"></script>
 </body>
 </html>

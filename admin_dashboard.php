@@ -498,6 +498,7 @@ try {
     </style>
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-mode.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle -->

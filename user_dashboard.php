@@ -723,6 +723,7 @@ function formatDate($date) {
     </style>
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-mode.css" rel="stylesheet">
 </head>
 <body>
     <!-- Modern Header -->
@@ -783,7 +784,6 @@ function formatDate($date) {
                     <a class="nav-link" href="user_generate.php">
                         <i class="fas fa-plus"></i>Generate
                     </a>
-                    <a class="nav-link" href="user_transactions.php">
                     <a class="nav-link" href="user_transactions.php">
                         <i class="fas fa-exchange-alt"></i>Transaction
                     </a>
@@ -1027,5 +1027,6 @@ function formatDate($date) {
             }
         });
     </script>
+    <script src="assets/js/dark-mode.js"></script>
 </body>
 </html>

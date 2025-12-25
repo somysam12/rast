@@ -397,6 +397,7 @@ if ($_POST) {
     </style>
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-mode.css" rel="stylesheet">
 </head>
 <body>
     <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
@@ -522,5 +523,6 @@ if ($_POST) {
             document.getElementById('darkModeIcon').className = 'fas fa-sun';
         }
     </script>
+    <script src="assets/js/dark-mode.js"></script>
 </body>
 </html>

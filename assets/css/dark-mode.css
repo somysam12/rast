@@ -1,0 +1,122 @@
+/* Dark Mode Styling with Smooth Transitions */
+
+html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Theme Toggle Button - Single Instance */
+.theme-toggle {
+    position: fixed !important;
+    top: 15px !important;
+    right: 15px !important;
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 2001 !important;
+    font-size: 1.5rem !important;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg) !important;
+    box-shadow: 0 6px 25px rgba(124, 58, 237, 0.6) !important;
+}
+
+.theme-toggle:active {
+    transform: scale(0.95) !important;
+}
+
+/* Smooth page transition on dark mode toggle */
+body {
+    transition: background-color 0.4s ease, color 0.4s ease !important;
+}
+
+/* Dark Mode Colors */
+[data-theme="dark"] {
+    --bg: #0f172a !important;
+    --card: #1e293b !important;
+    --text: #f1f5f9 !important;
+    --muted: #94a3b8 !important;
+    --line: #334155 !important;
+    --bg-color: #0f172a !important;
+    --card-bg: #1e293b !important;
+    --sidebar-bg: #1e293b !important;
+    --text-primary: #f1f5f9 !important;
+    --text-dark: #f1f5f9 !important;
+    --text-light: #cbd5e1 !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .theme-toggle {
+        top: 12px !important;
+        right: 12px !important;
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1.2rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .theme-toggle {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1rem !important;
+        top: 10px !important;
+        right: 10px !important;
+    }
+}
+
+/* Hamburger Menu Dark Mode */
+.hamburger-menu {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    color: white !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-theme="dark"] .hamburger-menu {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+    color: white !important;
+}
+
+.hamburger-menu:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+}
+
+/* Sidebar in Dark Mode */
+[data-theme="dark"] .sidebar {
+    background-color: var(--card-bg, #1e293b) !important;
+    color: var(--text, #f1f5f9) !important;
+}
+
+[data-theme="dark"] .sidebar .nav-link {
+    color: var(--text-light, #cbd5e1) !important;
+}
+
+[data-theme="dark"] .sidebar .nav-link:hover,
+[data-theme="dark"] .sidebar .nav-link.active {
+    background-color: var(--purple, #8b5cf6) !important;
+    color: white !important;
+}
+
+/* Header Dark Mode */
+[data-theme="dark"] .modern-header {
+    background-color: var(--card-bg, #1e293b) !important;
+    border-bottom-color: var(--line, #334155) !important;
+}
+
+[data-theme="dark"] .page-header {
+    background-color: var(--card-bg, #1e293b) !important;
+    border-color: var(--line, #334155) !important;
+    color: var(--text, #f1f5f9) !important;
+}

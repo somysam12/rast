@@ -210,3 +210,30 @@ input, textarea, select {
         font-size: 1rem !important;
     }
 }
+
+/* Dark Mode Animations */
+html {
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body, [data-theme] {
+    transition: background-color 0.4s ease !important;
+    transition: color 0.4s ease !important;
+    transition: border-color 0.4s ease !important;
+}
+
+.sidebar, .main-content, .page-header, .card, .stats-card {
+    transition: background-color 0.4s ease !important;
+    transition: color 0.4s ease !important;
+    transition: border-color 0.4s ease !important;
+}
+
+/* Smooth hamburger menu styling */
+.hamburger-menu {
+    transition: all 0.3s ease !important;
+}
+
+.hamburger-menu:hover {
+    transform: scale(1.05) !important;
+}
