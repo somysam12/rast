@@ -109,10 +109,30 @@ try {
             --border-light: #e2e8f0;
         }
     </style>
+    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="d-flex align-items-center">
+            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?></span>
+            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                <?php echo strtoupper(substr($_SESSION['username'] ?? 'AD', 0, 2)); ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
+
     <div class="container-fluid" style="display: flex; min-height: 100vh;">
-        <div style="background: #fff; border-right: 1px solid #e0e0e0; width: 280px; padding: 20px;">
+        <div class="sidebar" id="sidebar" style="background: #fff; border-right: 1px solid #e0e0e0; width: 280px; padding: 20px;">
             <h5 style="margin-bottom: 30px;"><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
             <nav class="nav flex-column gap-2">
                 <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
@@ -198,5 +218,14 @@ try {
             </div>
         </div>
     </div>
+    <script>
+        function toggleSidebar(e) {
+            if (e) e.preventDefault();
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (sidebar) sidebar.classList.toggle('show');
+            if (overlay) overlay.classList.toggle('show');
+        }
+    </script>
 </body>
 </html>
