@@ -516,16 +516,31 @@ try {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('lookupBtn').addEventListener('click', async function() {
-            const keyInput = document.getElementById('pasteKeyInput').value.trim();
-            const container = document.getElementById('keyResultContainer');
-            const form = document.getElementById('pasteForm');
+        // Auto-hide alerts
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                    }, 300);
+                }, 5000);
+            });
+        });
+
+        async function lookupQuickKey() {
+            const keyInput = document.getElementById('quickKeyPaste').value.trim();
+            const errorDiv = document.getElementById('quickLookupError');
+            const displayDiv = document.getElementById('quickKeyDisplay');
             
             if (!keyInput) {
-                container.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Please enter a license key</div>';
+                errorDiv.textContent = 'Please paste a license key first.';
+                errorDiv.style.display = 'block';
                 return;
             }
-            
+
             try {
                 const formData = new FormData();
                 formData.append('ajax_lookup', '1');
@@ -539,41 +554,75 @@ try {
                 const data = await response.json();
                 
                 if (data.success) {
-                    const key = data.key;
-                    container.innerHTML = `
-                        <div class="key-display">
-                            <strong><i class="fas fa-check-circle me-2" style="color: #10b981;"></i>Key Found!</strong>
-                            <div class="key-detail-item mt-2">
-                                <span class="key-detail-label">Product:</span>
-                                <span class="key-detail-value">${key.mod_name}</span>
-                            </div>
-                            <div class="key-detail-item">
-                                <span class="key-detail-label">Duration:</span>
-                                <span class="key-detail-value">${key.duration} ${key.duration_type}</span>
-                            </div>
-                            <div class="key-detail-item">
-                                <span class="key-detail-label">License Key:</span>
-                                <span class="key-detail-value" style="font-family: monospace;">${key.license_key}</span>
-                            </div>
-                        </div>
-                    `;
-                    document.getElementById('licenseKeyHidden').value = key.license_key;
-                    form.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    document.getElementById('quickModName').textContent = data.key.mod_name;
+                    document.getElementById('quickLicenseKey').textContent = data.key.license_key;
+                    document.getElementById('quickDuration').textContent = data.key.duration + ' ' + data.key.duration_type;
+                    document.getElementById('selectedKeyId').value = data.key.id;
+                    displayDiv.style.display = 'block';
                 } else {
-                    container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${data.message}</div>`;
-                    form.style.display = 'none';
+                    errorDiv.textContent = data.message;
+                    errorDiv.style.display = 'block';
+                    displayDiv.style.display = 'none';
                 }
             } catch (error) {
-                container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}</div>`;
-                form.style.display = 'none';
+                errorDiv.textContent = 'Error looking up key. Please try again.';
+                errorDiv.style.display = 'block';
+                displayDiv.style.display = 'none';
             }
-        });
-        
-        document.getElementById('pasteKeyInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('lookupBtn').click();
+        }
+
+        function prepareQuickRequest(type) {
+            document.getElementById('selectedRequestType').value = type;
+            document.getElementById('requestTypeTitle').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+            document.getElementById('fullRequestFormSection').style.display = 'block';
+            window.scrollTo({
+                top: document.getElementById('fullRequestFormSection').offsetTop - 20,
+                behavior: 'smooth'
+            });
+        }
+
+        function cancelQuickRequest() {
+            document.getElementById('fullRequestFormSection').style.display = 'none';
+        }
+
+        function filterKeyList() {
+            const input = document.getElementById('keySearchInput').value.toLowerCase();
+            const results = document.getElementById('keySearchResults');
+            const items = results.getElementsByClassName('key-item');
+            let hasMatch = false;
+
+            if (input.length < 1) {
+                results.style.display = 'none';
+                return;
             }
-        });
+
+            for (let item of items) {
+                const key = item.getAttribute('data-key').toLowerCase();
+                const mod = item.getAttribute('data-mod').toLowerCase();
+                if (key.includes(input) || mod.includes(input)) {
+                    item.style.display = 'block';
+                    hasMatch = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+            results.style.display = hasMatch ? 'block' : 'none';
+        }
+
+        function selectKey(id, mod, key) {
+            document.getElementById('selectedKeyId').value = id;
+            document.getElementById('displayModName').textContent = mod;
+            document.getElementById('displayLicenseKey').textContent = key;
+            document.getElementById('selectedKeyDisplay').style.display = 'block';
+            document.getElementById('keySearchResults').style.display = 'none';
+            document.getElementById('keySearchInput').value = '';
+        }
+
+        function clearSelection() {
+            document.getElementById('selectedKeyId').value = '';
+            document.getElementById('selectedKeyDisplay').style.display = 'none';
+        }
     </script>
 </body>
 </html>
