@@ -137,6 +137,7 @@ try {
     <title>Referral Codes - Multi Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -746,9 +747,50 @@ try {
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                alert('Code copied to clipboard!');
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Copied to clipboard!'
+                });
             });
         }
+
+        // Show success animation if code was generated
+        <?php if (isset($success) && strpos($success, 'Referral code generated successfully') !== false): 
+            $generatedCode = substr($success, strrpos($success, ': ') + 2);
+        ?>
+        document.addEventListener('DOMContentLoaded', function() {
+            const code = '<?php echo $generatedCode; ?>';
+            
+            // Auto copy to clipboard
+            navigator.clipboard.writeText(code).then(() => {
+                Swal.fire({
+                    title: 'Generated!',
+                    html: `Referral Code: <b style="color:#8b5cf6; font-size:1.5rem; letter-spacing:2px;">${code}</b><br><br>Code has been auto-copied to clipboard.`,
+                    icon: 'success',
+                    confirmButtonColor: '#8b5cf6',
+                    timer: 5000,
+                    timerProgressBar: true,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
+                });
+            });
+        });
+        <?php endif; ?>
     </script>
 </body>
 </html>
