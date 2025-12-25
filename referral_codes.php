@@ -534,7 +534,8 @@ try {
                 backdrop-filter: blur(20px);
             }
         }
-    </style>
+    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
+    <script src="assets/js/menu-logic.js"></script>
 </head>
 <body>
     <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>

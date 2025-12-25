@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.mobile-overlay');
-    
     // Create overlay if it doesn't exist
-    if (!overlay) {
+    if (!document.querySelector('.mobile-overlay')) {
         const newOverlay = document.createElement('div');
         newOverlay.className = 'mobile-overlay';
         newOverlay.id = 'mobile-overlay';
@@ -14,12 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.toggleSidebar = function(e) {
         if (e) {
-            e.preventDefault();
-            e.stopPropagation();
+            if (typeof e.preventDefault === 'function') e.preventDefault();
+            if (typeof e.stopPropagation === 'function') e.stopPropagation();
         }
         
-        const side = document.querySelector('.sidebar');
-        const over = document.querySelector('.mobile-overlay');
+        const side = document.querySelector('.sidebar') || document.getElementById('sidebar');
+        const over = document.querySelector('.mobile-overlay') || document.getElementById('overlay') || document.getElementById('mobileOverlay');
         
         if (side && over) {
             side.classList.toggle('show');
@@ -27,6 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (side.classList.contains('show')) {
                 document.body.style.overflow = 'hidden';
+                side.style.overflowY = 'auto';
+                side.style.height = '100vh';
+                side.style.position = 'fixed';
+                side.style.top = '0';
+                side.style.left = '0';
+                side.style.zIndex = '1050';
             } else {
                 document.body.style.overflow = '';
             }
@@ -43,8 +46,8 @@ document.addEventListener('DOMContentLoaded', function() {
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             if (window.innerWidth <= 991) {
-                const side = document.querySelector('.sidebar');
-                const over = document.querySelector('.mobile-overlay');
+                const side = document.querySelector('.sidebar') || document.getElementById('sidebar');
+                const over = document.querySelector('.mobile-overlay') || document.getElementById('overlay') || document.getElementById('mobileOverlay');
                 if (side) side.classList.remove('show');
                 if (over) over.classList.remove('show');
                 document.body.style.overflow = '';
