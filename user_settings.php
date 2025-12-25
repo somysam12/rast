@@ -402,13 +402,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
 <body>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
     
-    <div class="mobile-header">
-        <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>SilentMultiPanel Panel</h5>
-        </div>
+    
         <div class="d-flex align-items-center">
             <span class="balance-badge d-none d-sm-inline"><?php echo formatCurrency($user['balance']); ?></span>
             <div class="user-avatar ms-2" style="width: 35px; height: 35px; font-size: 0.9em;">

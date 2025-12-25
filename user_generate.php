@@ -206,7 +206,12 @@ try {
 </head>
 <body>
     <div class="container-fluid">
-        <div class="row">
+        <div class="row" style="position: relative;">
+            <div style="position: absolute; top: 20px; left: 20px; z-index: 999;">
+                <a href="user_dashboard.php" class="btn btn-primary" style="border-radius: 8px; padding: 0.6rem 1.2rem;">
+                    <i class="fas fa-arrow-left me-2"></i>Back
+                </a>
+            </div>
             <div class="col-md-3 col-lg-2 sidebar">
                 <div class="p-4 border-bottom">
                     <h4 style="color: var(--purple); font-weight: 700; margin-bottom: 0;"><i class="fas fa-crown me-2"></i>SilentMultiPanel</h4>

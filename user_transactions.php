@@ -442,13 +442,7 @@ function formatDate($date) {
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
     
     <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>SilentMultiPanel Panel</h5>
-        </div>
+    
         <div class="d-flex align-items-center">
             <span class="balance-badge d-none d-sm-inline"><?php echo formatCurrency($user['balance']); ?></span>
             <div class="user-avatar ms-2" style="width: 35px; height: 35px; font-size: 0.9em;">
@@ -653,58 +647,6 @@ function formatDate($date) {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Mobile Navigation (optimized)
-        function toggleSidebar() {
-            const sidebar = document.querySelector(".sidebar");
-            const overlay = document.querySelector(".mobile-overlay");
-            if (!sidebar || !overlay) return;
-            sidebar.classList.toggle("show");
-            overlay.classList.toggle("show");
-            if (window.innerWidth <= 991) {
-                if (sidebar.classList.contains("show")) {
-                    document.body.style.overflow = "hidden";
-                } else {
-                    document.body.style.overflow = "";
-                }
-            }
-        }
-        // Mobile nav links - close sidebar and allow navigation
-        document.addEventListener("DOMContentLoaded", function() {
-            const links = document.querySelectorAll(".sidebar .nav-link");
-            const sidebar = document.querySelector(".sidebar");
-            const overlay = document.querySelector(".mobile-overlay");
-            links.forEach(link => {
-                link.addEventListener("click", function() {
-                    if (window.innerWidth <= 991) {
-                        sidebar.classList.remove("show");
-                        overlay.classList.remove("show");
-                        document.body.style.overflow = "";
-                    }
-                });
-            });
-            if (overlay) {
-                overlay.addEventListener("click", toggleSidebar);
-            }
-        });
-        window.addEventListener("resize", function() {
-            if (window.innerWidth > 991) {
-                const sidebar = document.querySelector(".sidebar");
-                const overlay = document.querySelector(".mobile-overlay");
-                sidebar.classList.remove("show");
-                overlay.classList.remove("show");
-                document.body.style.overflow = "";
-            }
-        });
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 991.98) {
-                document.querySelector('.sidebar').classList.remove('show');
-                document.querySelector('.overlay').classList.remove('show');
-            }
-        });
-    </script>
+    
 </body>
 </html>

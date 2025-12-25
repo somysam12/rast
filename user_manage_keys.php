@@ -136,6 +136,11 @@ try {
             </div>
             
             <div class="col-md-9 col-lg-10 main-content">
+                <div style="margin-bottom: 1.5rem;">
+                    <a href="user_dashboard.php" class="btn btn-primary" style="border-radius: 8px; padding: 0.6rem 1.2rem;">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
