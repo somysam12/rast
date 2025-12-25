@@ -431,6 +431,7 @@ function formatDate($date) {
             }
         }
     </style>
+    <link href="assets/css/dark-mode-button.css" rel="stylesheet">
 </head>
 <body>
     <!-- Dark Mode Toggle -->

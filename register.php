@@ -395,6 +395,7 @@ if ($_POST) {
             }
         }
     </style>
+    <link href="assets/css/dark-mode-button.css" rel="stylesheet">
 </head>
 <body>
     <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">

@@ -1,4 +1,4 @@
-// Dark Mode Functionality for SilentMultiPanel Panel
+// Enhanced Dark Mode Functionality for SilentMultiPanel Panel
 class DarkModeManager {
     constructor() {
         this.init();
@@ -17,7 +17,11 @@ class DarkModeManager {
         const toggle = document.createElement('button');
         toggle.className = 'dark-mode-toggle';
         toggle.title = 'Toggle Dark Mode';
-        toggle.innerHTML = '<i class="fas fa-moon" id="darkModeIcon"></i>';
+        toggle.innerHTML = `
+            <div class="toggle-inner">
+                <i class="fas fa-moon" id="darkModeIcon"></i>
+            </div>
+        `;
         toggle.onclick = () => this.toggleDarkMode();
 
         document.body.appendChild(toggle);
@@ -26,15 +30,18 @@ class DarkModeManager {
     toggleDarkMode() {
         const body = document.body;
         const icon = document.getElementById('darkModeIcon');
+        const toggle = document.querySelector('.dark-mode-toggle');
         
         if (body.getAttribute('data-theme') === 'dark') {
             body.removeAttribute('data-theme');
             if (icon) icon.className = 'fas fa-moon';
+            if (toggle) toggle.classList.remove('dark-active');
             localStorage.setItem('theme', 'light');
             this.dispatchThemeChange('light');
         } else {
             body.setAttribute('data-theme', 'dark');
             if (icon) icon.className = 'fas fa-sun';
+            if (toggle) toggle.classList.add('dark-active');
             localStorage.setItem('theme', 'dark');
             this.dispatchThemeChange('dark');
         }
@@ -43,10 +50,12 @@ class DarkModeManager {
     loadSavedTheme() {
         const savedTheme = localStorage.getItem('theme');
         const icon = document.getElementById('darkModeIcon');
+        const toggle = document.querySelector('.dark-mode-toggle');
         
         if (savedTheme === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
             if (icon) icon.className = 'fas fa-sun';
+            if (toggle) toggle.classList.add('dark-active');
         }
     }
 
@@ -70,13 +79,16 @@ class DarkModeManager {
     applySystemTheme() {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const icon = document.getElementById('darkModeIcon');
+        const toggle = document.querySelector('.dark-mode-toggle');
         
         if (prefersDark) {
             document.body.setAttribute('data-theme', 'dark');
             if (icon) icon.className = 'fas fa-sun';
+            if (toggle) toggle.classList.add('dark-active');
         } else {
             document.body.removeAttribute('data-theme');
             if (icon) icon.className = 'fas fa-moon';
+            if (toggle) toggle.classList.remove('dark-active');
         }
     }
 }
