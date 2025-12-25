@@ -298,42 +298,92 @@ if ($_POST) {
             transform: translateY(-1px);
         }
         
-        .checkmark {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--purple);
-            border-radius: 50%;
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 20px auto;
             position: relative;
-            animation: scaleIn 0.5s ease-out;
-            margin: 0 10px;
-            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .checkmark::after {
+        .success-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .success-checkmark {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+        
+        .success-checkmark::after {
             content: '';
             position: absolute;
             width: 15px;
             height: 30px;
-            border: solid var(--purple);
+            border: solid white;
             border-width: 0 3px 3px 0;
             transform: rotate(45deg);
-            left: 13px;
-            top: 5px;
+            left: 16px;
+            top: 10px;
+            animation: drawCheck 0.8s ease-in-out forwards;
         }
         
-        @keyframes scaleIn {
+        @keyframes popIn {
             0% {
-                transform: scale(0);
+                transform: scale(0) rotate(0deg);
                 opacity: 0;
             }
             50% {
-                transform: scale(1.1);
+                transform: scale(1.2);
             }
             100% {
                 transform: scale(1);
                 opacity: 1;
             }
+        }
+        
+        @keyframes drawCheck {
+            0% {
+                stroke-dasharray: 50;
+                stroke-dashoffset: 50;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                stroke-dasharray: 50;
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+        
+        .swal2-html-container {
+            padding: 20px 0 !important;
+        }
+        
+        .success-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 15px 0;
+        }
+        
+        .success-subtext {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 10px;
         }
         
         
@@ -544,7 +594,7 @@ if ($_POST) {
             }
         }
         
-        // Form submission with loading animation
+        // Form submission with access granted animation
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             const form = this;
             if (form.checkValidity() === false) {
@@ -559,16 +609,28 @@ if ($_POST) {
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
             
-            // Show loading animation with checkmarks
+            // Show "Access Granted" popup with success animation
+            const htmlContent = `
+                <div class="success-icon">
+                    <div class="success-circle">
+                        <div class="success-checkmark"></div>
+                    </div>
+                </div>
+                <div class="success-text">Access Granted</div>
+                <div class="success-subtext">Redirecting you to dashboard...</div>
+            `;
+            
             Swal.fire({
-                title: 'Verifying Credentials',
-                html: '<div style="display: flex; justify-content: center; align-items: center; height: 150px;"><div class="checkmark" style="animation-delay: 0s;"></div><div class="checkmark" style="animation-delay: 0.3s;"></div></div>',
+                html: htmlContent,
                 allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                background: '#ffffff',
                 didOpen: () => {
                     setTimeout(() => {
                         // Proceed with actual form submission
                         form.submit();
-                    }, 2000);
+                    }, 2800);
                 }
             });
         });
