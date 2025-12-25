@@ -786,8 +786,8 @@ function formatDate($date) {
                     <a class="nav-link" href="user_applications.php">
                         <i class="fas fa-mobile-alt"></i>Applications
                     </a>
-                    <a class="nav-link" href="block_reset_key.php">
-                        <i class="fas fa-lock"></i>Block Or Reset Key
+                    <a class="nav-link" href="user_block_request.php">
+                        <i class="fas fa-ban"></i>Block & Reset
                     </a>
                     <a class="nav-link" href="user_request_confirmations.php">
                         <i class="fas fa-bell"></i>Key Notifications

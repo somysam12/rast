@@ -289,7 +289,7 @@ try {
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-2"><i class="fas fa-ban me-2"></i>Block & Reset Requests</h2>
+                            <h2 class="mb-2"><i class="fas fa-ban me-2"></i>Block & Reset</h2>
                             <p class="text-muted mb-0">Submit block or reset requests for your license keys</p>
                         </div>
                         <div class="d-none d-md-flex align-items-center">
@@ -317,34 +317,34 @@ try {
                     <div class="mb-4">
                         <label class="form-label">Search License Key</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" id="licenseSearchInput" class="form-control" placeholder="Paste license key here to verify ownership...">
+                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-purple"></i></span>
+                            <input type="text" id="licenseSearchInput" class="form-control border-start-0 ps-0" placeholder="Paste license key here to verify ownership..." style="box-shadow: none;">
                         </div>
                         <div id="searchLoading" class="text-center mt-3" style="display: none;">
                             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                             <span class="ms-2">Verifying key...</span>
                         </div>
-                        <div id="searchError" class="alert alert-danger mt-3" style="display: none;"></div>
+                        <div id="searchError" class="alert alert-danger mt-3 py-2" style="display: none;"></div>
                     </div>
 
                     <form method="POST" id="requestForm">
                         <input type="hidden" name="key_selection" value="pasted">
                         <input type="hidden" name="license_key" id="verifiedLicenseKey">
                         
-                        <div id="selectedKeyDisplay" class="key-display shadow-sm border-0" style="display: none; background: linear-gradient(145deg, #ffffff, #f8fafc);">
+                        <div id="selectedKeyDisplay" class="key-display shadow-sm border-0" style="display: none; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0 !important;">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <div class="badge bg-primary mb-2">Verified Ownership</div>
-                                    <h5 class="mb-1 text-dark" id="displayModName"></h5>
+                                    <h5 class="mb-1 text-dark" id="displayModName" style="font-weight: 700;"></h5>
                                     <p class="text-muted small mb-3">
-                                        <i class="fas fa-clock me-1"></i>Duration: <span id="displayDuration" class="fw-bold"></span>
+                                        <i class="fas fa-clock me-1"></i>Duration: <span id="displayDuration" class="fw-bold text-dark"></span>
                                     </p>
-                                    <div class="p-2 bg-light rounded border">
-                                        <code id="displayLicenseKey" class="text-primary fw-bold"></code>
+                                    <div class="p-3 bg-white rounded border">
+                                        <code id="displayLicenseKey" class="text-primary fw-bold" style="word-break: break-all; font-size: 0.95rem;"></code>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="clearSelection()" title="Clear selection">
-                                    <i class="fas fa-times-circle fa-lg"></i>
+                                    <i class="fas fa-times-circle fa-2x"></i>
                                 </button>
                             </div>
                         </div>
@@ -353,18 +353,18 @@ try {
                             <div class="row mt-4">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label class="form-label">Action Required *</label>
+                                        <label class="form-label fw-bold">Select Action *</label>
                                         <div class="d-flex gap-3">
                                             <div class="flex-fill">
                                                 <input type="radio" class="btn-check" name="request_type" id="type_block" value="block" autocomplete="off" required>
-                                                <label class="btn btn-outline-danger w-100 py-3" for="type_block">
-                                                    <i class="fas fa-ban d-block mb-1"></i> Block Key
+                                                <label class="btn btn-outline-danger w-100 py-3 d-flex flex-column align-items-center justify-content-center" for="type_block" style="border-width: 2px;">
+                                                    <i class="fas fa-ban fa-lg mb-2"></i> <span>Block Key</span>
                                                 </label>
                                             </div>
                                             <div class="flex-fill">
                                                 <input type="radio" class="btn-check" name="request_type" id="type_reset" value="reset" autocomplete="off">
-                                                <label class="btn btn-outline-primary w-100 py-3" for="type_reset">
-                                                    <i class="fas fa-redo d-block mb-1"></i> Reset HWID
+                                                <label class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center justify-content-center" for="type_reset" style="border-width: 2px;">
+                                                    <i class="fas fa-redo fa-lg mb-2"></i> <span>Reset HWID</span>
                                                 </label>
                                             </div>
                                         </div>
@@ -372,10 +372,10 @@ try {
                                 </div>
                             </div>
                             <div class="form-group mt-3">
-                                <label class="form-label">Reason for Request *</label>
-                                <textarea class="form-control" name="reason" rows="3" placeholder="Please explain why you want to perform this action..." required></textarea>
+                                <label class="form-label fw-bold">Reason for Request *</label>
+                                <textarea class="form-control" name="reason" rows="3" placeholder="Please explain why you want to perform this action..." required style="background: #f8fafc;"></textarea>
                             </div>
-                            <button type="submit" name="submit_request" class="btn btn-primary w-100 mt-3 py-3 shadow">
+                            <button type="submit" name="submit_request" class="btn btn-primary w-100 mt-4 py-3 shadow-sm" style="font-size: 1.1rem; font-weight: 600;">
                                 <i class="fas fa-paper-plane me-2"></i>Send Request to Admin
                             </button>
                         </div>
