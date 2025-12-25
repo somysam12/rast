@@ -25,11 +25,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (side.classList.contains('show')) {
                 document.body.style.overflow = 'hidden';
                 side.style.overflowY = 'auto';
+                side.style.overflowX = 'hidden';
                 side.style.height = '100vh';
+                side.style.maxHeight = '100vh';
                 side.style.position = 'fixed';
                 side.style.top = '0';
                 side.style.left = '0';
                 side.style.zIndex = '1050';
+                side.style.webkitOverflowScrolling = 'touch';
             } else {
                 document.body.style.overflow = '';
             }

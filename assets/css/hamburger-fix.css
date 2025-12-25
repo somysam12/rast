@@ -36,10 +36,23 @@
         visibility: visible !important;
         background: white !important;
         box-shadow: 10px 0 20px rgba(0,0,0,0.1) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 
     .sidebar.show {
         transform: translateX(0) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+    
+    .sidebar .nav {
+        padding-bottom: 120px !important;
+    }
+    
+    .sidebar .nav-link {
+        min-height: 48px !important;
     }
 
     .main-content {

@@ -366,15 +366,34 @@ try {
                 background: var(--sidebar-bg);
                 border-right: none;
                 box-shadow: var(--shadow-large);
+                position: fixed;
+                top: 0;
+                left: 0;
                 height: 100vh;
-                overflow-y: auto;
+                overflow-y: scroll;
                 overflow-x: hidden;
+                z-index: 1001;
+                -webkit-overflow-scrolling: touch;
             }
             
             .sidebar.show {
                 transform: translateX(0);
-                overflow-y: auto;
+                overflow-y: scroll;
                 overflow-x: hidden;
+            }
+            
+            .sidebar .nav {
+                padding-bottom: 100px !important;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .sidebar .nav-link {
+                min-height: 48px;
+            }
+            
+            .mobile-overlay {
+                z-index: 1000;
             }
             
             .main-content {
