@@ -442,7 +442,7 @@ function formatDate($date) {
     </button>
     
     <!-- Mobile Overlay -->
-    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
     
     <!-- Mobile Header -->
     
@@ -657,5 +657,5 @@ function formatDate($date) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script src="assets/js/dark-mode.js"></script>
-</body>
+<script src="assets/js/menu-logic.js"></script></body>
 </html>

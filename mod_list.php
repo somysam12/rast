@@ -415,12 +415,12 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     
     <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
     
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
+            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
                 <i class="fas fa-bars"></i>
             </button>
             <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
@@ -606,24 +606,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         document.addEventListener('DOMContentLoaded', initTheme);
         
         // Mobile menu functionality
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            const mainContent = document.querySelector('.main-content');
-            const body = document.body;
-            
-            // Toggle sidebar visibility
-            if (sidebar) sidebar.classList.toggle('show');
-            if (overlay) overlay.classList.toggle('show');
-            
-            // Prevent body scroll when sidebar is open on mobile
-            if (window.innerWidth <= 768) {
-                if (sidebar.classList.contains('show')) {
-                    body.style.overflow = 'hidden';
-                    // Ensure sidebar is clickable
-                    sidebar.style.pointerEvents = 'auto';
-                    sidebar.style.zIndex = '1002';
-                } else {
                     body.style.overflow = '';
                     sidebar.style.pointerEvents = 'none';
                 }
@@ -767,5 +749,5 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+<script src="assets/js/menu-logic.js"></script></body>
 </html>

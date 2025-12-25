@@ -501,12 +501,12 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     
     <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
     
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
+            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
                 <i class="fas fa-bars"></i>
             </button>
             <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
@@ -757,16 +757,6 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Mobile menu functionality
         // Mobile Navigation (optimized)
-        function toggleSidebar() {
-            const sidebar = document.querySelector(".sidebar");
-            const overlay = document.querySelector(".mobile-overlay");
-            if (!sidebar || !overlay) return;
-            sidebar.classList.toggle("show");
-            overlay.classList.toggle("show");
-            if (window.innerWidth <= 991) {
-                if (sidebar.classList.contains("show")) {
-                    document.body.style.overflow = "hidden";
-                } else {
                     document.body.style.overflow = "";
                 }
             }
@@ -779,22 +769,17 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             links.forEach(link => {
                 link.addEventListener("click", function() {
                     if (window.innerWidth <= 991) {
-                        sidebar.classList.remove("show");
-                        overlay.classList.remove("show");
                         document.body.style.overflow = "";
                     }
                 });
             });
             if (overlay) {
-                overlay.addEventListener("click", toggleSidebar);
             }
         });
         window.addEventListener("resize", function() {
             if (window.innerWidth > 991) {
                 const sidebar = document.querySelector(".sidebar");
                 const overlay = document.querySelector(".mobile-overlay");
-                sidebar.classList.remove("show");
-                overlay.classList.remove("show");
                 document.body.style.overflow = "";
             }
         });
@@ -1042,5 +1027,5 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         });
     </script>
-</body>
+<script src="assets/js/menu-logic.js"></script></body>
 </html>

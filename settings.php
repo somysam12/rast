@@ -485,7 +485,7 @@ try {
                 <div class="header">
                     <div class="d-flex justify-content-between align-items-center flex-wrap">
                         <div class="d-flex align-items-center">
-                            <button class="btn btn-outline-secondary mobile-menu-btn me-3" type="button" onclick="toggleSidebar()">
+                            <button class="btn btn-outline-secondary mobile-menu-btn me-3" type="button" onclick="toggleSidebar(event)">
                                 <i class="fas fa-bars"></i>
                             </button>
                             <div>
@@ -668,15 +668,11 @@ try {
     </div>
     
     <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay d-md-none" onclick="toggleSidebar()"></div>
+    <div class="sidebar-overlay d-md-none" onclick="toggleSidebar(event)"></div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Mobile sidebar toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar) sidebar.classList.toggle('show');
-        }
 
         // Password visibility toggle
         function togglePassword(fieldId) {
@@ -784,5 +780,5 @@ try {
             });
         });
     </script>
-</body>
+<script src="assets/js/menu-logic.js"></script></body>
 </html>

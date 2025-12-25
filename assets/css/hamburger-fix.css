@@ -1,58 +1,89 @@
-/* Hamburger Menu - Full Functionality */
-.hamburger-menu, .mobile-toggle {
-    pointer-events: auto !important;
-    cursor: pointer !important;
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
-    border: none !important;
-    color: white !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 10px !important;
-    border-radius: 8px !important;
-    z-index: 1010 !important;
+/* Clean & Reliable Hamburger Menu System */
+:root {
+    --sidebar-width: 280px;
+    --header-height: 70px;
 }
 
-/* Sidebar Navigation Links - Ensure Clickable */
-.sidebar .nav-link {
-    cursor: pointer !important;
-    text-decoration: none !important;
-    display: flex !important;
-    align-items: center !important;
-    pointer-events: auto !important;
+/* Base Styles */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 2000;
 }
 
-/* Sidebar behavior on mobile */
-@media (max-width: 991.98px) {
+.mobile-overlay.show {
+    display: block !important;
+}
+
+/* Sidebar behavior */
+@media (max-width: 991px) {
     .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: var(--sidebar-width) !important;
+        height: 100vh !important;
         transform: translateX(-100%) !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        z-index: 2001 !important;
         display: block !important;
         visibility: visible !important;
-        left: 0 !important;
+        background: white !important;
+        box-shadow: 10px 0 20px rgba(0,0,0,0.1) !important;
     }
+
     .sidebar.show {
         transform: translateX(0) !important;
     }
+
     .main-content {
         margin-left: 0 !important;
+        padding-top: calc(var(--header-height) + 10px) !important;
     }
-    .mobile-overlay {
-        display: none;
+
+    .modern-header, .mobile-header {
         position: fixed !important;
-        inset: 0 !important;
-        background: rgba(0,0,0,0.5) !important;
-        z-index: 1008 !important;
-    }
-    .mobile-overlay.show {
-        display: block !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: var(--header-height) !important;
+        z-index: 1500 !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0 15px !important;
+        background: white !important;
+        border-bottom: 1px solid #eee !important;
     }
 }
 
-/* Z-index layering */
-.modern-header, .mobile-header {
-    z-index: 1005 !important;
+/* Toggle Buttons */
+.mobile-toggle, .hamburger-menu {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 45px !important;
+    height: 45px !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    z-index: 1600 !important;
+    position: relative !important;
 }
 
-.sidebar {
-    z-index: 1010 !important;
+.mobile-toggle i, .hamburger-menu i {
+    font-size: 1.2rem !important;
+}
+
+/* Fix for touch interaction */
+.mobile-toggle:active, .hamburger-menu:active {
+    transform: scale(0.9) !important;
 }

@@ -150,5 +150,5 @@ if ($_POST) {
             </div>
         </div>
     </div>
-</body>
+<script src="assets/js/menu-logic.js"></script></body>
 </html>

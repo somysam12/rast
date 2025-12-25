@@ -538,5 +538,5 @@ try {
         }
     </script>
     <script src="assets/js/dark-mode.js"></script>
-</body>
+<script src="assets/js/menu-logic.js"></script></body>
 </html>

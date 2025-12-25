@@ -725,7 +725,7 @@ function formatDate($date) {
 <body>
     <!-- Modern Header -->
     <div class="modern-header">
-        <button class="hamburger-menu" onclick="toggleSidebar()" title="Toggle Menu">
+        <button class="hamburger-menu" onclick="toggleSidebar(event)" title="Toggle Menu">
             <i class="fas fa-bars"></i>
         </button>
         
@@ -755,7 +755,7 @@ function formatDate($date) {
     </div>
     
     <!-- Mobile Overlay -->
-    <div class="mobile-overlay" onclick="toggleSidebar()"></div>
+    <div class="mobile-overlay" onclick="toggleSidebar(event)"></div>
     
     <!-- Theme Toggle Button -->
         <i class="fas fa-moon"></i>
@@ -932,16 +932,6 @@ function formatDate($date) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Mobile Navigation (optimized)
-        function toggleSidebar() {
-            const sidebar = document.querySelector(".sidebar");
-            const overlay = document.querySelector(".mobile-overlay");
-            if (!sidebar || !overlay) return;
-            sidebar.classList.toggle("show");
-            overlay.classList.toggle("show");
-            if (window.innerWidth <= 991) {
-                if (sidebar.classList.contains("show")) {
-                    document.body.style.overflow = "hidden";
-                } else {
                     document.body.style.overflow = "";
                 }
             }
@@ -954,22 +944,17 @@ function formatDate($date) {
             links.forEach(link => {
                 link.addEventListener("click", function() {
                     if (window.innerWidth <= 991) {
-                        sidebar.classList.remove("show");
-                        overlay.classList.remove("show");
                         document.body.style.overflow = "";
                     }
                 });
             });
             if (overlay) {
-                overlay.addEventListener("click", toggleSidebar);
             }
         });
         window.addEventListener("resize", function() {
             if (window.innerWidth > 991) {
                 const sidebar = document.querySelector(".sidebar");
                 const overlay = document.querySelector(".mobile-overlay");
-                sidebar.classList.remove("show");
-                overlay.classList.remove("show");
                 document.body.style.overflow = "";
             }
         });
@@ -995,5 +980,5 @@ function formatDate($date) {
             }
         });
     </script>
-</body>
+<script src="assets/js/menu-logic.js"></script></body>
 </html>

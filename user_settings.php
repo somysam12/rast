@@ -403,7 +403,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
-    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
     
     
         <div class="d-flex align-items-center">

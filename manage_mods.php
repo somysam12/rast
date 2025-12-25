@@ -366,7 +366,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
+            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
                 <i class="fas fa-bars"></i>
             </button>
             <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
@@ -557,14 +557,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Mobile sidebar toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            
-            if (window.innerWidth > 768) {
-                sidebar.classList.toggle('hidden');
-                mainContent.classList.toggle('full-width');
-            } else {
                 if (sidebar) sidebar.classList.toggle('show');
             }
         }
@@ -621,5 +613,5 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         });
     </script>
-</body>
+<script src="assets/js/menu-logic.js"></script></body>
 </html>
