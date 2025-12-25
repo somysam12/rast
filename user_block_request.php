@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_lookup'])) {
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
                                WHERE lk.sold_to = ? AND (lk.license_key LIKE ? OR m.name LIKE ?) 
-                               GROUP BY lk.license_key, lk.id
+                               GROUP BY lk.license_key
                                LIMIT 10');
         $searchTerm = "%" . $licenseKey . "%";
         $stmt->execute([$_SESSION['user_id'], $searchTerm, $searchTerm]);
@@ -496,13 +496,13 @@ try {
                         if (data.success) {
                             resultsDiv.innerHTML = '';
                             
-                            // Use a Map to ensure unique keys in search results
-                            const uniqueKeys = new Map();
+                            // Use an Object to ensure unique keys in search results
+                            const uniqueKeys = {};
                             data.keys.forEach(k => {
-                                uniqueKeys.set(k.license_key, k);
+                                uniqueKeys[k.license_key] = k;
                             });
 
-                            uniqueKeys.forEach(key => {
+                            Object.values(uniqueKeys).forEach(key => {
                                 const item = document.createElement('a');
                                 item.href = 'javascript:void(0)';
                                 item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
