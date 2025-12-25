@@ -598,6 +598,7 @@ function formatDate($date) {
         }
         
         /* Theme Toggle */
+        .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -617,6 +618,7 @@ function formatDate($date) {
             backdrop-filter: blur(20px);
         }
         
+        .theme-toggle:hover {
             color: var(--accent);
             box-shadow: var(--shadow-large);
             transform: scale(1.1);
@@ -644,7 +646,8 @@ function formatDate($date) {
             .main-content {
                 margin-left: 0;
                 width: 100%;
-                padding: 0.5rem;
+                padding: 1rem;
+                padding-top: 20px !important;
             }
             
             .main-content-with-header {
@@ -733,38 +736,42 @@ function formatDate($date) {
             <div class="user-avatar-header" onclick="toggleUserDropdown(event)" title="User Menu">
                 <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
             </div>
-            <i class="fas fa-chevron-down dropdown-arrow" onclick="toggleUserDropdown(event)" style="cursor: pointer;"></i>
-                
-                <!-- User Dropdown -->
-                <div class="user-dropdown" id="userDropdown">
-                    <div class="dropdown-item" style="background: var(--accent-100); color: var(--accent); font-weight: 600; cursor: default;">
-                        <i class="fas fa-user"></i>Profile
-                    </div>
-                    <a href="user_settings.php" class="dropdown-item">
-                        <i class="fas fa-cog"></i>Settings
-                    </a>
-                    <a href="javascript:history.back()" class="dropdown-item">
-                        <i class="fas fa-arrow-left"></i>Back
-                    </a>
-                    <hr style="margin: 0.5rem 0; border-color: var(--line);">
-                    <a href="logout.php" class="dropdown-item">
-                        <i class="fas fa-sign-out-alt"></i>Logout
-                    </a>
+            <i class="fas fa-chevron-down dropdown-arrow" onclick="toggleUserDropdown(event)"></i>
+            
+            <div class="user-dropdown" id="userDropdown">
+                <div class="px-3 py-2 border-bottom">
+                    <div class="fw-bold"><?php echo htmlspecialchars($user['username']); ?></div>
+                    <small class="text-muted"><?php echo htmlspecialchars($user['email']); ?></small>
                 </div>
+                <a href="user_settings.php" class="dropdown-item">
+                    <i class="fas fa-user-cog"></i>Profile Settings
+                </a>
+                <a href="user_transactions.php" class="dropdown-item">
+                    <i class="fas fa-wallet"></i>My Wallet
+                </a>
+                <a href="javascript:history.back()" class="dropdown-item">
+                    <i class="fas fa-arrow-left"></i>Back
+                </a>
+                <hr style="margin: 0.5rem 0; border-color: var(--line);">
+                <a href="logout.php" class="dropdown-item">
+                    <i class="fas fa-sign-out-alt"></i>Logout
+                </a>
+            </div>
         </div>
     </div>
     
     <!-- Mobile Overlay -->
-    <div class="mobile-overlay" onclick="toggleSidebar(event)"></div>
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar(event)"></div>
     
     <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
         <i class="fas fa-moon"></i>
     </button>
     
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar">
+            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="p-3">
                     <h4 style="color: #374151; font-weight: 700; margin-bottom: 0;">
                         <i class="fas fa-user" style="color: #6b7280; margin-right: 8px;"></i>User Panel
@@ -789,8 +796,8 @@ function formatDate($date) {
                     <a class="nav-link" href="user_block_request.php">
                         <i class="fas fa-ban"></i>Block & Reset
                     </a>
-                    <a class="nav-link" href="user_request_confirmations.php">
-                        <i class="fas fa-bell"></i>Key Notifications
+                    <a class="nav-link" href="user_notifications.php">
+                        <i class="fas fa-bell"></i>Notifications
                     </a>
                     <a class="nav-link" href="user_settings.php">
                         <i class="fas fa-cog"></i>Settings
@@ -802,7 +809,7 @@ function formatDate($date) {
             </div>
             
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content main-content-with-header">
+            <div class="col-md-9 col-lg-10 main-content main-content-with-header" id="mainContent">
                 <div class="page-header fade-in">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -894,33 +901,37 @@ function formatDate($date) {
                                 <table class="table table-sm">
                                     <thead>
                                         <tr>
-                                            <th style="width: 30%;">Type</th>
-                                            <th style="width: 30%;">Amount</th>
-                                            <th style="width: 40%;">Date</th>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php foreach ($recentTransactions as $transaction): ?>
+                                        <tr>
+                                            <td><?php echo date('d M', strtotime($transaction['created_at'])); ?></td>
+                                            <td>
+                                                <span class="badge bg-<?php echo $transaction['type'] === 'purchase' ? 'primary' : 'success'; ?> p-1" style="font-size: 0.7rem;">
+                                                    <?php echo ucfirst($transaction['type']); ?>
+                                                </span>
+                                            </td>
+                                            <td class="<?php echo $transaction['amount'] < 0 ? 'text-danger' : 'text-success'; ?> fw-bold">
+                                                <?php echo formatCurrency($transaction['amount']); ?>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
                                         <?php if (empty($recentTransactions)): ?>
                                         <tr>
-                                            <td colspan="3" class="text-center text-muted">No transactions yet</td>
+                                            <td colspan="3" class="text-center text-muted py-3">No recent transactions</td>
                                         </tr>
-                                        <?php else: ?>
-                                            <?php foreach ($recentTransactions as $transaction): ?>
-                                            <tr>
-                                                <td>
-                                                    <span class="badge bg-<?php echo $transaction['type'] === 'purchase' ? 'primary' : 'success'; ?>">
-                                                        <?php echo ucfirst(str_replace('_', ' ', $transaction['type'])); ?>
-                                                    </span>
-                                                </td>
-                                                <td class="<?php echo $transaction['amount'] < 0 ? 'text-danger' : 'text-success'; ?>">
-                                                    <?php echo $transaction['amount'] < 0 ? formatCurrency(abs($transaction['amount'])) : formatCurrency($transaction['amount']); ?>
-                                                </td>
-                                                <td><?php echo formatDate($transaction['created_at']); ?></td>
-                                            </tr>
-                                            <?php endforeach; ?>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="user_transactions.php" class="btn btn-outline-primary btn-sm w-100">
+                                    View All Transactions
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -931,54 +942,66 @@ function formatDate($date) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Mobile Navigation (optimized)
-                    document.body.style.overflow = "";
-                }
+        // Sidebar Toggle
+        function toggleSidebar(e) {
+            if (e) e.stopPropagation();
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        // User Dropdown Toggle
+        function toggleUserDropdown(e) {
+            if (e) e.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            const arrow = document.querySelector('.dropdown-arrow');
+            dropdown.classList.toggle('show');
+            if (arrow) arrow.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0)';
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('userDropdown');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            if (dropdown && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+                const arrow = document.querySelector('.dropdown-arrow');
+                if (arrow) arrow.style.transform = 'rotate(0)';
+            }
+            
+            if (window.innerWidth <= 991 && sidebar && !sidebar.contains(e.target)) {
+                sidebar.classList.remove('show');
+                if (overlay) overlay.classList.remove('show');
+            }
+        });
+
+        // Theme Management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.querySelector('.theme-toggle i');
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            if (icon) {
+                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
             }
         }
-        // Mobile nav links - close sidebar and allow navigation
-        document.addEventListener("DOMContentLoaded", function() {
-            const links = document.querySelectorAll(".sidebar .nav-link");
-            const sidebar = document.querySelector(".sidebar");
-            const overlay = document.querySelector(".mobile-overlay");
-            links.forEach(link => {
-                link.addEventListener("click", function() {
-                    if (window.innerWidth <= 991) {
-                        document.body.style.overflow = "";
-                    }
-                });
-            });
-            if (overlay) {
-            }
-        });
-        window.addEventListener("resize", function() {
-            if (window.innerWidth > 991) {
-                const sidebar = document.querySelector(".sidebar");
-                const overlay = document.querySelector(".mobile-overlay");
-                document.body.style.overflow = "";
-            }
-        });
-        
-        // Close sidebar when clicking on nav links on mobile
-        // Navigation handled by DOMContentLoaded listener above
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 991) {
-                document.querySelector('.sidebar').classList.remove('show');
-                document.querySelector('.mobile-overlay').classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        });
-        
-            }
-        }
-        
-        // Load saved theme
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.body.setAttribute('data-theme', 'dark');
+
+        // Apply saved theme on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.querySelector('.theme-toggle i');
+            if (icon) {
+                icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
             }
         });
     </script>
-<script src="assets/js/menu-logic.js"></script></body>
+</body>
 </html>
