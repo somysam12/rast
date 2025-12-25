@@ -590,6 +590,31 @@ try {
                     selectKey(keyData);
                 }
 
+                function confirmCancel(event, form) {
+                    event.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "Do you really want to cancel this request?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#8b5cf6',
+                        cancelButtonColor: '#ef4444',
+                        confirmButtonText: 'Yes, cancel it!',
+                        cancelButtonText: 'No, keep it',
+                        background: '#ffffff',
+                        color: '#1e293b',
+                        customClass: {
+                            popup: 'rounded-4 shadow-lg border-0',
+                            confirmButton: 'px-4 py-2 rounded-3 fw-bold',
+                            cancelButton: 'px-4 py-2 rounded-3 fw-bold'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                }
+
                 document.addEventListener('click', function(e) {
                     if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
                         resultsDiv.style.display = 'none';
@@ -625,7 +650,7 @@ try {
                                     </td>
                                     <td><small class="text-muted"><?php echo formatDate($req['created_at']); ?></small></td>
                                     <td>
-                                        <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this request?');" style="display:inline;">
+                                        <form method="POST" style="display:inline;" onsubmit="confirmCancel(event, this)">
                                             <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($req['id']); ?>">
                                             <button type="submit" name="cancel_request" class="btn btn-sm btn-outline-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 6px;">
                                                 <i class="fas fa-times me-1"></i> Cancel
