@@ -730,10 +730,10 @@ function formatDate($date) {
         </button>
         
         <div class="user-section">
-            <div class="user-avatar-header" onclick="toggleUserDropdown()" title="User Menu">
+            <div class="user-avatar-header" onclick="toggleUserDropdown(event)" title="User Menu">
                 <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
             </div>
-            <i class="fas fa-chevron-down dropdown-arrow" onclick="toggleUserDropdown()" style="cursor: pointer;"></i>
+            <i class="fas fa-chevron-down dropdown-arrow" onclick="toggleUserDropdown(event)" style="cursor: pointer;"></i>
                 
                 <!-- User Dropdown -->
                 <div class="user-dropdown" id="userDropdown">
@@ -984,16 +984,6 @@ function formatDate($date) {
             }
         });
         
-        // Theme toggle functionality
-            const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
-            
-            if (currentTheme === 'dark') {
-                body.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
             }
         }
         

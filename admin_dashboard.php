@@ -501,7 +501,7 @@ try {
     </button>
     
     <!-- Mobile Overlay -->
-    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar()"></div>
     
     <!-- Mobile Header -->
     <div class="mobile-header">
