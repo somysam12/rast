@@ -44,6 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read'])) {
     }
 }
 
+// Mark all as read
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_all_read'])) {
+    try {
+        $stmt = $pdo->prepare('UPDATE key_confirmations SET status = "read" WHERE user_id = ? AND status = "unread"');
+        $stmt->execute([$user['id']]);
+        header('Location: user_notifications.php');
+        exit;
+    } catch (Throwable $e) {}
+}
+
 // Get all notifications
 $notifications = [];
 try {
@@ -99,6 +109,10 @@ foreach ($notifications as $notif) {
         .alert { border-radius: 8px; border: none; }
         .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
         .unread-badge { background: var(--purple); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: 700; }
+        .back-btn-anim { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; }
+        .mark-all-btn { transition: all 0.3s ease; }
+        .mark-all-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
         @media (max-width: 991.98px) {
             .sidebar { display: none; }
             .main-content { margin-left: 0; padding: 1rem; padding-top: 20px !important; }
@@ -137,11 +151,24 @@ foreach ($notifications as $notif) {
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2"><i class="fas fa-bell me-2"></i>Notifications</h2>
-                            <p class="text-muted mb-0">Admin responses to your block and reset requests</p>
+                        <div class="d-flex align-items-center">
+                            <a href="user_dashboard.php" class="btn btn-outline-primary btn-sm me-3 back-btn-anim" title="Back to Dashboard">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                            <div>
+                                <h2 class="mb-2"><i class="fas fa-bell me-2"></i>Notifications</h2>
+                                <p class="text-muted mb-0">Admin responses to your block and reset requests</p>
+                            </div>
                         </div>
-                        <div class="d-none d-md-flex align-items-center">
+                        <div class="d-flex align-items-center">
+                            <?php if ($unreadCount > 0): ?>
+                            <form method="POST" class="me-3">
+                                <button type="submit" name="mark_all_read" class="btn btn-primary btn-sm mark-all-btn">
+                                    <i class="fas fa-check-double me-1"></i>Mark All Read
+                                </button>
+                            </form>
+                            <?php endif; ?>
+                            <div class="d-none d-md-flex align-items-center">
                             <div class="text-end me-3">
                                 <div class="fw-bold"><?php echo htmlspecialchars($user['username']); ?></div>
                                 <small class="text-muted">Balance: <?php echo formatCurrency($user['balance']); ?></small>

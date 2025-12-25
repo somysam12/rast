@@ -81,6 +81,7 @@ try {
     <title>Manage Keys - Mod APK Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
@@ -132,7 +133,19 @@ try {
                     <a class="nav-link" href="user_transactions.php"><i class="fas fa-exchange-alt"></i>Transaction</a>
                     <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt"></i>Applications</a>
                     <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban"></i>Block & Reset</a>
-                    <a class="nav-link" href="user_notifications.php"><i class="fas fa-bell"></i>Notifications</a>
+                    <a class="nav-link" href="user_notifications.php">
+                        <i class="fas fa-bell"></i>Notifications
+                        <?php
+                        try {
+                            $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM key_confirmations WHERE user_id = ? AND status = 'unread'");
+                            $stmt_count->execute([$user['id']]);
+                            $notifCount = $stmt_count->fetchColumn();
+                            if ($notifCount > 0) {
+                                echo '<span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">' . $notifCount . '</span>';
+                            }
+                        } catch (Exception $e) {}
+                        ?>
+                    </a>
                     <a class="nav-link" href="user_settings.php"><i class="fas fa-cog"></i>Settings</a>
                     <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt"></i>Logout</a>
                 </nav>
@@ -233,9 +246,26 @@ try {
     <script>
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                alert('License key copied to clipboard!');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copied!',
+                    text: 'License key copied to clipboard!',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    background: '#ffffff',
+                    iconColor: '#8b5cf6',
+                    customClass: {
+                        title: 'text-purple',
+                        popup: 'rounded-12'
+                    }
+                });
             }).catch(() => {
-                alert('Failed to copy');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed to copy!',
+                    confirmButtonColor: '#8b5cf6'
+                });
             });
         }
     </script>

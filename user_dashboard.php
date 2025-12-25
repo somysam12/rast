@@ -798,6 +798,16 @@ function formatDate($date) {
                     </a>
                     <a class="nav-link" href="user_notifications.php">
                         <i class="fas fa-bell"></i>Notifications
+                        <?php
+                        try {
+                            $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM key_confirmations WHERE user_id = ? AND status = 'unread'");
+                            $stmt_count->execute([$userId]);
+                            $notifCount = $stmt_count->fetchColumn();
+                            if ($notifCount > 0) {
+                                echo '<span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">' . $notifCount . '</span>';
+                            }
+                        } catch (Exception $e) {}
+                        ?>
                     </a>
                     <a class="nav-link" href="user_settings.php">
                         <i class="fas fa-cog"></i>Settings
