@@ -283,7 +283,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: #dc2626;
         }
         
-        .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -302,7 +301,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: var(--text-secondary);
         }
         
-        .theme-toggle:hover {
             color: var(--purple);
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
@@ -342,7 +340,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 padding: 1rem;
             }
             
-            .theme-toggle {
                 top: 15px;
                 right: 15px;
                 width: 40px;
@@ -363,7 +360,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
     <!-- Theme Toggle -->
-    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
     
@@ -574,7 +570,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         // Dark mode functionality
-        function toggleDarkMode() {
             const body = document.body;
             const icon = document.getElementById('darkModeIcon');
             
