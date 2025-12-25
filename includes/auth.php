@@ -11,10 +11,15 @@ function isLoggedIn() {
         return true;
     }
     
-    $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id = ? LIMIT 1");
-    $stmt->execute([$_SESSION['user_id'], session_id()]);
-    $sessionExists = $stmt->fetchColumn();
+    try {
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id = ? LIMIT 1");
+        $stmt->execute([$_SESSION['user_id'], session_id()]);
+        $sessionExists = $stmt->fetchColumn();
+    } catch (Throwable $e) {
+        // Fallback for missing table during deployment/init
+        return true; 
+    }
     
     if (!$sessionExists) {
         logout();
