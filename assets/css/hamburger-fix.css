@@ -44,7 +44,7 @@
 
     .main-content {
         margin-left: 0 !important;
-        padding-top: calc(var(--header-height) + 10px) !important;
+        padding-top: 20px !important;
     }
 
     .modern-header, .mobile-header {

@@ -240,7 +240,7 @@ try {
             border-radius: 16px;
             padding: 2rem;
             box-shadow: var(--shadow-medium);
-            margin-top: 2rem;
+            margin-top: 1rem;
             border: 1px solid var(--border-light);
             transition: all 0.3s ease;
         }

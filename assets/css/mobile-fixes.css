@@ -6,7 +6,7 @@
 /* Fix overlapping and spacing issues on mobile */
 @media (max-width: 768px) {
     .main-content {
-        padding-top: 85px !important;
+        padding-top: 20px !important;
         margin-left: 0 !important;
         padding-left: 15px !important;
         padding-right: 15px !important;

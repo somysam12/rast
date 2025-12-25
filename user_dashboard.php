@@ -312,7 +312,7 @@ function formatDate($date) {
         }
         
         .main-content-with-header {
-            margin-top: 60px;
+            margin-top: 10px;
         }
         
         .main-content.full-width {
@@ -648,7 +648,7 @@ function formatDate($date) {
             }
             
             .main-content-with-header {
-                margin-top: 60px;
+                margin-top: 10px;
             }
             
             .sidebar {
