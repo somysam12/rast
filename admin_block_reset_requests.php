@@ -60,10 +60,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 // Get pending requests with key details
 $pendingRequests = [];
 try {
-    // Only show requests that exist in the key_requests table and have pending status
-    $stmt = $pdo->query("SELECT kr.id, kr.user_id, kr.key_id, kr.request_type, kr.mod_name, kr.reason, kr.status, kr.created_at, u.username, lk.license_key, lk.duration, lk.duration_type 
+    // We use a clean query to only fetch what is currently in the database
+    // This ensures that if a row is deleted, it stops appearing immediately
+    $stmt = $pdo->query("SELECT 
+                            kr.id, 
+                            kr.user_id, 
+                            kr.key_id, 
+                            kr.request_type, 
+                            kr.mod_name, 
+                            kr.reason, 
+                            kr.status, 
+                            kr.created_at, 
+                            u.username, 
+                            lk.license_key, 
+                            lk.duration, 
+                            lk.duration_type 
                         FROM key_requests kr 
-                        INNER JOIN users u ON kr.user_id = u.id 
+                        JOIN users u ON kr.user_id = u.id 
                         LEFT JOIN license_keys lk ON lk.id = kr.key_id
                         WHERE kr.status = 'pending'
                         ORDER BY kr.created_at DESC");

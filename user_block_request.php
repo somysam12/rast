@@ -155,16 +155,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
         try {
             $pdo->beginTransaction();
             
-            // Delete confirmation notifications related to this request
-            $stmt = $pdo->prepare('DELETE FROM key_confirmations WHERE request_id = ?');
+            // 1. First, delete all confirmations linked to this request
+            $stmt = $pdo->prepare("DELETE FROM key_confirmations WHERE request_id = ?");
             $stmt->execute([$requestId]);
 
-            // Delete the request itself - force delete regardless of status to ensure sync
-            $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ?');
-            $stmt->execute([$requestId]);
+            // 2. Then, delete the request itself
+            // We use user_id check for security, but force delete regardless of status
+            $stmt = $pdo->prepare("DELETE FROM key_requests WHERE id = ? AND user_id = ?");
+            $stmt->execute([$requestId, $_SESSION['user_id']]);
             
             $pdo->commit();
-            $_SESSION['success'] = 'Request cancelled and deleted successfully.';
+            
+            // 3. Set success message and redirect to clear POST data and refresh UI
+            $_SESSION['success'] = 'Request deleted and cancelled successfully.';
             header('Location: user_block_request.php');
             exit;
         } catch (Throwable $e) {
