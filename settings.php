@@ -675,7 +675,7 @@ try {
         // Mobile sidebar toggle
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('show');
+            if (sidebar) sidebar.classList.toggle('show');
         }
 
         // Password visibility toggle

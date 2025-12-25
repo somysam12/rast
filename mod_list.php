@@ -613,8 +613,8 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             const body = document.body;
             
             // Toggle sidebar visibility
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
+            if (sidebar) sidebar.classList.toggle('show');
+            if (overlay) overlay.classList.toggle('show');
             
             // Prevent body scroll when sidebar is open on mobile
             if (window.innerWidth <= 768) {

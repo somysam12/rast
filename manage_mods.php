@@ -565,7 +565,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 sidebar.classList.toggle('hidden');
                 mainContent.classList.toggle('full-width');
             } else {
-                sidebar.classList.toggle('show');
+                if (sidebar) sidebar.classList.toggle('show');
             }
         }
         

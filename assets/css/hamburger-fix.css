@@ -1,36 +1,52 @@
 /* Hamburger Menu - Full Functionality */
-.hamburger-menu {
+.hamburger-menu, .mobile-toggle {
     pointer-events: auto !important;
     cursor: pointer !important;
     background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
     border: none !important;
     color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    z-index: 1010 !important;
 }
 
 /* Sidebar Navigation Links - Ensure Clickable */
 .sidebar .nav-link {
     cursor: pointer !important;
     text-decoration: none !important;
-    display: block !important;
+    display: flex !important;
+    align-items: center !important;
+    pointer-events: auto !important;
 }
 
-.sidebar .nav-link:hover {
-    cursor: pointer !important;
+/* Sidebar behavior on mobile */
+@media (max-width: 991.98px) {
+    .sidebar {
+        transform: translateX(-100%) !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+    .sidebar.show {
+        transform: translateX(0) !important;
+    }
+    .main-content {
+        margin-left: 0 !important;
+    }
 }
 
 /* Z-index layering */
-.modern-header {
-    z-index: 999 !important;
+.modern-header, .mobile-header {
+    z-index: 1005 !important;
 }
 
 .sidebar {
-    z-index: 1000 !important;
+    z-index: 1010 !important;
 }
 
-.theme-toggle {
-    z-index: 9999 !important;
-}
-
-.mobile-overlay {
-    z-index: 998 !important;
+.overlay, .mobile-overlay {
+    z-index: 1008 !important;
+    background: rgba(0,0,0,0.5) !important;
 }
