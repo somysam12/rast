@@ -28,7 +28,7 @@
 }
 
 .theme-toggle {
-    z-index: 2001 !important;
+    z-index: 9999 !important;
 }
 
 .mobile-overlay {
