@@ -1,53 +1,36 @@
-/* Hamburger Menu - Ensure Full Functionality */
-
+/* Hamburger Menu - Full Functionality */
 .hamburger-menu {
     pointer-events: auto !important;
-    z-index: 2001 !important;
-}
-
-.hamburger-menu:not(:disabled) {
     cursor: pointer !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    border: none !important;
+    color: white !important;
 }
 
-/* Sidebar Navigation - Ensure Clickable */
+/* Sidebar Navigation Links - Ensure Clickable */
 .sidebar .nav-link {
-    pointer-events: auto !important;
     cursor: pointer !important;
-    display: block !important;
     text-decoration: none !important;
+    display: block !important;
 }
 
 .sidebar .nav-link:hover {
-    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
-/* Mobile Overlay - Allow clicks */
-.mobile-overlay {
-    pointer-events: none !important;
-}
-
-.mobile-overlay.show {
-    pointer-events: auto !important;
-}
-
-/* Theme Toggle - Ensure Clickable */
-.theme-toggle {
-    pointer-events: auto !important;
-    z-index: 2001 !important;
-}
-
-/* Modern Header */
+/* Z-index layering */
 .modern-header {
     z-index: 999 !important;
-    pointer-events: auto !important;
 }
 
-/* Sidebar */
 .sidebar {
     z-index: 1000 !important;
 }
 
-/* Main Content */
-.main-content {
-    z-index: auto !important;
+.theme-toggle {
+    z-index: 2001 !important;
+}
+
+.mobile-overlay {
+    z-index: 998 !important;
 }

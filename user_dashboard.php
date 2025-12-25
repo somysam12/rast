@@ -724,7 +724,6 @@ function formatDate($date) {
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/dark-mode.css" rel="stylesheet">
-    <script src="assets/js/dark-mode.js"></script>
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
@@ -1029,5 +1028,6 @@ function formatDate($date) {
             }
         });
     </script>
+    <script src="assets/js/dark-mode.js"></script>
 </body>
 </html>

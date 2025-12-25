@@ -294,7 +294,6 @@ if ($isLoggedIn) {
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/dark-mode.css" rel="stylesheet">
-    <script src="assets/js/dark-mode.js"></script>
 </head>
 <body>
     <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
@@ -470,5 +469,6 @@ if ($isLoggedIn) {
             });
         });
     </script>
+    <script src="assets/js/dark-mode.js"></script>
 </body>
 </html>
