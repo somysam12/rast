@@ -38,22 +38,24 @@
         margin: 0 !important;
     }
 
-    /* Dark Mode Button Positioning */
+    /* Dark Mode Button Positioning - FIXED OVERLAP */
     #theme-toggle, .theme-toggle {
         position: fixed !important;
         top: 12px !important;
         right: 12px !important;
-        z-index: 2005 !important;
-        width: 46px !important;
-        height: 46px !important;
+        z-index: 9999 !important; /* Extremely high z-index */
+        width: 48px !important;
+        height: 48px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         border-radius: 50% !important;
         background: var(--purple-gradient) !important;
         color: white !important;
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4) !important;
-        border: none !important;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.5) !important;
+        border: 2px solid white !important; /* Added border for clarity */
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     /* Back Button Spacing Fix */
