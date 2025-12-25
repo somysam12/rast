@@ -46,6 +46,7 @@ if ($_POST) {
     <title>Login - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="assets/css/main.css" rel="stylesheet">
     <style>
         :root {
@@ -272,6 +273,7 @@ if ($_POST) {
             color: var(--purple);
         }
         
+        .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -290,10 +292,50 @@ if ($_POST) {
             box-shadow: var(--shadow-medium);
         }
         
+        .theme-toggle:hover {
             color: var(--purple);
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
         }
+        
+        .checkmark {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--purple);
+            border-radius: 50%;
+            position: relative;
+            animation: scaleIn 0.5s ease-out;
+            margin: 0 10px;
+            background: white;
+        }
+        
+        .checkmark::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 30px;
+            border: solid var(--purple);
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+            left: 13px;
+            top: 5px;
+        }
+        
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
         
         /* Dark theme styles */
         [data-theme="dark"] {
@@ -371,6 +413,7 @@ if ($_POST) {
 </head>
 <body>
     <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
     
@@ -396,7 +439,7 @@ if ($_POST) {
                                 </div>
                             <?php endif; ?>
                             
-                            <form method="POST" class="needs-validation" novalidate>
+                            <form method="POST" class="needs-validation" id="loginForm" novalidate>
                                 <div class="input-group">
                                     <input type="text" class="form-control with-icon" id="username" name="username" 
                                            value="<?php echo htmlspecialchars($username ?? ''); ?>" 
@@ -411,7 +454,7 @@ if ($_POST) {
                                     <input type="password" class="form-control with-icon" id="password" name="password" 
                                            placeholder="Password" required>
                                     <i class="fas fa-lock input-icon"></i>
-                                    <button type="button" class="password-toggle" onclick="togglePassword()">
+                                    <button type="button" class="password-toggle" id="toggleBtn" onclick="togglePassword(event)">
                                         <i class="fas fa-eye" id="passwordIcon"></i>
                                     </button>
                                     <div class="invalid-feedback">
@@ -464,6 +507,7 @@ if ($_POST) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Dark mode functionality
+        document.getElementById('themeToggle').addEventListener('click', function() {
             const body = document.body;
             const icon = document.getElementById('darkModeIcon');
             
@@ -476,7 +520,7 @@ if ($_POST) {
                 icon.className = 'fas fa-sun';
                 localStorage.setItem('theme', 'dark');
             }
-        }
+        })
         
         // Load saved theme
         const savedTheme = localStorage.getItem('theme');
@@ -486,7 +530,8 @@ if ($_POST) {
         }
         
         // Password toggle functionality
-        function togglePassword() {
+        function togglePassword(e) {
+            if (e) e.preventDefault();
             const passwordInput = document.getElementById('password');
             const passwordIcon = document.getElementById('passwordIcon');
             
@@ -498,6 +543,35 @@ if ($_POST) {
                 passwordIcon.className = 'fas fa-eye';
             }
         }
+        
+        // Form submission with loading animation
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const form = this;
+            if (form.checkValidity() === false) {
+                e.preventDefault();
+                e.stopPropagation();
+                form.classList.add('was-validated');
+                return;
+            }
+            e.preventDefault();
+            
+            const btn = form.querySelector('.btn-login');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
+            
+            // Show loading animation with checkmarks
+            Swal.fire({
+                title: 'Verifying Credentials',
+                html: '<div style="display: flex; justify-content: center; align-items: center; height: 150px;"><div class="checkmark" style="animation-delay: 0s;"></div><div class="checkmark" style="animation-delay: 0.3s;"></div></div>',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    setTimeout(() => {
+                        // Proceed with actual form submission
+                        form.submit();
+                    }, 2000);
+                }
+            });
+        });
         
         // Form validation
         (function() {
