@@ -159,17 +159,217 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                             </div>
                         </div>
                         
-                        <!-- Progress Indicator -->
-                        <div id="uploadProgressContainer" style="display: none; margin-bottom: 2rem;">
-                            <div class="progress" style="height: 24px;">
-                                <div id="uploadProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%; transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-                            </div>
-                            <div style="margin-top: 1rem; text-align: center;">
-                                <p style="margin: 0; font-size: 0.95rem; color: #64748b;">
-                                    <span id="uploadedMB">0</span> MB / <span id="totalMB">0</span> MB
-                                    <br>
-                                    <small id="uploadSpeed" style="color: #94a3b8;">Calculating speed...</small>
-                                </p>
+                        <!-- Animated Progress Indicator -->
+                        <div id="uploadProgressContainer" style="display: none; margin-bottom: 3rem; text-align: center;">
+                            <style>
+                                @keyframes slideInDown {
+                                    from {
+                                        opacity: 0;
+                                        transform: translateY(-30px);
+                                    }
+                                    to {
+                                        opacity: 1;
+                                        transform: translateY(0);
+                                    }
+                                }
+                                
+                                @keyframes fillAnimation {
+                                    from {
+                                        stroke-dashoffset: 565;
+                                    }
+                                    to {
+                                        stroke-dashoffset: 0;
+                                    }
+                                }
+                                
+                                @keyframes rotateSpin {
+                                    from {
+                                        transform: rotate(0deg);
+                                    }
+                                    to {
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                                
+                                @keyframes pulse {
+                                    0%, 100% {
+                                        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+                                    }
+                                    50% {
+                                        box-shadow: 0 0 0 15px rgba(139, 92, 246, 0);
+                                    }
+                                }
+                                
+                                @keyframes shimmer {
+                                    0% {
+                                        background-position: -1000px 0;
+                                    }
+                                    100% {
+                                        background-position: 1000px 0;
+                                    }
+                                }
+                                
+                                .progress-container {
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    gap: 2rem;
+                                    animation: slideInDown 0.5s ease-out;
+                                }
+                                
+                                .circular-progress {
+                                    position: relative;
+                                    width: 200px;
+                                    height: 200px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    animation: pulse 2s infinite;
+                                }
+                                
+                                .circular-progress svg {
+                                    transform: rotate(-90deg);
+                                }
+                                
+                                .progress-circle {
+                                    fill: none;
+                                    stroke-width: 8;
+                                    stroke-linecap: round;
+                                    stroke: url(#gradient);
+                                    stroke-dasharray: 565;
+                                    stroke-dashoffset: 565;
+                                    transition: stroke-dashoffset 0.5s ease;
+                                }
+                                
+                                .progress-bg-circle {
+                                    fill: none;
+                                    stroke-width: 8;
+                                    stroke: #e2e8f0;
+                                }
+                                
+                                .percentage-text {
+                                    position: absolute;
+                                    font-size: 48px;
+                                    font-weight: 700;
+                                    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+                                    -webkit-background-clip: text;
+                                    -webkit-text-fill-color: transparent;
+                                    background-clip: text;
+                                    animation: rotateSpin 2s linear infinite;
+                                    transform-origin: center;
+                                }
+                                
+                                .progress-info {
+                                    width: 100%;
+                                    max-width: 500px;
+                                }
+                                
+                                .mb-info {
+                                    font-size: 1.2rem;
+                                    font-weight: 600;
+                                    color: #1e293b;
+                                    margin: 0;
+                                    margin-bottom: 0.5rem;
+                                }
+                                
+                                .speed-info {
+                                    font-size: 0.95rem;
+                                    color: #64748b;
+                                    margin: 0;
+                                    display: flex;
+                                    justify-content: center;
+                                    gap: 2rem;
+                                    flex-wrap: wrap;
+                                }
+                                
+                                .speed-item {
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 0.5rem;
+                                }
+                                
+                                .speed-item i {
+                                    color: #8b5cf6;
+                                    font-size: 1rem;
+                                }
+                                
+                                .upload-status {
+                                    font-size: 0.9rem;
+                                    color: #94a3b8;
+                                    margin-top: 1rem;
+                                    font-style: italic;
+                                }
+                                
+                                .progress-bar-linear {
+                                    width: 100%;
+                                    height: 6px;
+                                    background: #e2e8f0;
+                                    border-radius: 10px;
+                                    overflow: hidden;
+                                    margin-top: 1rem;
+                                    position: relative;
+                                }
+                                
+                                .progress-bar-fill {
+                                    height: 100%;
+                                    background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+                                    border-radius: 10px;
+                                    width: 0%;
+                                    transition: width 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+                                    box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+                                    position: relative;
+                                }
+                                
+                                .progress-bar-fill::after {
+                                    content: '';
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    bottom: 0;
+                                    right: 0;
+                                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+                                    animation: shimmer 2s infinite;
+                                }
+                            </style>
+                            
+                            <div class="progress-container">
+                                <div class="circular-progress">
+                                    <svg width="200" height="200" viewBox="0 0 200 200">
+                                        <defs>
+                                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                                <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                            </linearGradient>
+                                        </defs>
+                                        <circle class="progress-bg-circle" cx="100" cy="100" r="90"></circle>
+                                        <circle class="progress-circle" id="uploadProgressCircle" cx="100" cy="100" r="90"></circle>
+                                    </svg>
+                                    <div class="percentage-text" id="percentageText">0%</div>
+                                </div>
+                                
+                                <div class="progress-info">
+                                    <p class="mb-info">
+                                        <i class="fas fa-download me-2" style="color: #8b5cf6;"></i>
+                                        <span id="uploadedMB">0</span> MB <span style="color: #94a3b8;">/ </span> <span id="totalMB">0</span> MB
+                                    </p>
+                                    <p class="speed-info">
+                                        <span class="speed-item">
+                                            <i class="fas fa-tachometer-alt"></i>
+                                            <span id="uploadSpeed">Calculating...</span>
+                                        </span>
+                                        <span class="speed-item">
+                                            <i class="fas fa-hourglass-end"></i>
+                                            <span id="timeLeft">-- </span>
+                                        </span>
+                                    </p>
+                                    <p class="upload-status">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <span id="uploadStatus">Preparing upload...</span>
+                                    </p>
+                                    <div class="progress-bar-linear">
+                                        <div class="progress-bar-fill" id="linearProgressBar"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -273,8 +473,14 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                 const percentComplete = (e.loaded / e.total) * 100;
                 const uploadedMB = (e.loaded / 1024 / 1024).toFixed(2);
                 
-                document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
-                document.getElementById('uploadProgressBar').textContent = Math.round(percentComplete) + '%';
+                // Update circular progress
+                const circumference = 565;
+                const offset = circumference - (percentComplete / 100) * circumference;
+                document.getElementById('uploadProgressCircle').style.strokeDashoffset = offset;
+                document.getElementById('percentageText').textContent = Math.round(percentComplete) + '%';
+                
+                // Update linear progress
+                document.getElementById('linearProgressBar').style.width = percentComplete + '%';
                 document.getElementById('uploadedMB').textContent = uploadedMB;
                 
                 // Calculate speed
@@ -287,7 +493,14 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                 const remainingSeconds = remainingBytes / (e.loaded / elapsedSeconds);
                 const remainingTime = formatTime(remainingSeconds);
                 
-                document.getElementById('uploadSpeed').textContent = speedMBps + ' MB/s | Time left: ' + remainingTime;
+                document.getElementById('uploadSpeed').textContent = speedMBps + ' MB/s';
+                document.getElementById('timeLeft').textContent = remainingTime;
+                
+                // Update status
+                const status = percentComplete < 50 ? '⏳ Uploading...' : 
+                              percentComplete < 100 ? '🔄 Almost there...' : 
+                              '✅ Finalizing...';
+                document.getElementById('uploadStatus').textContent = status;
             }
         });
         
@@ -298,13 +511,15 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
         xhr.addEventListener('load', function() {
             if (xhr.status === 200) {
                 // Show success animation
-                document.getElementById('uploadProgressBar').className = 'progress-bar bg-success';
-                document.getElementById('uploadProgressBar').style.width = '100%';
-                document.getElementById('uploadProgressBar').textContent = '100%';
+                document.getElementById('uploadProgressCircle').style.stroke = '#10b981';
+                document.getElementById('linearProgressBar').style.background = 'linear-gradient(90deg, #10b981 0%, #059669 100%)';
+                document.getElementById('percentageText').textContent = '✓';
+                document.getElementById('percentageText').style.color = '#10b981';
+                document.getElementById('uploadStatus').innerHTML = '<i class="fas fa-check-circle me-2" style="color: #10b981;"></i>Upload Complete!';
                 
                 setTimeout(() => {
                     location.reload();
-                }, 1500);
+                }, 2000);
             } else {
                 alert('Upload failed. Please try again.');
                 uploadBtn.disabled = false;
