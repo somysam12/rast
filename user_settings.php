@@ -346,7 +346,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             display: block;
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 991.98px) {
             .sidebar {
                 width: 100%;
                 transform: translateX(-100%);
@@ -360,6 +360,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             .main-content {
                 margin-left: 0;
                 padding: 1rem;
+                padding-top: 20px !important;
             }
             
             .mobile-header {

@@ -99,9 +99,9 @@ foreach ($notifications as $notif) {
         .alert { border-radius: 8px; border: none; }
         .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
         .unread-badge { background: var(--purple); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: 700; }
-        @media (max-width: 768px) {
+        @media (max-width: 991.98px) {
             .sidebar { display: none; }
-            .main-content { margin-left: 0; padding: 1rem; }
+            .main-content { margin-left: 0; padding: 1rem; padding-top: 20px !important; }
         }
     </style>
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
