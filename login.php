@@ -594,7 +594,7 @@ if ($_POST) {
             }
         }
         
-        // Form submission with access granted animation
+        // Form submission with AJAX validation
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             const form = this;
             if (form.checkValidity() === false) {
@@ -606,32 +606,79 @@ if ($_POST) {
             e.preventDefault();
             
             const btn = form.querySelector('.btn-login');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const forceLogout = document.getElementById('force_logout').checked;
+            
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
             
-            // Show "Access Granted" popup with success animation
-            const htmlContent = `
-                <div class="success-icon">
-                    <div class="success-circle">
-                        <div class="success-checkmark"></div>
-                    </div>
-                </div>
-                <div class="success-text">Access Granted</div>
-                <div class="success-subtext">Redirecting you to dashboard...</div>
-            `;
-            
-            Swal.fire({
-                html: htmlContent,
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                background: '#ffffff',
-                didOpen: () => {
-                    setTimeout(() => {
-                        // Proceed with actual form submission
-                        form.submit();
-                    }, 2800);
+            // Send login request via AJAX
+            fetch('login.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&force_logout=' + (forceLogout ? '1' : '0')
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Check if login was successful by looking for redirect or error messages
+                if (data.includes('Invalid username or password') || data.includes('already logged in')) {
+                    // Login failed - show Access Not Granted
+                    const htmlContent = `
+                        <div style="width: 80px; height: 80px; margin: 20px auto; position: relative; display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);">
+                                <i class="fas fa-times" style="color: white; font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                        <div style="font-size: 24px; font-weight: 700; color: #1e293b; margin: 15px 0;">Access Not Granted</div>
+                        <div style="font-size: 14px; color: #64748b; margin-top: 10px;">Invalid username or password</div>
+                    `;
+                    
+                    Swal.fire({
+                        html: htmlContent,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Try Again',
+                        background: '#ffffff',
+                        didOpen: () => {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Sign In';
+                        }
+                    });
+                } else {
+                    // Login successful - show Access Granted and redirect
+                    const htmlContent = `
+                        <div class="success-icon">
+                            <div class="success-circle">
+                                <div class="success-checkmark"></div>
+                            </div>
+                        </div>
+                        <div class="success-text">Access Granted</div>
+                        <div class="success-subtext">Redirecting you to dashboard...</div>
+                    `;
+                    
+                    Swal.fire({
+                        html: htmlContent,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        background: '#ffffff',
+                        didOpen: () => {
+                            setTimeout(() => {
+                                // Redirect to dashboard
+                                window.location.href = data.includes('admin_dashboard') ? 'admin_dashboard.php' : 'user_dashboard.php';
+                            }, 2800);
+                        }
+                    });
                 }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Sign In';
+                alert('An error occurred. Please try again.');
             });
         });
         

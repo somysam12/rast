@@ -366,12 +366,15 @@ try {
                 background: var(--sidebar-bg);
                 border-right: none;
                 box-shadow: var(--shadow-large);
+                height: 100vh;
+                overflow-y: auto;
+                overflow-x: hidden;
             }
             
             .sidebar.show {
                 transform: translateX(0);
-            overflow-y: auto;
-            overflow-x: hidden;
+                overflow-y: auto;
+                overflow-x: hidden;
             }
             
             .main-content {
