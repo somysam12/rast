@@ -1,0 +1,53 @@
+/* Hamburger Menu - Ensure Full Functionality */
+
+.hamburger-menu {
+    pointer-events: auto !important;
+    z-index: 2001 !important;
+}
+
+.hamburger-menu:not(:disabled) {
+    cursor: pointer !important;
+}
+
+/* Sidebar Navigation - Ensure Clickable */
+.sidebar .nav-link {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    display: block !important;
+    text-decoration: none !important;
+}
+
+.sidebar .nav-link:hover {
+    pointer-events: auto !important;
+}
+
+/* Mobile Overlay - Allow clicks */
+.mobile-overlay {
+    pointer-events: none !important;
+}
+
+.mobile-overlay.show {
+    pointer-events: auto !important;
+}
+
+/* Theme Toggle - Ensure Clickable */
+.theme-toggle {
+    pointer-events: auto !important;
+    z-index: 2001 !important;
+}
+
+/* Modern Header */
+.modern-header {
+    z-index: 999 !important;
+    pointer-events: auto !important;
+}
+
+/* Sidebar */
+.sidebar {
+    z-index: 1000 !important;
+}
+
+/* Main Content */
+.main-content {
+    z-index: auto !important;
+}

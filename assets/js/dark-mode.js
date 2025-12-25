@@ -1,5 +1,10 @@
-// Dark Mode Toggle Script with Persistence and Animations
+// Load theme immediately - BEFORE page renders
+(function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+})();
 
+// Dark Mode Toggle Function
 function toggleDarkMode() {
     const html = document.documentElement;
     const currentTheme = html.getAttribute('data-theme');
@@ -11,26 +16,23 @@ function toggleDarkMode() {
     // Save to localStorage
     localStorage.setItem('theme', newTheme);
     
-    // Add animation class
+    // Add fade animation
+    document.body.style.transition = 'opacity 0.15s ease';
     document.body.style.opacity = '0.95';
+    
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 150);
 }
 
-// Load saved theme on page load
+// Apply transitions after page load
 document.addEventListener('DOMContentLoaded', function() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    // Add smooth transitions
-    document.documentElement.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+    // All elements should transition smoothly
+    const style = document.createElement('style');
+    style.textContent = `
+        html, body, [data-theme] {
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease !important;
+        }
+    `;
+    document.head.appendChild(style);
 });
-
-// Also check on page start (before DOM loads)
-if (typeof localStorage !== 'undefined') {
-    const theme = localStorage.getItem('theme');
-    if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
-}
