@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
             $stmt->execute([$requestId]);
 
             // Delete the request itself - specifically look for PENDING status
-            $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ? AND user_id = ? AND status = "pending"');
+            $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ? AND user_id = ?');
             $stmt->execute([$requestId, $_SESSION['user_id']]);
             
             if ($stmt->rowCount() > 0) {
@@ -169,17 +169,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
                 header('Location: user_block_request.php');
                 exit;
             } else {
-                // If it wasn't pending or didn't exist, we still want it gone if it's there
-                $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ? AND user_id = ?');
-                $stmt->execute([$requestId, $_SESSION['user_id']]);
-                
-                if ($stmt->rowCount() > 0) {
-                    $pdo->commit();
-                    $_SESSION['success'] = 'Request removed successfully.';
-                    header('Location: user_block_request.php');
-                    exit;
-                }
-                
                 $pdo->rollBack();
                 $error = 'Request not found or already processed.';
             }
