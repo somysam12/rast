@@ -231,13 +231,23 @@ function updateBalance($userId, $amount, $type = 'balance_add', $reference = nul
         $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
         $stmt->execute([$amount, $userId]);
         
-        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, reference, status, created_at) VALUES (?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP)");
-        $stmt->execute([$userId, $amount, $type, $reference]);
+        $description = ($type === 'balance_add') ? "Balance added by admin" : "Transaction";
+        if ($type === 'debit' || $type === 'purchase') {
+            $description = "License key purchase";
+        }
+        
+        // Ensure negative amount for purchases/debits
+        if (($type === 'debit' || $type === 'purchase') && $amount > 0) {
+            $amount = -$amount;
+        }
+
+        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, description, reference, status, created_at) VALUES (?, ?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP)");
+        $stmt->execute([$userId, $amount, $type, $description, $reference]);
         
         $pdo->commit();
         return true;
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) $pdo->rollBack();
         return false;
     }
 }

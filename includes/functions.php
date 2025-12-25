@@ -173,8 +173,8 @@ function purchaseLicenseKey($userId, $keyId) {
         $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
         $stmt->execute([$key['price'], $userId]);
         
-        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, reference, status) VALUES (?, ?, 'purchase', ?, 'completed')");
-        $stmt->execute([$userId, -$key['price'], "License purchase #" . $keyId]);
+        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, description, reference, status) VALUES (?, ?, 'purchase', ?, ?, 'completed')");
+        $stmt->execute([$userId, -$key['price'], "License key purchase - " . $key['mod_name'], "License purchase #" . $keyId]);
         
         $pdo->commit();
         return $key;
