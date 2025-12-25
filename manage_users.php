@@ -38,7 +38,7 @@ try {
 // Handle delete user
 if (isset($_GET['delete']) && is_numeric($_GET['delete']) && $pdo) {
     try {
-        $stmt = $pdo->prepare("DELETE FROM users WHERE id = ? AND role = 'user'");
+        $stmt = $pdo->prepare("DELETE FROM users WHERE id = ? AND role IN ('user', 'reseller', 'admin')");
         if ($stmt->execute([$_GET['delete']])) {
             $success = 'User deleted successfully!';
         } else {
@@ -57,7 +57,7 @@ try {
                             COALESCE(fl.logout_limit, 0) as logout_limit
                             FROM users u 
                             LEFT JOIN force_logouts fl ON u.id = fl.user_id
-                            WHERE u.role IN ('user', 'reseller')
+                            WHERE u.role IN ('user', 'reseller', 'admin')
                             GROUP BY u.id
                             ORDER BY u.created_at DESC");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
