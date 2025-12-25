@@ -198,6 +198,19 @@ try {
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
         
+        /* Table and Date Visibility Fix */
+        .table tbody td {
+            color: var(--text) !important;
+            vertical-align: middle;
+        }
+        .text-muted-date {
+            color: #475569 !important; /* Darker slate color for better visibility */
+            font-weight: 500;
+        }
+        [data-theme="dark"] .text-muted-date {
+            color: #94a3b8 !important; /* Lighter slate for dark mode */
+        }
+        
         /* Custom Stylish Toast */
         #customToast {
             position: fixed;
@@ -210,8 +223,8 @@ try {
             display: flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-            z-index: 9999;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            z-index: 99999; /* Higher z-index */
             transform: translateX(120%);
             transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             border-left: 4px solid #8b5cf6;
@@ -400,7 +413,7 @@ try {
                                         <td><?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?></td>
                                         <td><code style="background: #f8fafc; padding: 0.5rem; border-radius: 6px;"><?php echo htmlspecialchars($key['license_key']); ?></code></td>
                                         <td><span class="badge bg-primary"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span></td>
-                                        <td><?php echo formatDate($key['sold_at']); ?></td>
+                                        <td class="text-muted-date"><?php echo formatDate($key['sold_at']); ?></td>
                                         <td><button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')"><i class="fas fa-copy"></i></button></td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -433,13 +446,20 @@ try {
 
         function copyToClipboard(text, isAuto = false) {
             function performCopy() {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        showStylishToast(isAuto ? 'Keys purchased & copied to clipboard!' : 'License key copied to clipboard!');
-                    }).catch(err => {
+                try {
+                    // Try the modern API first
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            showStylishToast(isAuto ? 'Keys purchased & copied to clipboard!' : 'License key copied to clipboard!');
+                        }).catch(err => {
+                            console.warn('Async copy failed, trying fallback', err);
+                            fallbackCopy(text);
+                        });
+                    } else {
                         fallbackCopy(text);
-                    });
-                } else {
+                    }
+                } catch (e) {
+                    console.error('Copy attempt failed', e);
                     fallbackCopy(text);
                 }
             }
@@ -447,31 +467,45 @@ try {
             function fallbackCopy(val) {
                 const textArea = document.createElement('textarea');
                 textArea.value = val;
+                
+                // Ensure the textarea is invisible but part of the document
                 textArea.style.position = 'fixed';
                 textArea.style.left = '-9999px';
                 textArea.style.top = '0';
+                textArea.setAttribute('readonly', ''); // Prevent keyboard on mobile
                 document.body.appendChild(textArea);
-                textArea.focus();
+                
                 textArea.select();
+                textArea.setSelectionRange(0, 99999); // For mobile devices
+                
+                let successful = false;
                 try {
-                    document.execCommand('copy');
-                    showStylishToast(isAuto ? 'Keys purchased & copied to clipboard!' : 'License key copied to clipboard!');
+                    successful = document.execCommand('copy');
                 } catch (err) {
-                    console.error('Fallback copy failed');
+                    console.error('Fallback copy failed', err);
                 }
+                
                 document.body.removeChild(textArea);
+                
+                if (successful) {
+                    showStylishToast(isAuto ? 'Keys purchased & copied to clipboard!' : 'License key copied to clipboard!');
+                } else {
+                    console.error('All copy methods failed');
+                }
             }
             performCopy();
         }
 
         // Auto-copy on load if purchase just happened
-        document.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('load', function() {
             const copyData = document.getElementById('autoCopyData');
             if (copyData) {
                 const keys = copyData.getAttribute('data-keys');
                 if (keys) {
-                    // Short delay to ensure browser focus is ready for clipboard
-                    setTimeout(() => copyToClipboard(keys, true), 500);
+                    // Slight delay to ensure page is fully ready and user interaction context is "fresh"
+                    setTimeout(() => {
+                        copyToClipboard(keys, true);
+                    }, 800);
                 }
             }
         });
