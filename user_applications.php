@@ -312,6 +312,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
     </style>
+    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
 </head>
 <body>
     <!-- Mobile Overlay -->

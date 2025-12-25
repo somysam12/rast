@@ -330,6 +330,7 @@ function formatDate($date) {
             }
         }
     </style>
+    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
 </head>
 <body>
     <!-- Mobile Menu Button -->

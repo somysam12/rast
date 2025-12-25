@@ -176,6 +176,7 @@ foreach ($confirmations as $conf) {
             font-weight: 600;
         }
     </style>
+    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
 </head>
 <body>
     <div class="navbar-custom">

@@ -224,6 +224,7 @@ try {
             .btn-generate { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
         }
     </style>
+    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">

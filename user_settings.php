@@ -398,6 +398,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             }
         }
     </style>
+    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>

@@ -1,0 +1,212 @@
+/* ===== COMPREHENSIVE MOBILE FIXES ===== */
+
+/* Theme Toggle - Make it visible and large on all phones */
+.theme-toggle {
+    position: fixed !important;
+    top: 15px !important;
+    right: 15px !important;
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4) !important;
+    transition: all 0.3s ease !important;
+    z-index: 2001 !important;
+    font-size: 1.5rem !important;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6) !important;
+}
+
+/* Back Buttons - Stylish gradient */
+.back-button, a[href*="back"], a[href*="dashboard"] + .btn-primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.7rem 1.4rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+}
+
+.back-button:hover, a[href*="back"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.5) !important;
+}
+
+/* Text Wrapping - Fix overlaps */
+.page-header h2, .page-header h1, .page-header h3,
+.page-header h4, .page-header h5, .page-header h6 {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    white-space: normal !important;
+}
+
+.page-header p, .page-header small {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* Mobile Header - Always visible */
+.modern-header {
+    display: flex !important;
+    z-index: 1000 !important;
+}
+
+/* Main Content Padding for fixed header */
+.main-content {
+    padding-top: 80px !important;
+}
+
+/* Responsive Tables */
+@media (max-width: 768px) {
+    .theme-toggle {
+        top: 12px !important;
+        right: 12px !important;
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 1.3rem !important;
+    }
+    
+    .page-header {
+        padding: 1.25rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .page-header h2 {
+        font-size: 1.25rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .page-header p {
+        font-size: 0.9rem !important;
+    }
+    
+    .main-content {
+        padding: 1rem !important;
+        padding-top: 80px !important;
+    }
+    
+    .back-button {
+        padding: 0.6rem 1rem !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .stats-card, .card, .table-card {
+        padding: 1.25rem !important;
+    }
+    
+    table {
+        font-size: 0.85rem !important;
+    }
+    
+    table thead th {
+        padding: 0.75rem !important;
+    }
+    
+    table tbody td {
+        padding: 0.75rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .theme-toggle {
+        top: 10px !important;
+        right: 10px !important;
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    .page-header {
+        padding: 1rem !important;
+    }
+    
+    .page-header h2 {
+        font-size: 1.1rem !important;
+    }
+    
+    .page-header .d-flex {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+    
+    .back-button {
+        padding: 0.5rem 0.9rem !important;
+        font-size: 0.9rem !important;
+        width: 100%;
+        margin-bottom: 1rem !important;
+    }
+    
+    .main-content {
+        padding: 0.75rem !important;
+        padding-top: 75px !important;
+    }
+    
+    .stats-card, .card, .table-card, .key-card, .filter-card {
+        padding: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    table {
+        font-size: 0.75rem !important;
+    }
+    
+    table thead th,
+    table tbody td {
+        padding: 0.5rem !important;
+    }
+    
+    .badge {
+        font-size: 0.7rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .theme-toggle {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1rem !important;
+    }
+    
+    .page-header h2 {
+        font-size: 1rem !important;
+    }
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] .theme-toggle {
+    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%) !important;
+}
+
+/* Ensure everything is readable */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea, select {
+    font-size: 16px !important;
+}
+
+@media (max-width: 768px) {
+    input[type="number"], input[type="text"], input[type="email"], 
+    input[type="password"], select, textarea {
+        width: 100% !important;
+        padding: 0.75rem !important;
+        font-size: 1rem !important;
+    }
+}

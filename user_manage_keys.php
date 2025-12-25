@@ -111,6 +111,7 @@ try {
             .main-content { margin-left: 0; padding: 1rem; }
         }
     </style>
+    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">
