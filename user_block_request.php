@@ -153,16 +153,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
     $requestId = $_POST['request_id'] ?? '';
     if (ctype_digit((string)$requestId)) {
         try {
+            $pdo->beginTransaction();
+            
+            // Delete confirmation notifications related to this request
+            $stmt = $pdo->prepare('DELETE FROM key_confirmations WHERE request_id = ?');
+            $stmt->execute([$requestId]);
+
+            // Delete the request itself
             $stmt = $pdo->prepare('DELETE FROM key_requests WHERE id = ? AND user_id = ? AND status = "pending"');
             $stmt->execute([$requestId, $_SESSION['user_id']]);
+            
             if ($stmt->rowCount() > 0) {
+                $pdo->commit();
                 $_SESSION['success'] = 'Request cancelled successfully.';
                 header('Location: user_block_request.php');
                 exit;
             } else {
+                $pdo->rollBack();
                 $error = 'Request not found or already processed.';
             }
         } catch (Throwable $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
             $error = 'Error: ' . $e->getMessage();
         }
     }
