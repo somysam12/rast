@@ -311,42 +311,24 @@ try {
         
         .theme-toggle {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1050;
-            background: var(--card) !important;
-            border: 2px solid var(--line) !important;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex !important;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 0;
-            font-size: 20px;
-            color: var(--text);
+            box-shadow: var(--shadow-medium);
+            color: var(--text-secondary);
         }
+        
         .theme-toggle:hover {
-            transform: scale(1.1);
-            color: var(--accent);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-        }
-        .theme-toggle:active {
-            transform: scale(0.95);
-        }
-        @media (max-width: 768px) {
-            .theme-toggle {
-                width: 50px !important;
-                height: 50px !important;
-                font-size: 18px !important;
-                top: 12px !important;
-                right: 12px !important;
-                z-index: 1050 !important;
-            }
-        }
             color: var(--purple);
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
@@ -440,3 +422,454 @@ try {
                 font-size: 1rem;
             }
             
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+            }
+            
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            
+            .table thead th,
+            .table tbody td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+            
+            .page-header {
+                padding: 1rem;
+            }
+            
+            .stats-card {
+                padding: 1rem;
+            }
+            
+            .stats-card h3 {
+                font-size: 1.5rem;
+            }
+            
+            .table-card {
+                padding: 0.75rem;
+            }
+            
+            .table {
+                font-size: 0.8rem;
+            }
+            
+            .table thead th,
+            .table tbody td {
+                padding: 0.5rem 0.25rem;
+            }
+            
+            .sidebar .nav-link {
+                padding: 10px 16px;
+                margin: 2px 8px;
+                font-size: 0.85rem;
+            }
+            
+            .sidebar .nav-link i {
+                width: 18px;
+                margin-right: 10px;
+            }
+        }
+        
+        /* Landscape tablet optimization */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+            
+            .main-content {
+                margin-left: 250px;
+            }
+            
+            .stats-card {
+                padding: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+        <i class="fas fa-moon" id="darkModeIcon"></i>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="d-flex align-items-center">
+            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
+                <div class="p-3">
+                    <h4><i class="fas fa-crown me-2"></i>Multi Panel</h4>
+                    <p class="small mb-0" style="opacity: 0.7;">Admin Dashboard</p>
+                </div>
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="admin_dashboard.php">
+                        <i class="fas fa-tachometer-alt"></i>Dashboard
+                    </a>
+                    <a class="nav-link" href="add_mod.php">
+                        <i class="fas fa-plus"></i>Add Mod Name
+                    </a>
+                    <a class="nav-link" href="manage_mods.php">
+                        <i class="fas fa-edit"></i>Manage Mods
+                    </a>
+                    <a class="nav-link" href="upload_mod.php">
+                        <i class="fas fa-upload"></i>Upload Mod APK
+                    </a>
+                    <a class="nav-link" href="mod_list.php">
+                        <i class="fas fa-list"></i>Mod APK List
+                    </a>
+                    <a class="nav-link" href="add_license.php">
+                        <i class="fas fa-key"></i>Add License Key
+                    </a>
+                    <a class="nav-link" href="licence_key_list.php">
+                        <i class="fas fa-key"></i>License Key List
+                    </a>
+                    <a class="nav-link" href="available_keys.php">
+                        <i class="fas fa-key"></i>Available Keys
+                    </a>
+                    <a class="nav-link" href="manage_users.php">
+                        <i class="fas fa-users"></i>Manage Users
+                    </a>
+                    <a class="nav-link" href="add_balance.php">
+                        <i class="fas fa-wallet"></i>Add Balance
+                    </a>
+                    <a class="nav-link" href="transactions.php">
+                        <i class="fas fa-exchange-alt"></i>Transaction
+                    </a>
+                    <a class="nav-link" href="referral_codes.php">
+                        <i class="fas fa-tag"></i>Referral Code
+                    </a>
+                    <a class="nav-link" href="admin_block_reset_requests.php">
+                        <i class="fas fa-shield-alt"></i>Block & Reset Requests
+                    </a>
+                    <a class="nav-link" href="settings.php">
+                        <i class="fas fa-cog"></i>Settings
+                    </a>
+                    <a class="nav-link" href="logout.php">
+                        <i class="fas fa-sign-out-alt"></i>Logout
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content" id="mainContent">
+                <div class="page-header fade-in">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-2" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem;"><i class="fas fa-crown me-2" style="color: #8b5cf6; -webkit-text-fill-color: #8b5cf6;"></i>SilentMultiPanel</h2>
+                            <p class="text-muted mb-0">Welcome, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>!</p>
+                        </div>
+                        <div class="d-none d-md-flex align-items-center">
+                            <div class="text-end me-3">
+                                <div class="fw-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></div>
+                                <small class="text-muted">Administrator</small>
+                            </div>
+                            <div class="user-avatar">
+                                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4 fade-in">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="stats-card total-mods">
+                            <div class="text-center">
+                                <div class="stats-icon total-mods mx-auto">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                <h6 class="text-muted mb-2">Total Mods</h6>
+                                <h3 class="mb-0 fw-bold"><?php echo $stats['total_mods']; ?></h3>
+                                <small style="color: var(--purple);">
+                                    <i class="fas fa-chart-line me-1"></i>Active mods
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="stats-card license-keys">
+                            <div class="text-center">
+                                <div class="stats-icon license-keys mx-auto">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <h6 class="text-muted mb-2">License Keys</h6>
+                                <h3 class="mb-0 fw-bold"><?php echo $stats['total_keys']; ?></h3>
+                                <small style="color: #059669;">
+                                    <i class="fas fa-key me-1"></i>Total generated
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="stats-card total-users">
+                            <div class="text-center">
+                                <div class="stats-icon total-users mx-auto">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h6 class="text-muted mb-2">Total Users</h6>
+                                <h3 class="mb-0 fw-bold"><?php echo $stats['total_users']; ?></h3>
+                                <small style="color: #0ea5e9;">
+                                    <i class="fas fa-user-plus me-1"></i>Registered users
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="stats-card sold-licenses">
+                            <div class="text-center">
+                                <div class="stats-icon sold-licenses mx-auto">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <h6 class="text-muted mb-2">Sold Licenses</h6>
+                                <h3 class="mb-0 fw-bold"><?php echo $stats['sold_keys']; ?></h3>
+                                <small style="color: #f59e0b;">
+                                    <i class="fas fa-coins me-1"></i>Revenue generated
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+
+                <!-- All Users Section -->
+                <div class="table-card fade-in">
+                    <h5><i class="fas fa-users me-2"></i>All Users</h5>
+                    <div class="row">
+<?php
+try {
+    $stmt = $pdo->query("SELECT username, role FROM users WHERE role = 'user' ORDER BY username ASC");
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (empty($users)) {
+        echo '<div class="col-12"><p class="text-muted text-center py-4">No users registered yet</p></div>';
+    } else {
+        foreach ($users as $userItem):
+            $initials = strtoupper(substr($userItem['username'], 0, 2));
+            $roleDisplay = $userItem['role'] === 'user' ? 'User Account' : 'Administrator';
+?>
+                        <div class="col-md-4 col-lg-3 mb-3">
+                            <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--purple);"></div>
+                                <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem; margin: 0 auto 1rem; box-shadow: var(--shadow-medium);">
+                                    <?php echo $initials; ?>
+                                </div>
+                                <h6 style="color: var(--text-primary); font-weight: 600; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($userItem['username']); ?></h6>
+                                <small style="color: var(--text-secondary);"><?php echo $roleDisplay; ?></small>
+                            </div>
+                        </div>
+<?php
+        endforeach;
+    }
+} catch (Exception $e) {
+    echo '<div class="col-12"><div class="alert alert-warning">Unable to load users</div></div>';
+}
+?>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="table-card fade-in">
+                            <h5><i class="fas fa-box me-2"></i>Recent Mods</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th class="d-none d-sm-table-cell">Upload Date</th>
+                                            <th class="d-sm-none">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (empty($recentMods)): ?>
+                                        <tr>
+                                            <td colspan="2" class="text-center text-muted py-4">
+                                                <i class="fas fa-box fa-2x mb-2 d-block opacity-50"></i>
+                                                No mods uploaded yet
+                                            </td>
+                                        </tr>
+                                        <?php else: ?>
+                                            <?php foreach ($recentMods as $mod): ?>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; background: var(--purple) !important;">
+                                                            <i class="fas fa-mobile-alt text-white"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-semibold"><?php echo htmlspecialchars($mod['name']); ?></div>
+                                                            <small class="text-muted d-sm-none"><?php echo formatDate($mod['created_at']); ?></small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="d-none d-sm-table-cell"><?php echo formatDate($mod['created_at']); ?></td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="table-card fade-in">
+                            <h5><i class="fas fa-users me-2"></i>Recent Users</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th class="d-none d-sm-table-cell">Join Date</th>
+                                            <th class="d-sm-none">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (empty($recentUsers)): ?>
+                                        <tr>
+                                            <td colspan="2" class="text-center text-muted py-4">
+                                                <i class="fas fa-users fa-2x mb-2 d-block opacity-50"></i>
+                                                No users registered yet
+                                            </td>
+                                        </tr>
+                                        <?php else: ?>
+                                            <?php foreach ($recentUsers as $user): ?>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="bg-info rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; background: #0ea5e9 !important;">
+                                                            <span class="text-white fw-bold" style="font-size: 0.8rem;"><?php echo strtoupper(substr($user['username'], 0, 2)); ?></span>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-semibold"><?php echo htmlspecialchars($user['username']); ?></div>
+                                                            <small class="text-muted d-sm-none"><?php echo formatDate($user['created_at']); ?></small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="d-none d-sm-table-cell"><?php echo formatDate($user['created_at']); ?></td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/dark-mode.js"></script>
+    <script src="assets/js/enhanced-ui.js"></script>
+    <script>
+        // Mobile sidebar toggle
+        // Mobile Navigation (optimized)
+        function toggleSidebar() {
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            if (!sidebar || !overlay) return;
+            sidebar.classList.toggle("show");
+            overlay.classList.toggle("show");
+            if (window.innerWidth <= 991) {
+                if (sidebar.classList.contains("show")) {
+                    document.body.style.overflow = "hidden";
+                } else {
+                    document.body.style.overflow = "";
+                }
+            }
+        }
+        // Mobile nav links - close sidebar and allow navigation
+        document.addEventListener("DOMContentLoaded", function() {
+            const links = document.querySelectorAll(".sidebar .nav-link");
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".mobile-overlay");
+            links.forEach(link => {
+                link.addEventListener("click", function() {
+                    if (window.innerWidth <= 991) {
+                        sidebar.classList.remove("show");
+                        overlay.classList.remove("show");
+                        document.body.style.overflow = "";
+                    }
+                });
+            });
+            if (overlay) {
+                overlay.addEventListener("click", toggleSidebar);
+            }
+        });
+        window.addEventListener("resize", function() {
+            if (window.innerWidth > 991) {
+                const sidebar = document.querySelector(".sidebar");
+                const overlay = document.querySelector(".mobile-overlay");
+                sidebar.classList.remove("show");
+                overlay.classList.remove("show");
+                document.body.style.overflow = "";
+            }
+        });
+        
+        // Close sidebar when clicking on nav links on mobile
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+        
+        // Fade in animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.classList.add('visible');
+                }, index * 100);
+            });
+        });
+        
+        // Stats animation on load - simplified
+        function animateStats() {
+            const statsNumbers = document.querySelectorAll('.stats-card h3');
+            statsNumbers.forEach(stat => {
+                const finalValue = parseInt(stat.textContent);
+                if (finalValue > 0) {
+                    let currentValue = 0;
+                    const increment = Math.max(1, Math.floor(finalValue / 20));
+                    
+                    const timer = setInterval(() => {
+                        currentValue += increment;
+                        if (currentValue >= finalValue) {
+                            stat.textContent = finalValue;
+                            clearInterval(timer);
+                        } else {
+                            stat.textContent = currentValue;
+                        }
+                    }, 50);
+                }
