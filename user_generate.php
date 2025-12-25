@@ -113,40 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $success = 'Purchased ' . $keysSold . ' license key(s) successfully!';
             if (!empty($lastKeys)) {
                 $keysString = implode("\n", $lastKeys);
-                $success .= "<div id='autoCopyData' data-keys='" . htmlspecialchars($keysString) . "' style='display:none;'></div>";
-                $success .= "<script>
-                    (function() {
-                        const keys = " . json_encode($keysString) . ";
-                        function doCopy() {
-                            if (navigator.clipboard && navigator.clipboard.writeText) {
-                                navigator.clipboard.writeText(keys).then(() => {
-                                    alert('Success! ' + " . count($lastKeys) . " + ' key(s) purchased and copied to clipboard:\\n' + keys);
-                                }).catch(err => {
-                                    console.error('Async copy failed', err);
-                                    fallbackCopy(keys);
-                                });
-                            } else {
-                                fallbackCopy(keys);
-                            }
-                        }
-                        function fallbackCopy(text) {
-                            const textArea = document.createElement('textarea');
-                            textArea.value = text;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            try {
-                                document.execCommand('copy');
-                                alert('Success! ' + " . count($lastKeys) . " + ' key(s) purchased and copied to clipboard!');
-                            } catch (err) {
-                                console.error('Fallback copy failed', err);
-                            }
-                            document.body.removeChild(textArea);
-                        }
-                        // Try copying immediately and after a short delay
-                        doCopy();
-                        setTimeout(doCopy, 300);
-                    })();
-                </script>";
+                $success .= "<div id='autoCopyData' data-keys='" . htmlspecialchars($keysString) . "' data-count='" . count($lastKeys) . "' style='display:none;'></div>";
             }
 
             $stmt = $pdo->prepare('SELECT id, username, role, balance FROM users WHERE id = ? LIMIT 1');
@@ -230,6 +197,32 @@ try {
         :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
+        
+        /* Custom Stylish Toast */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 4px solid #8b5cf6;
+            max-width: 350px;
+        }
+        #customToast.show { transform: translateX(0); }
+        #customToast i { font-size: 1.5rem; color: #8b5cf6; }
+        #customToast .toast-content { flex: 1; }
+        #customToast .toast-title { font-weight: 700; margin-bottom: 2px; }
+        #customToast .toast-msg { font-size: 0.85rem; opacity: 0.9; }
+        
         .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; width: 280px; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; }
         .sidebar .nav-link { color: var(--muted); padding: 12px 20px; margin: 4px 16px; border-radius: 8px; }
         .sidebar .nav-link:hover { background: #f3f4f6; color: var(--text); }
@@ -420,12 +413,68 @@ try {
         </div>
     </div>
     
+    <div id="customToast">
+        <i class="fas fa-check-circle"></i>
+        <div class="toast-content">
+            <div class="toast-title">Success!</div>
+            <div class="toast-msg" id="toastMessage">Key purchased and copied.</div>
+        </div>
+    </div>
+
     <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('License key copied to clipboard!');
-            }).catch(() => alert('Failed to copy'));
+        function showStylishToast(message) {
+            const toast = document.getElementById('customToast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
         }
+
+        function copyToClipboard(text, isAuto = false) {
+            function performCopy() {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showStylishToast(isAuto ? 'Keys purchased & copied to clipboard!' : 'License key copied to clipboard!');
+                    }).catch(err => {
+                        fallbackCopy(text);
+                    });
+                } else {
+                    fallbackCopy(text);
+                }
+            }
+
+            function fallbackCopy(val) {
+                const textArea = document.createElement('textarea');
+                textArea.value = val;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                textArea.style.top = '0';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showStylishToast(isAuto ? 'Keys purchased & copied to clipboard!' : 'License key copied to clipboard!');
+                } catch (err) {
+                    console.error('Fallback copy failed');
+                }
+                document.body.removeChild(textArea);
+            }
+            performCopy();
+        }
+
+        // Auto-copy on load if purchase just happened
+        document.addEventListener('DOMContentLoaded', function() {
+            const copyData = document.getElementById('autoCopyData');
+            if (copyData) {
+                const keys = copyData.getAttribute('data-keys');
+                if (keys) {
+                    // Short delay to ensure browser focus is ready for clipboard
+                    setTimeout(() => copyToClipboard(keys, true), 500);
+                }
+            }
+        });
     </script>
     <script src="assets/js/dark-mode.js"></script>
 </body>
