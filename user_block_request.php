@@ -22,11 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_lookup'])) {
             exit;
         }
         
-        $stmt = $pdo->prepare('SELECT lk.id, lk.license_key, lk.duration, lk.duration_type, lk.mod_id, m.name AS mod_name
+        $stmt = $pdo->prepare('SELECT lk.license_key, lk.duration, lk.duration_type, MIN(lk.id) as id, MAX(m.name) AS mod_name
                                FROM license_keys lk
                                LEFT JOIN mods m ON m.id = lk.mod_id
                                WHERE lk.sold_to = ? AND (lk.license_key LIKE ? OR m.name LIKE ?) 
-                               GROUP BY lk.license_key
+                               GROUP BY lk.license_key, lk.duration, lk.duration_type
                                LIMIT 10');
         $searchTerm = "%" . $licenseKey . "%";
         $stmt->execute([$_SESSION['user_id'], $searchTerm, $searchTerm]);
@@ -375,7 +375,7 @@ try {
                         <div class="row g-2" id="keysContainer">
                             <?php foreach ($purchasedKeys as $key): ?>
                             <div class="col-md-6 key-item" data-key="<?php echo htmlspecialchars($key['license_key']); ?>" data-mod="<?php echo htmlspecialchars($key['mod_name']); ?>">
-                                <div class="p-3 border rounded bg-light hover-shadow cursor-pointer" onclick="selectFromList('<?php echo addslashes($key['license_key']); ?>')">
+                                <div class="p-3 border rounded bg-light hover-shadow cursor-pointer" onclick="selectFromList('<?php echo addslashes($key['license_key']); ?>', '<?php echo addslashes($key['mod_name']); ?>', '<?php echo addslashes($key['duration']); ?>', '<?php echo addslashes($key['duration_type']); ?>')">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <div class="fw-bold text-dark"><?php echo htmlspecialchars($key['mod_name']); ?></div>
@@ -478,6 +478,20 @@ try {
                     }, 300);
                 });
 
+                function selectKey(keyData) {
+                    // Update search input
+                    searchInput.value = keyData.license_key;
+                    
+                    // Show details and action forms
+                    showDetails(keyData);
+                    
+                    // Hide search results
+                    resultsDiv.style.display = 'none';
+                    
+                    // Scroll to details
+                    display.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
                 function performSearch(query) {
                     loading.style.display = 'block';
                     resultsDiv.style.display = 'none';
@@ -496,13 +510,15 @@ try {
                         if (data.success) {
                             resultsDiv.innerHTML = '';
                             
-                            // Use an Object to ensure unique keys in search results
-                            const uniqueKeys = {};
+                            // Extra safety: Filter out any duplicates in JS too
+                            const uniqueMap = new Map();
                             data.keys.forEach(k => {
-                                uniqueKeys[k.license_key] = k;
+                                if (!uniqueMap.has(k.license_key)) {
+                                    uniqueMap.set(k.license_key, k);
+                                }
                             });
 
-                            Object.values(uniqueKeys).forEach(key => {
+                            uniqueMap.forEach(key => {
                                 const item = document.createElement('a');
                                 item.href = 'javascript:void(0)';
                                 item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
@@ -513,10 +529,9 @@ try {
                                     </div>
                                     <span class="badge bg-purple rounded-pill">${key.duration} ${key.duration_type}</span>
                                 `;
-                                item.onclick = () => {
-                                    showDetails(key);
-                                    resultsDiv.style.display = 'none';
-                                    searchInput.value = key.license_key;
+                                item.onclick = (e) => {
+                                    e.preventDefault();
+                                    selectKey(key);
                                 };
                                 resultsDiv.appendChild(item);
                             });
@@ -565,10 +580,14 @@ try {
                     keyItems.forEach(item => item.style.display = 'block');
                 }
 
-                function selectFromList(key) {
-                    searchInput.value = key;
-                    const event = new Event('input');
-                    searchInput.dispatchEvent(event);
+                function selectFromList(key, modName, duration, durationType) {
+                    const keyData = {
+                        license_key: key,
+                        mod_name: modName,
+                        duration: duration,
+                        duration_type: durationType
+                    };
+                    selectKey(keyData);
                 }
 
                 document.addEventListener('click', function(e) {
