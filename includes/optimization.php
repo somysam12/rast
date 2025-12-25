@@ -1,4 +1,7 @@
 <?php
+// Set timezone to Indian Standard Time (IST)
+date_default_timezone_set('Asia/Kolkata');
+
 if (!headers_sent()) {
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: SAMEORIGIN');

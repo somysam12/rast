@@ -22,7 +22,13 @@ function formatDate($date) {
     if (empty($date)) return 'N/A';
     $timestamp = strtotime($date);
     if ($timestamp === false) return 'N/A';
+    // IST timezone is already set globally in optimization.php
     return date('d M Y H:i', $timestamp);
+}
+
+function getIST() {
+    // Return current time in IST
+    return date('Y-m-d H:i:s');
 }
 
 function getModStats() {
