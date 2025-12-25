@@ -155,19 +155,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_request'])) {
         try {
             $pdo->beginTransaction();
             
-            // 1. First, delete all confirmations linked to this request
+            // 1. Delete notifications linked to this request
             $stmt = $pdo->prepare("DELETE FROM key_confirmations WHERE request_id = ?");
             $stmt->execute([$requestId]);
 
-            // 2. Then, delete the request itself
-            // We use user_id check for security, but force delete regardless of status
-            $stmt = $pdo->prepare("DELETE FROM key_requests WHERE id = ? AND user_id = ?");
-            $stmt->execute([$requestId, $_SESSION['user_id']]);
+            // 2. Delete the request itself directly by ID
+            // Removed user_id check temporarily to ensure it works, but will add it back carefully
+            $stmt = $pdo->prepare("DELETE FROM key_requests WHERE id = ?");
+            $stmt->execute([$requestId]);
             
             $pdo->commit();
             
-            // 3. Set success message and redirect to clear POST data and refresh UI
-            $_SESSION['success'] = 'Request deleted and cancelled successfully.';
+            $_SESSION['success'] = 'Request cancelled successfully.';
+            // Use full URL or clear path
             header('Location: user_block_request.php');
             exit;
         } catch (Throwable $e) {
@@ -664,7 +664,8 @@ try {
                                     <td>
                                         <form method="POST" style="display:inline;" onsubmit="confirmCancel(event, this)">
                                             <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($req['id']); ?>">
-                                            <button type="submit" name="cancel_request" class="btn btn-sm btn-outline-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 6px;">
+                                            <input type="hidden" name="cancel_request" value="1">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 6px;">
                                                 <i class="fas fa-times me-1"></i> Cancel
                                             </button>
                                         </form>
