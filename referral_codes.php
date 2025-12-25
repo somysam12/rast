@@ -534,6 +534,12 @@ try {
                 backdrop-filter: blur(20px);
             }
         }
+        
+        .bg-purple {
+            background-color: var(--purple) !important;
+            color: white !important;
+        }
+    </style>
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
     <script src="assets/js/menu-logic.js"></script>
 </head>
@@ -770,27 +776,27 @@ try {
         <?php if (isset($success) && strpos($success, 'Referral code generated successfully') !== false): 
             $generatedCode = substr($success, strrpos($success, ': ') + 2);
         ?>
-        document.addEventListener('DOMContentLoaded', function() {
-            const code = '<?php echo $generatedCode; ?>';
-            
-            // Auto copy to clipboard
-            navigator.clipboard.writeText(code).then(() => {
-                Swal.fire({
-                    title: 'Generated!',
-                    html: `Referral Code: <b style="color:#8b5cf6; font-size:1.5rem; letter-spacing:2px;">${code}</b><br><br>Code has been auto-copied to clipboard.`,
-                    icon: 'success',
-                    confirmButtonColor: '#8b5cf6',
-                    timer: 5000,
-                    timerProgressBar: true,
-                    showClass: {
-                        popup: 'animate__animated animate__fadeInDown'
-                    },
-                    hideClass: {
-                        popup: 'animate__animated animate__fadeOutUp'
-                    }
+            document.addEventListener('DOMContentLoaded', function() {
+                const code = '<?php echo htmlspecialchars($generatedCode); ?>';
+                
+                // Auto copy to clipboard
+                navigator.clipboard.writeText(code).then(() => {
+                    Swal.fire({
+                        title: 'Generated!',
+                        html: `Referral Code: <b style="color:#8b5cf6; font-size:1.5rem; letter-spacing:2px;">${code}</b><br><br>Code has been auto-copied to clipboard.`,
+                        icon: 'success',
+                        confirmButtonColor: '#8b5cf6',
+                        timer: 5000,
+                        timerProgressBar: true,
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutUp'
+                        }
+                    });
                 });
             });
-        });
         <?php endif; ?>
     </script>
 </body>
