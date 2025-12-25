@@ -168,7 +168,6 @@ foreach ($notifications as $notif) {
                                 </button>
                             </form>
                             <?php endif; ?>
-                            <div class="d-none d-md-flex align-items-center">
                             <div class="text-end me-3">
                                 <div class="fw-bold"><?php echo htmlspecialchars($user['username']); ?></div>
                                 <small class="text-muted">Balance: <?php echo formatCurrency($user['balance']); ?></small>
@@ -232,5 +231,6 @@ foreach ($notifications as $notif) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/dark-mode.js"></script>
-<script src="assets/js/menu-logic.js"></script></body>
+    <script src="assets/js/menu-logic.js"></script>
+</body>
 </html>
