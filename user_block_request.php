@@ -312,103 +312,149 @@ try {
                 
                 <!-- Submit Request Form -->
                 <div class="card-section">
-                    <h5><i class="fas fa-plus-circle me-2"></i>Submit New Request</h5>
+                    <h5><i class="fas fa-search me-2"></i>Find & Select License</h5>
                     
                     <div class="mb-4">
-                        <label class="form-label">Search & Select License Key</label>
+                        <label class="form-label">Search License Key</label>
                         <div class="input-group">
-                            <input type="text" id="keySearchInput" class="form-control" placeholder="Type license key or mod name to search...">
-                            <button class="btn btn-outline-primary" type="button" onclick="filterKeyList()"><i class="fas fa-search"></i></button>
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="licenseSearchInput" class="form-control" placeholder="Paste license key here to verify ownership...">
                         </div>
-                        <div id="keySearchResults" class="list-group mt-2" style="max-height: 200px; overflow-y: auto; display: none;">
-                            <?php foreach ($purchasedKeys as $key): ?>
-                            <button type="button" class="list-group-item list-group-item-action key-item" 
-                                    data-id="<?php echo $key['id']; ?>" 
-                                    data-key="<?php echo htmlspecialchars($key['license_key']); ?>"
-                                    data-mod="<?php echo htmlspecialchars($key['mod_name']); ?>"
-                                    onclick="selectKey('<?php echo $key['id']; ?>', '<?php echo htmlspecialchars($key['mod_name']); ?>', '<?php echo htmlspecialchars($key['license_key']); ?>')">
-                                <strong><?php echo htmlspecialchars($key['mod_name']); ?></strong><br>
-                                <small class="text-muted"><?php echo htmlspecialchars($key['license_key']); ?></small>
-                            </button>
-                            <?php endforeach; ?>
+                        <div id="searchLoading" class="text-center mt-3" style="display: none;">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-2">Verifying key...</span>
                         </div>
+                        <div id="searchError" class="alert alert-danger mt-3" style="display: none;"></div>
                     </div>
 
                     <form method="POST" id="requestForm">
-                        <input type="hidden" name="key_selection" value="dropdown">
-                        <input type="hidden" name="key_id" id="selectedKeyId" required>
+                        <input type="hidden" name="key_selection" value="pasted">
+                        <input type="hidden" name="license_key" id="verifiedLicenseKey">
                         
-                        <div id="selectedKeyDisplay" class="key-display" style="display: none;">
-                            <div class="d-flex justify-content-between align-items-center">
+                        <div id="selectedKeyDisplay" class="key-display shadow-sm border-0" style="display: none; background: linear-gradient(145deg, #ffffff, #f8fafc);">
+                            <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h6 class="mb-1" id="displayModName"></h6>
-                                    <code id="displayLicenseKey"></code>
+                                    <div class="badge bg-primary mb-2">Verified Ownership</div>
+                                    <h5 class="mb-1 text-dark" id="displayModName"></h5>
+                                    <p class="text-muted small mb-3">
+                                        <i class="fas fa-clock me-1"></i>Duration: <span id="displayDuration" class="fw-bold"></span>
+                                    </p>
+                                    <div class="p-2 bg-light rounded border">
+                                        <code id="displayLicenseKey" class="text-primary fw-bold"></code>
+                                    </div>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelection()"><i class="fas fa-times"></i></button>
+                                <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="clearSelection()" title="Clear selection">
+                                    <i class="fas fa-times-circle fa-lg"></i>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label class="form-label">Request Type *</label>
-                                    <select class="form-control" name="request_type" required>
-                                        <option value="">-- Select type --</option>
-                                        <option value="block">Block Key</option>
-                                        <option value="reset">Reset Key</option>
-                                    </select>
+                        <div id="requestDetails" style="display: none;">
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label">Action Required *</label>
+                                        <div class="d-flex gap-3">
+                                            <div class="flex-fill">
+                                                <input type="radio" class="btn-check" name="request_type" id="type_block" value="block" autocomplete="off" required>
+                                                <label class="btn btn-outline-danger w-100 py-3" for="type_block">
+                                                    <i class="fas fa-ban d-block mb-1"></i> Block Key
+                                                </label>
+                                            </div>
+                                            <div class="flex-fill">
+                                                <input type="radio" class="btn-check" name="request_type" id="type_reset" value="reset" autocomplete="off">
+                                                <label class="btn btn-outline-primary w-100 py-3" for="type_reset">
+                                                    <i class="fas fa-redo d-block mb-1"></i> Reset HWID
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="form-group mt-3">
+                                <label class="form-label">Reason for Request *</label>
+                                <textarea class="form-control" name="reason" rows="3" placeholder="Please explain why you want to perform this action..." required></textarea>
+                            </div>
+                            <button type="submit" name="submit_request" class="btn btn-primary w-100 mt-3 py-3 shadow">
+                                <i class="fas fa-paper-plane me-2"></i>Send Request to Admin
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Reason for Request *</label>
-                            <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
-                        </div>
-                        <button type="submit" name="submit_request" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-2"></i>Submit Request
-                        </button>
                     </form>
                 </div>
 
                 <script>
-                function filterKeyList() {
-                    const input = document.getElementById('keySearchInput').value.toLowerCase();
-                    const results = document.getElementById('keySearchResults');
-                    const items = results.getElementsByClassName('key-item');
-                    let hasMatch = false;
+                const searchInput = document.getElementById('licenseSearchInput');
+                const loading = document.getElementById('searchLoading');
+                const errorDiv = document.getElementById('searchError');
+                const display = document.getElementById('selectedKeyDisplay');
+                const requestDetails = document.getElementById('requestDetails');
+                const verifiedKeyInput = document.getElementById('verifiedLicenseKey');
 
-                    if (input.length < 1) {
-                        results.style.display = 'none';
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    const key = this.value.trim();
+                    
+                    if (key.length < 10) {
+                        hideDetails();
                         return;
                     }
 
-                    for (let item of items) {
-                        const key = item.getAttribute('data-key').toLowerCase();
-                        const mod = item.getAttribute('data-mod').toLowerCase();
-                        if (key.includes(input) || mod.includes(input)) {
-                            item.style.display = 'block';
-                            hasMatch = true;
+                    searchTimeout = setTimeout(() => {
+                        performLookup(key);
+                    }, 500);
+                });
+
+                function performLookup(key) {
+                    loading.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    hideDetails();
+
+                    const formData = new FormData();
+                    formData.append('ajax_lookup', '1');
+                    formData.append('license_key', key);
+
+                    fetch('user_block_request.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        loading.style.display = 'none';
+                        if (data.success) {
+                            showDetails(data.key);
                         } else {
-                            item.style.display = 'none';
+                            errorDiv.textContent = data.message;
+                            errorDiv.style.display = 'block';
                         }
-                    }
-                    results.style.display = hasMatch ? 'block' : 'none';
+                    })
+                    .catch(err => {
+                        loading.style.display = 'none';
+                        errorDiv.textContent = 'Connection error. Please try again.';
+                        errorDiv.style.display = 'block';
+                    });
                 }
 
-                document.getElementById('keySearchInput').addEventListener('input', filterKeyList);
+                function showDetails(keyData) {
+                    document.getElementById('displayModName').textContent = keyData.mod_name;
+                    document.getElementById('displayDuration').textContent = `${keyData.duration} ${keyData.duration_type}`;
+                    document.getElementById('displayLicenseKey').textContent = keyData.license_key;
+                    verifiedKeyInput.value = keyData.license_key;
+                    
+                    display.style.display = 'block';
+                    requestDetails.style.display = 'block';
+                }
 
-                function selectKey(id, mod, key) {
-                    document.getElementById('selectedKeyId').value = id;
-                    document.getElementById('displayModName').textContent = mod;
-                    document.getElementById('displayLicenseKey').textContent = key;
-                    document.getElementById('selectedKeyDisplay').style.display = 'block';
-                    document.getElementById('keySearchResults').style.display = 'none';
-                    document.getElementById('keySearchInput').value = '';
+                function hideDetails() {
+                    display.style.display = 'none';
+                    requestDetails.style.display = 'none';
+                    verifiedKeyInput.value = '';
                 }
 
                 function clearSelection() {
-                    document.getElementById('selectedKeyId').value = '';
-                    document.getElementById('selectedKeyDisplay').style.display = 'none';
+                    searchInput.value = '';
+                    hideDetails();
+                    errorDiv.style.display = 'none';
                 }
                 </script>
                 
