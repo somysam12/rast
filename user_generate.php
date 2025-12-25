@@ -113,15 +113,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             $success = 'Purchased ' . $keysSold . ' license key(s) successfully!';
             if (!empty($lastKeys)) {
                 $keysString = implode("\n", $lastKeys);
+                $success .= "<div id='autoCopyData' data-keys='" . htmlspecialchars($keysString) . "' style='display:none;'></div>";
                 $success .= "<script>
-                    setTimeout(() => {
+                    (function() {
                         const keys = " . json_encode($keysString) . ";
-                        navigator.clipboard.writeText(keys).then(() => {
-                            alert('Success! ' + " . count($lastKeys) . " + ' key(s) purchased and copied to clipboard:\\n' + keys);
-                        }).catch(() => {
-                            console.log('Clipboard copy failed');
-                        });
-                    }, 500);
+                        function doCopy() {
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(keys).then(() => {
+                                    alert('Success! ' + " . count($lastKeys) . " + ' key(s) purchased and copied to clipboard:\\n' + keys);
+                                }).catch(err => {
+                                    console.error('Async copy failed', err);
+                                    fallbackCopy(keys);
+                                });
+                            } else {
+                                fallbackCopy(keys);
+                            }
+                        }
+                        function fallbackCopy(text) {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = text;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            try {
+                                document.execCommand('copy');
+                                alert('Success! ' + " . count($lastKeys) . " + ' key(s) purchased and copied to clipboard!');
+                            } catch (err) {
+                                console.error('Fallback copy failed', err);
+                            }
+                            document.body.removeChild(textArea);
+                        }
+                        // Try copying immediately and after a short delay
+                        doCopy();
+                        setTimeout(doCopy, 300);
+                    })();
                 </script>";
             }
 
