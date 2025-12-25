@@ -7,13 +7,11 @@ require_once 'includes/functions.php';
 
 requireAdmin();
 
-// Debug: Check if we reach this point
 if (!isset($_SESSION)) {
     session_start();
 }
 
 if (!isset($_SESSION['user_id'])) {
-    // If not logged in, redirect instead of showing white screen
     header('Location: login.php');
     exit();
 }
@@ -75,459 +73,38 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>License Key List - Multi Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-light: #a78bfa;
-            --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-light: #e2e8f0;
-            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        
-        [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border-light: #334155;
-        }
-        
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            min-height: 100vh;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar {
-            background-color: var(--card-bg);
-            border-right: 1px solid var(--border-light);
-            min-height: 100vh;
-            position: fixed;
-            width: 280px;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-            box-shadow: var(--shadow-light);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(0);
-        }
-        
-        .sidebar.hidden {
-            transform: translateX(-100%);
-        }
-        
-        .sidebar .nav-link {
-            color: var(--text-secondary);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin: 2px 16px;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-        }
-        
-        .sidebar .nav-link:hover {
-            background-color: var(--purple);
-            color: white;
-        }
-        
-        .sidebar .nav-link.active {
-            background-color: var(--purple);
-            color: white;
-        }
-        
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 12px;
-            font-size: 1em;
-        }
-        
-        .main-content {
-            margin-left: 280px;
-            padding: 2rem;
-            min-height: 100vh;
-            transition: margin-left 0.3s ease;
-        }
-        
-        .main-content.full-width {
-            margin-left: 0;
-        }
-        
-        .mobile-header {
-            display: none;
-            background: var(--card-bg);
-            padding: 1rem;
-            box-shadow: var(--shadow-light);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1001;
-            border-bottom: 1px solid var(--border-light);
-            backdrop-filter: blur(20px);
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .mobile-toggle {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            border: none;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow-light);
-            transition: all 0.2s ease;
-        }
-        
-        .mobile-toggle:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .page-header {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--shadow-light);
-        }
-        
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--purple);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-        
-        .filter-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-light);
-            margin-bottom: 1.5rem;
-        }
-        
-        .table-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-light);
-        }
-        
-        .form-control {
-            border-radius: 8px;
-            border: 1px solid var(--border-light);
-            padding: 10px 12px;
-            transition: border-color 0.2s ease;
-            background-color: var(--card-bg);
-            color: var(--text-primary);
-        }
-        
-        .form-control:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-            outline: none;
-        }
-        
-        .btn-primary {
-            background-color: var(--purple);
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--purple-dark);
-            color: white;
-        }
-        
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.875rem;
-        }
-        
-        .table {
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border-light);
-        }
-        
-        .table thead th {
-            background-color: var(--purple);
-            color: white;
-            border: none;
-            font-weight: 600;
-            padding: 12px;
-        }
-        
-        .table tbody tr {
-            transition: background-color 0.2s ease;
-        }
-        
-        .table tbody tr:hover {
-            background-color: rgba(139, 92, 246, 0.05);
-        }
-        
-        .table tbody td {
-            padding: 12px;
-            border: none;
-            border-bottom: 1px solid var(--border-light);
-            color: var(--text-primary);
-        }
-        
-        .badge {
-            font-size: 0.75rem;
-            padding: 0.375rem 0.75rem;
-            border-radius: 6px;
-        }
-        
-        .license-key {
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-            font-size: 0.85rem;
-            background-color: rgba(139, 92, 246, 0.1);
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: var(--purple-dark);
-        }
-        
-        /* Theme toggle button */
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1001;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-light);
-        }
-        
-            transform: scale(1.1);
-        }
-        /* Force mobile header visibility on mobile devices */
-        @media screen and (max-width: 768px) {
-            .mobile-header {
-                display: flex !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                z-index: 1001 !important;
-                background: var(--card-bg) !important;
-                padding: 1rem !important;
-                box-shadow: var(--shadow-light) !important;
-                border-bottom: 1px solid var(--border-light) !important;
-            }
-        }
-        
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                transform: translateX(-100%);
-                background: var(--card-bg);
-                border-right: none;
-                box-shadow: var(--shadow-medium);
-                backdrop-filter: blur(20px);
-                z-index: 1002;
-                pointer-events: none;
-            }
-            
-            .sidebar.show {
-                transform: translateX(0);
-                pointer-events: auto;
-            }
-            
-            .sidebar .nav-link {
-                pointer-events: auto;
-                position: relative;
-                z-index: 1003;
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-                padding-top: 80px; /* Add padding for fixed mobile header */
-            }
-            
-            .mobile-header {
-                display: flex !important;
-                justify-content: space-between;
-                align-items: center;
-                backdrop-filter: blur(20px);
-            }
-            
-            .page-header {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .page-header h2 {
-                font-size: 1.5rem;
-            }
-            
-            .filter-card, .table-card {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .user-avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 1em;
-            }
-            
-            .mobile-toggle {
-                background: var(--gradient-primary);
-                border: none;
-                color: white;
-                padding: 0.75rem;
-                border-radius: 12px;
-                box-shadow: var(--shadow-light);
-                transition: all 0.3s ease;
-                font-size: 1.1rem;
-                min-width: 48px;
-                min-height: 48px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .mobile-toggle:hover {
-                transform: translateY(-2px);
-                box-shadow: var(--shadow-medium);
-            }
-            
-            .mobile-toggle:active {
-                transform: translateY(0) scale(0.95);
-            }
-            
-            .mobile-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                z-index: 1001;
-                pointer-events: none;
-            }
-            
-            .mobile-overlay.show {
-                display: block;
-                pointer-events: auto;
-            }
-            
-            .table-responsive {
-                font-size: 0.9rem;
-            }
-            
-            .table thead th,
-            .table tbody td {
-                padding: 0.5rem;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .main-content {
-                padding: 0.5rem;
-            }
-            
-            .page-header {
-                padding: 1rem;
-            }
-            
-            .filter-card, .table-card {
-                padding: 0.5rem;
-            }
-            
-            .table {
-                font-size: 0.8rem;
-            }
-            
-            .table thead th,
-            .table tbody td {
-                padding: 0.3rem;
-            }
-        }
-        
-        .mobile-menu-btn {
-            display: none;
-        }
-        
-        .mobile-overlay {
-            display: none;
-        }
-    </style>
+    <link href="assets/css/main.css" rel="stylesheet">
+    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Theme Toggle Button -->
-        <i class="fas fa-sun" id="theme-icon"></i>
-    </div>
-    
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
-    
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="d-flex align-items-center">
             <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
                 <i class="fas fa-bars"></i>
             </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: #8b5cf6;"></i>Multi Panel</h5>
         </div>
         <div class="d-flex align-items-center">
             <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: #8b5cf6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
                 <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
             </div>
         </div>
     </div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
     
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-                <div class="position-sticky">
-                    <h4 class="text-center py-3 border-bottom" style="border-color: var(--border-light) !important; color: var(--purple); font-weight: 600;">
-                        <i class="fas fa-shield-alt me-2"></i>Multi Panel
-                    </h4>
-                <nav class="nav flex-column p-3">
+                <div class="p-3">
+                    <h4><i class="fas fa-crown me-2"></i>Multi Panel</h4>
+                    <p class="small mb-0" style="opacity: 0.7;">Admin Dashboard</p>
+                </div>
+                <nav class="nav flex-column">
                     <a class="nav-link" href="admin_dashboard.php">
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
@@ -571,7 +148,6 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-sign-out-alt"></i>Logout
                     </a>
                 </nav>
-                </div>
             </div>
             
             <!-- Main Content -->
@@ -579,149 +155,37 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="page-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-2"><i class="fas fa-key me-2" style="color: var(--purple);"></i>License Key List</h2>
-                            <p class="mb-0" style="color: var(--text-secondary);">Manage and view all license keys with advanced filtering</p>
+                            <h2 class="mb-2"><i class="fas fa-key me-2" style="color: #8b5cf6;"></i>License Key List</h2>
+                            <p class="mb-0 text-muted">Manage and view all license keys with advanced filtering</p>
                         </div>
                         <div class="d-flex align-items-center">
-                            <a href="add_license.php" class="btn btn-primary me-3">
+                            <a href="add_license.php" class="btn btn-primary me-3" style="background: #8b5cf6; border: none;">
                                 <i class="fas fa-plus me-2"></i>Add License Key
                             </a>
-                            <div class="text-end me-3">
-                                <div class="fw-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></div>
-                                <small style="color: var(--text-secondary);">Admin Account</small>
-                            </div>
-                            <div class="user-avatar">
-                                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
-                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Filters -->
-                <div class="filter-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-filter me-2" style="color: var(--purple);"></i>Filter Options</h5>
-                        <span class="badge bg-secondary"><?php echo count($licenseKeys); ?> Total Keys</span>
-                    </div>
-                    <form method="GET" class="row g-3">
-                        <div class="col-md-4">
-                            <label for="mod_id" class="form-label fw-bold">
-                                <i class="fas fa-list me-2" style="color: var(--purple);"></i>Filter by Mod:
-                            </label>
-                            <select class="form-control" id="mod_id" name="mod_id">
-                                <option value="">All Mods</option>
-                                <?php foreach ($mods as $mod): ?>
-                                <option value="<?php echo $mod['id']; ?>" 
-                                        <?php echo $filters['mod_id'] == $mod['id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($mod['name']); ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="status" class="form-label fw-bold">
-                                <i class="fas fa-toggle-on me-2" style="color: var(--purple);"></i>Filter by Status:
-                            </label>
-                            <select class="form-control" id="status" name="status">
-                                <option value="">All Statuses</option>
-                                <option value="available" <?php echo $filters['status'] === 'available' ? 'selected' : ''; ?>>Available</option>
-                                <option value="sold" <?php echo $filters['status'] === 'sold' ? 'selected' : ''; ?>>Sold</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="search" class="form-label fw-bold">
-                                <i class="fas fa-search me-2" style="color: var(--purple);"></i>Search License Key or Mod
-                            </label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="search" name="search" 
-                                       value="<?php echo htmlspecialchars($filters['search']); ?>" 
-                                       placeholder="Search...">
-                                <button class="btn btn-outline-secondary" type="submit">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary me-2">
-                                <i class="fas fa-filter me-2"></i>Apply
-                            </button>
-                            <a href="licence_key_list.php" class="btn btn-secondary">
-                                <i class="fas fa-times me-2"></i>Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- License Keys Table -->
-                <div class="table-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-table me-2" style="color: var(--purple);"></i>License Key Overview</h5>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-success">Available: <?php echo count(array_filter($licenseKeys, function($k) { return $k['status'] === 'available'; })); ?></span>
-                            <span class="badge bg-danger">Sold: <?php echo count(array_filter($licenseKeys, function($k) { return $k['status'] === 'sold'; })); ?></span>
-                        </div>
-                    </div>
+                <div class="table-card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th><i class="fas fa-hashtag me-2"></i>ID</th>
-                                    <th><i class="fas fa-tag me-2"></i>Mod Name</th>
-                                    <th><i class="fas fa-key me-2"></i>License Key</th>
-                                    <th><i class="fas fa-clock me-2"></i>Duration</th>
-                                    <th><i class="fas fa-rupee-sign me-2"></i>Price (INR)</th>
-                                    <th><i class="fas fa-toggle-on me-2"></i>Status</th>
-                                    <th><i class="fas fa-calendar me-2"></i>Created At</th>
-                                    <th><i class="fas fa-cog me-2"></i>Actions</th>
+                                    <th>License Key</th>
+                                    <th>Mod Name</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($licenseKeys)): ?>
+                                <?php foreach ($licenseKeys as $key): ?>
                                 <tr>
-                                    <td colspan="8" class="text-center py-5" style="color: var(--text-secondary);">
-                                        <i class="fas fa-key fa-3x mb-3"></i><br>
-                                        <h6>No license keys found</h6>
-                                        <p class="mb-3">Try adjusting your filters or add some license keys</p>
-                                        <a href="add_license.php" class="btn btn-primary">
-                                            <i class="fas fa-plus me-2"></i>Add First License Key
-                                        </a>
-                                    </td>
+                                    <td><code><?php echo htmlspecialchars($key['license_key']); ?></code></td>
+                                    <td><?php echo htmlspecialchars($key['mod_name']); ?></td>
+                                    <td><span class="badge bg-<?php echo $key['status'] === 'available' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($key['status']); ?></span></td>
+                                    <td><?php echo $key['created_at']; ?></td>
                                 </tr>
-                                <?php else: ?>
-                                    <?php foreach ($licenseKeys as $key): ?>
-                                    <tr>
-                                        <td><strong>#<?php echo $key['id']; ?></strong></td>
-                                        <td><strong><?php echo htmlspecialchars($key['mod_name']); ?></strong></td>
-                                        <td>
-                                            <span class="license-key"><?php echo htmlspecialchars($key['license_key']); ?></span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary">
-                                                <?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?>
-                                            </span>
-                                        </td>
-                                        <td><?php echo formatCurrency($key['price']); ?></td>
-                                        <td>
-                                            <span class="badge bg-<?php echo $key['status'] === 'available' ? 'success' : 'danger'; ?>">
-                                                <?php echo ucfirst($key['status']); ?>
-                                            </span>
-                                        </td>
-                                        <td style="color: var(--text-secondary);"><?php echo formatDate($key['created_at']); ?></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary me-1" 
-                                                    onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')" 
-                                                    title="Copy Key">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-secondary" 
-                                                    onclick="deleteKey(<?php echo $key['id']; ?>)" 
-                                                    title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
@@ -732,300 +196,13 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Theme functionality
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeIcon(savedTheme);
-        }
-        
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        }
-        
-        function updateThemeIcon(theme) {
-            const themeIcon = document.getElementById('theme-icon');
-            themeIcon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        }
-        
-        // Initialize theme on page load
-        document.addEventListener('DOMContentLoaded', initTheme);
-        
-        // Mobile menu functionality
-        // Mobile Navigation (optimized)
-                    document.body.style.overflow = "";
-                }
-            }
-        }
-        // Mobile nav links - close sidebar and allow navigation
-        document.addEventListener("DOMContentLoaded", function() {
-            const links = document.querySelectorAll(".sidebar .nav-link");
-            const sidebar = document.querySelector(".sidebar");
-            const overlay = document.querySelector(".mobile-overlay");
-            links.forEach(link => {
-                link.addEventListener("click", function() {
-                    if (window.innerWidth <= 991) {
-                        document.body.style.overflow = "";
-                    }
-                });
-            });
-            if (overlay) {
-            }
-        });
-        window.addEventListener("resize", function() {
-            if (window.innerWidth > 991) {
-                const sidebar = document.querySelector(".sidebar");
-                const overlay = document.querySelector(".mobile-overlay");
-                document.body.style.overflow = "";
-            }
-        });
-                
-                // Add touch event support for mobile
-                link.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    if (window.innerWidth <= 768) {
-                        // Trigger click event
-                        link.click();
-                    }
-                });
-            });
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
+        function toggleSidebar(e) {
+            if (e) e.preventDefault();
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
-            const mainContent = document.querySelector('.main-content');
-            const body = document.body;
-            
-            if (window.innerWidth > 768) {
-                // Desktop view
-                overlay.classList.remove('show');
-                sidebar.classList.remove('show');
-                body.style.overflow = '';
-                if (!sidebar.classList.contains('hidden')) {
-                    mainContent.classList.remove('full-width');
-                }
-            } else {
-                // Mobile view
-                sidebar.classList.remove('show');
-                overlay.classList.remove('show');
-                mainContent.classList.remove('full-width');
-                body.style.overflow = '';
-            }
-        });
-        
-        // Ensure mobile header is visible on mobile devices
-        function checkMobileView() {
-            const mobileHeader = document.querySelector('.mobile-header');
-            const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            if (isMobile) {
-                mobileHeader.style.display = 'flex';
-                mobileHeader.style.position = 'fixed';
-                mobileHeader.style.top = '0';
-                mobileHeader.style.left = '0';
-                mobileHeader.style.right = '0';
-                mobileHeader.style.width = '100%';
-                mobileHeader.style.zIndex = '1001';
-            } else {
-                mobileHeader.style.display = 'none';
-            }
+            if (sidebar) sidebar.classList.toggle('show');
+            if (overlay) overlay.classList.toggle('show');
         }
-        
-        // Check on load and resize
-        document.addEventListener('DOMContentLoaded', checkMobileView);
-        window.addEventListener('resize', checkMobileView);
-        
-        // Force mobile header visibility on small screens
-        setTimeout(() => {
-            if (window.innerWidth <= 768) {
-                const mobileHeader = document.querySelector('.mobile-header');
-                mobileHeader.style.display = 'flex';
-                mobileHeader.style.position = 'fixed';
-                mobileHeader.style.top = '0';
-                mobileHeader.style.left = '0';
-                mobileHeader.style.right = '0';
-                mobileHeader.style.width = '100%';
-                mobileHeader.style.zIndex = '1001';
-            }
-        }, 100);
-        
-        // Emergency mobile header fix
-        function forceMobileHeader() {
-            const mobileHeader = document.querySelector('.mobile-header');
-            if (mobileHeader && window.innerWidth <= 768) {
-                mobileHeader.style.cssText = `
-                    display: flex !important;
-                    position: fixed !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    right: 0 !important;
-                    width: 100% !important;
-                    z-index: 1001 !important;
-                    background: var(--card-bg) !important;
-                    padding: 1rem !important;
-                    box-shadow: var(--shadow-light) !important;
-                    border-bottom: 1px solid var(--border-light) !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                `;
-            }
-        }
-        
-        // Run on load and after a delay
-        document.addEventListener('DOMContentLoaded', forceMobileHeader);
-        setTimeout(forceMobileHeader, 500);
-        window.addEventListener('resize', forceMobileHeader);
-        
-        // Enhanced copy to clipboard function
-        function copyToClipboard(text) {
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(function() {
-                    showToast('License key copied to clipboard!', 'success');
-                }, function(err) {
-                    console.error('Could not copy text: ', err);
-                    fallbackCopyTextToClipboard(text);
-                });
-            } else {
-                fallbackCopyTextToClipboard(text);
-            }
-        }
-        
-        // Fallback copy function
-        function fallbackCopyTextToClipboard(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.top = '0';
-            textArea.style.left = '0';
-            textArea.style.position = 'fixed';
-            
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showToast('License key copied to clipboard!', 'success');
-                } else {
-                    showToast('Failed to copy license key', 'error');
-                }
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-                showToast('Copy failed. Please copy manually', 'error');
-            }
-            
-            document.body.removeChild(textArea);
-        }
-        
-        // Toast notification function
-        function showToast(message, type = 'info') {
-            // Remove existing toast if any
-            const existingToast = document.querySelector('.toast-notification');
-            if (existingToast) {
-                existingToast.remove();
-            }
-            
-            const toast = document.createElement('div');
-            toast.className = `toast-notification toast-${type}`;
-            toast.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 10001;
-                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#6b7280'};
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                font-weight: 500;
-                opacity: 0;
-                transform: translateX(100%);
-                transition: all 0.3s ease;
-            `;
-            
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fas ${icon} me-2"></i>${message}`;
-            
-            document.body.appendChild(toast);
-            
-            // Animate in
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // Auto remove after 3 seconds
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.parentNode.removeChild(toast);
-                    }
-                }, 300);
-            }, 3000);
-        }
-        
-        // Enhanced delete function
-        function deleteKey(keyId) {
-            if (confirm('Are you sure you want to delete this license key? This action cannot be undone.')) {
-                // Show loading state
-                const deleteBtn = event.target.closest('button');
-                const originalHTML = deleteBtn.innerHTML;
-                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                deleteBtn.disabled = true;
-                
-                // Simulate delete (you can implement actual delete functionality here)
-                setTimeout(() => {
-                    showToast('Delete functionality will be implemented in backend', 'error');
-                    deleteBtn.innerHTML = originalHTML;
-                    deleteBtn.disabled = false;
-                }, 1000);
-            }
-        }
-        
-        // Auto-refresh functionality
-        let autoRefresh = false;
-        let refreshInterval;
-        
-        function toggleAutoRefresh() {
-            autoRefresh = !autoRefresh;
-            if (autoRefresh) {
-                refreshInterval = setInterval(() => {
-                    window.location.reload();
-                }, 30000); // Refresh every 30 seconds
-                showToast('Auto-refresh enabled (30s)', 'success');
-            } else {
-                clearInterval(refreshInterval);
-                showToast('Auto-refresh disabled', 'info');
-            }
-        }
-        
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Ctrl/Cmd + R for refresh
-            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-                e.preventDefault();
-                window.location.reload();
-            }
-            
-            // Ctrl/Cmd + F for focus search
-            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-                e.preventDefault();
-                const searchInput = document.getElementById('search');
-                if (searchInput) {
-                    searchInput.focus();
-                }
-            }
-        });
     </script>
-<script src="assets/js/menu-logic.js"></script></body>
+</body>
 </html>

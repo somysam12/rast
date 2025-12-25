@@ -42,7 +42,6 @@ try {
     }
 } catch (Exception $e) {
     $users = [];
-    $error = 'Failed to fetch users: ' . $e->getMessage();
 }
 
 // Get transactions
@@ -54,7 +53,6 @@ try {
     }
 } catch (Exception $e) {
     $transactions = [];
-    $error = 'Failed to fetch transactions: ' . $e->getMessage();
 }
 
 // Get transaction statistics
@@ -75,9 +73,7 @@ try {
             FROM transactions");
         $transactionStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: $transactionStats;
     }
-} catch (Exception $e) {
-    // Use defaults
-}
+} catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,139 +83,98 @@ try {
     <title>Transactions - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --border-light: #e2e8f0;
-        }
-    </style>
+    <link href="assets/css/main.css" rel="stylesheet">
+    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container-fluid" style="display: flex; min-height: 100vh;">
-        <div style="background: #fff; border-right: 1px solid #e0e0e0; width: 280px; padding: 20px;">
-            <h5 style="margin-bottom: 30px;"><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
-            <nav class="nav flex-column gap-2">
-                <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
-                <a class="nav-link" href="add_balance.php"><i class="fas fa-plus-circle me-2"></i>Add Balance</a>
-                <a class="nav-link" href="manage_users.php"><i class="fas fa-users me-2"></i>Manage Users</a>
-                <a class="nav-link active" href="transactions.php"><i class="fas fa-exchange-alt me-2"></i>Transaction</a>
-            </nav>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="d-flex align-items-center">
+            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: #8b5cf6;"></i>Multi Panel</h5>
         </div>
+        <div class="d-flex align-items-center">
+            <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?></span>
+            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: #8b5cf6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                <?php echo strtoupper(substr($_SESSION['username'] ?? 'AD', 0, 2)); ?>
+            </div>
+        </div>
+    </div>
 
-        <div style="flex: 1; padding: 30px;">
-            <h2 style="margin-bottom: 30px;">Transaction History</h2>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                    <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Transactions</div>
-                    <h3><?php echo (int)($transactionStats['total_transactions'] ?? 0); ?></h3>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
+                <div class="p-3">
+                    <h4><i class="fas fa-crown me-2"></i>Multi Panel</h4>
+                    <p class="small mb-0" style="opacity: 0.7;">Admin Dashboard</p>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                    <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Income</div>
-                    <h3><?php echo formatCurrency($transactionStats['total_income'] ?? 0); ?></h3>
-                </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                    <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Expenses</div>
-                    <h3><?php echo formatCurrency($transactionStats['total_expenses'] ?? 0); ?></h3>
-                </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                    <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Completed</div>
-                    <h3><?php echo (int)($transactionStats['completed_transactions'] ?? 0); ?></h3>
-                </div>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
+                    <a class="nav-link" href="add_balance.php"><i class="fas fa-plus-circle me-2"></i>Add Balance</a>
+                    <a class="nav-link" href="manage_users.php"><i class="fas fa-users me-2"></i>Manage Users</a>
+                    <a class="nav-link active" href="transactions.php"><i class="fas fa-exchange-alt me-2"></i>Transaction</a>
+                    <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                </nav>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                <h4 style="margin-bottom: 20px;">Transaction Filters</h4>
-                <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <input type="text" name="search" placeholder="Search username or reference..." value="<?php echo htmlspecialchars($filters['search'] ?? ''); ?>" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                    <select name="user_id" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                        <option value="">All Users</option>
-                        <?php foreach ($users as $user): ?>
-                            <option value="<?php echo $user['id']; ?>" <?php echo isset($filters['user_id']) && $filters['user_id'] == $user['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($user['username']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <select name="status" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                        <option value="">All Statuses</option>
-                        <option value="completed" <?php echo $filters['status'] == 'completed' ? 'selected' : ''; ?>>Completed</option>
-                        <option value="pending" <?php echo $filters['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
-                        <option value="failed" <?php echo $filters['status'] == 'failed' ? 'selected' : ''; ?>>Failed</option>
-                    </select>
-                    <button type="submit" style="background: var(--purple-dark); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;">Apply Filters</button>
-                    <a href="transactions.php" style="background: #666; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; text-align: center; text-decoration: none;">Reset Filters</a>
-                </form>
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <h2 class="mb-4">Transaction History</h2>
 
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 12px; text-align: left;">Date</th>
-                                <th style="padding: 12px; text-align: left;">User</th>
-                                <th style="padding: 12px; text-align: left;">Amount</th>
-                                <th style="padding: 12px; text-align: left;">Description</th>
-                                <th style="padding: 12px; text-align: left;">Type</th>
-                                <th style="padding: 12px; text-align: left;">Status</th>
-                                <th style="padding: 12px; text-align: left;">Reference</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($transactions)): ?>
-                                <?php foreach ($transactions as $transaction): ?>
-                                    <tr style="border-bottom: 1px solid #e0e0e0;">
-                                        <td style="padding: 12px;"><?php echo formatDate($transaction['created_at'] ?? ''); ?></td>
-                                        <td style="padding: 12px;"><?php echo htmlspecialchars($transaction['username'] ?? 'N/A'); ?></td>
-                                        <td style="padding: 12px; font-weight: 500; <?php echo $transaction['amount'] < 0 ? 'color: #ef4444;' : 'color: #10b981;'; ?>">
-                                            <?php echo ($transaction['amount'] < 0 ? '-' : '+') . formatCurrency(abs($transaction['amount'] ?? 0)); ?>
-                                        </td>
-                                        <td style="padding: 12px;">
-                                            <div style="font-size: 0.9em; color: #333; font-weight: 500;"><?php echo htmlspecialchars($transaction['description'] ?? ''); ?></div>
-                                            <?php if (!empty($transaction['reference']) && strpos($transaction['reference'], 'License purchase #') === 0): ?>
-                                                <?php 
-                                                $keyId = str_replace('License purchase #', '', $transaction['reference']);
-                                                $stmt = $pdo->prepare("SELECT license_key FROM license_keys WHERE id = ?");
-                                                $stmt->execute([$keyId]);
-                                                $lkey = $stmt->fetchColumn();
-                                                if ($lkey): ?>
-                                                    <div style="font-size: 0.8em; color: #8b5cf6; margin-top: 4px; font-family: monospace; background: #f3f0ff; padding: 2px 6px; border-radius: 4px; display: inline-block;">
-                                                        <i class="fas fa-key me-1"></i><?php echo htmlspecialchars($lkey); ?>
-                                                    </div>
-                                                <?php endif; ?>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td style="padding: 12px;"><?php echo htmlspecialchars($transaction['type'] ?? ''); ?></td>
-                                        <td style="padding: 12px;">
-                                            <?php 
-                                            $status = $transaction['status'] ?? 'unknown';
-                                            if ($status == 'completed') {
-                                                $bg = 'background: #d1fae5; color: #065f46;';
-                                            } elseif ($status == 'pending') {
-                                                $bg = 'background: #fef3c7; color: #92400e;';
-                                            } else {
-                                                $bg = 'background: #fee2e2; color: #7f1d1d;';
-                                            }
-                                            ?>
-                                            <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; <?php echo $bg; ?>">
-                                                <?php echo htmlspecialchars($status); ?>
-                                            </span>
-                                        </td>
-                                        <td style="padding: 12px;"><?php echo htmlspecialchars($transaction['reference'] ?? ''); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Income</div>
+                            <h3><?php echo formatCurrency($transactionStats['total_income'] ?? 0); ?></h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
                                 <tr>
-                                    <td colspan="6" style="padding: 20px; text-align: center; color: #888;">No transactions found</td>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
                                 </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($transactions as $transaction): ?>
+                                <tr>
+                                    <td><?php echo $transaction['created_at']; ?></td>
+                                    <td><?php echo htmlspecialchars($transaction['username'] ?? 'N/A'); ?></td>
+                                    <td style="<?php echo $transaction['amount'] < 0 ? 'color: #ef4444;' : 'color: #10b981;'; ?>">
+                                        <?php echo ($transaction['amount'] < 0 ? '-' : '+') . formatCurrency(abs($transaction['amount'] ?? 0)); ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($transaction['type']); ?></td>
+                                    <td><span class="badge bg-<?php echo $transaction['status'] === 'completed' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($transaction['status']); ?></span></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        function toggleSidebar(e) {
+            if (e) e.preventDefault();
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (sidebar) sidebar.classList.toggle('show');
+            if (overlay) overlay.classList.toggle('show');
+        }
+    </script>
 </body>
 </html>

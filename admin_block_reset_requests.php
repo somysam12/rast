@@ -35,17 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $stmt->execute([$newStatus, $requestId]);
                 
                 // Create confirmation notification
-                if ($action === 'approve') {
-                    $msgText = "Your request to {$request['request_type']} the key for {$request['mod_name']} has been approved. Your key has been {$request['request_type']}ed.";
-                    $actionType = $request['request_type'];
-                } else {
-                    $msgText = "Your request to {$request['request_type']} the key for {$request['mod_name']} has been rejected.";
-                    $actionType = $request['request_type'];
-                }
+                $msgText = "Your request to {$request['request_type']} the key for {$request['mod_name']} has been " . ($action === 'approve' ? 'approved' : 'rejected') . ".";
                 
                 $stmt = $pdo->prepare("INSERT INTO key_confirmations (user_id, request_id, action_type, message) 
                                       VALUES (?, ?, ?, ?)");
-                $stmt->execute([$request['user_id'], $requestId, $actionType, $msgText]);
+                $stmt->execute([$request['user_id'], $requestId, $request['request_type'], $msgText]);
                 
                 $message = $action === 'approve' ? 'Request approved!' : 'Request rejected!';
                 $messageType = 'success';
@@ -57,33 +51,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Get pending requests with key details
+// Get pending requests
 $pendingRequests = [];
 try {
-    // We use a clean query to only fetch what is currently in the database
-    // This ensures that if a row is deleted, it stops appearing immediately
-    $stmt = $pdo->query("SELECT 
-                            kr.id, 
-                            kr.user_id, 
-                            kr.key_id, 
-                            kr.request_type, 
-                            kr.mod_name, 
-                            kr.reason, 
-                            kr.status, 
-                            kr.created_at, 
-                            u.username, 
-                            lk.license_key, 
-                            lk.duration, 
-                            lk.duration_type 
+    $stmt = $pdo->query("SELECT kr.*, u.username, lk.license_key 
                         FROM key_requests kr 
                         JOIN users u ON kr.user_id = u.id 
                         LEFT JOIN license_keys lk ON lk.id = kr.key_id
                         WHERE kr.status = 'pending'
                         ORDER BY kr.created_at DESC");
     $pendingRequests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    // Handle error
-}
+} catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -93,300 +71,115 @@ try {
     <title>Block And Reset Requests - Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #f9fafb;
-            --card: #ffffff;
-            --text: #374151;
-            --muted: #6b7280;
-            --line: #e5e7eb;
-            --purple: #8b5cf6;
-            --purple-600: #7c3aed;
-            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-        
-        [data-theme="dark"] {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --muted: #94a3b8;
-            --line: #334155;
-        }
-        
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-        }
-        
-        .navbar-custom {
-            background: var(--card);
-            border-bottom: 1px solid var(--line);
-            padding: 1rem 1.5rem;
-        }
-        
-        .container-custom {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        
-        .card-custom {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-light);
-        }
-        
-        .request-card {
-            background: var(--bg);
-            border-left: 4px solid var(--purple);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .request-card.block {
-            border-left-color: #ef4444;
-        }
-        
-        .request-card.reset {
-            border-left-color: #f59e0b;
-        }
-        
-        .btn-back {
-            margin-bottom: 2rem;
-        }
-        
-        .btn-back a {
-            color: var(--purple);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .btn-back a:hover {
-            text-decoration: underline;
-        }
-        
-        .request-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .request-user {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .request-type-badge {
-            padding: 0.35rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-        
-        .request-type-badge.block {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .request-type-badge.reset {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .key-details {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .key-detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--line);
-        }
-        
-        .key-detail-row:last-child {
-            border-bottom: none;
-        }
-        
-        .key-detail-label {
-            font-weight: 600;
-            color: var(--muted);
-        }
-        
-        .key-detail-value {
-            color: var(--text);
-            font-family: 'Courier New', monospace;
-        }
-        
-        .reason-box {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        
-        .btn-approve {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        
-        .btn-approve:hover {
-            background: #059669;
-        }
-        
-        .btn-reject {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        
-        .btn-reject:hover {
-            background: #dc2626;
-        }
-        
-        .total-pending {
-            background: var(--purple);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        
-        .total-pending-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-    </style>
-    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
-    <link href="assets/css/dark-mode.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
-    <div class="navbar-custom">
-        <div class="container-custom">
-            <h1 style="color: var(--purple); margin: 0; font-weight: 700;">Block And Reset Requests</h1>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="d-flex align-items-center">
+            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: #8b5cf6;"></i>Multi Panel</h5>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: #8b5cf6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+            </div>
         </div>
     </div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
     
-    <div class="container-custom">
-        <div class="btn-back">
-            <a href="admin_dashboard.php">← Back to Dashboard</a>
-        </div>
-        
-        <?php if ($message): ?>
-            <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($message); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
+                <div class="p-3">
+                    <h4><i class="fas fa-crown me-2"></i>Multi Panel</h4>
+                    <p class="small mb-0" style="opacity: 0.7;">Admin Dashboard</p>
+                </div>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+                    <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod Name</a>
+                    <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
+                    <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload Mod APK</a>
+                    <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i>Mod APK List</a>
+                    <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License Key</a>
+                    <a class="nav-link" href="licence_key_list.php"><i class="fas fa-key"></i>License Key List</a>
+                    <a class="nav-link" href="available_keys.php"><i class="fas fa-key"></i>Available Keys</a>
+                    <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+                    <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
+                    <a class="nav-link" href="transactions.php"><i class="fas fa-exchange-alt"></i>Transaction</a>
+                    <a class="nav-link" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Code</a>
+                    <a class="nav-link active" href="admin_block_reset_requests.php"><i class="fas fa-shield-alt"></i>Block & Reset Requests</a>
+                    <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt"></i>Logout</a>
+                </nav>
             </div>
-        <?php endif; ?>
-        
-        <div class="total-pending">
-            <div>Total Pending Requests:</div>
-            <div class="total-pending-number"><?php echo count($pendingRequests); ?></div>
-        </div>
-        
-        <?php if (empty($pendingRequests)): ?>
-            <div class="card-custom text-center">
-                <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--purple); margin-bottom: 1rem; display: block;"></i>
-                <p style="color: var(--muted);">No pending requests at this moment.</p>
-            </div>
-        <?php else: ?>
-            <?php foreach ($pendingRequests as $request): ?>
-                <div class="request-card <?php echo htmlspecialchars($request['request_type']); ?>">
-                    <div class="request-header">
-                        <div class="request-user">
-                            <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
-                            <div>
-                                <div><?php echo htmlspecialchars($request['username']); ?></div>
-                                <div style="font-size: 0.85em; color: var(--muted); font-weight: 400;">
-                                    Request Date: <?php echo formatDate($request['created_at']); ?>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="request-type-badge <?php echo htmlspecialchars($request['request_type']); ?>">
-                            <?php echo strtoupper($request['request_type']); ?>
-                        </span>
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <div class="page-header">
+                    <h2 class="mb-2">Block And Reset Requests</h2>
+                    <p class="text-muted">Manage user requests for key resets or blocks</p>
+                </div>
+                
+                <?php if ($message): ?>
+                    <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
+                        <?php echo htmlspecialchars($message); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
-                    
-                    <!-- Key Details -->
-                    <div class="key-details">
-                        <div class="key-detail-row">
-                            <span class="key-detail-label">Product:</span>
-                            <span class="key-detail-value"><?php echo htmlspecialchars($request['mod_name']); ?></span>
-                        </div>
-                        <div class="key-detail-row">
-                            <span class="key-detail-label">Duration:</span>
-                            <span class="key-detail-value"><?php echo htmlspecialchars($request['duration'] . ' ' . ucfirst($request['duration_type'])); ?></span>
-                        </div>
-                        <div class="key-detail-row">
-                            <span class="key-detail-label">License Key:</span>
-                            <span class="key-detail-value"><?php echo htmlspecialchars(substr($request['license_key'], 0, 30)) . (strlen($request['license_key']) > 30 ? '...' : ''); ?></span>
-                        </div>
-                    </div>
-                    
-                    <!-- Reason -->
-                    <div>
-                        <strong style="color: var(--muted);">Reason:</strong>
-                        <div class="reason-box">
-                            <?php echo htmlspecialchars($request['reason']); ?>
-                        </div>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="action-buttons">
-                        <form method="POST" style="display: inline;">
-                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                            <button type="submit" name="action" value="approve" class="btn-approve">
-                                <i class="fas fa-check me-2"></i>Approve
-                            </button>
-                        </form>
-                        <form method="POST" style="display: inline;">
-                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                            <button type="submit" name="action" value="reject" class="btn-reject">
-                                <i class="fas fa-times me-2"></i>Reject
-                            </button>
-                        </form>
+                <?php endif; ?>
+                
+                <div class="table-card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Type</th>
+                                    <th>Mod</th>
+                                    <th>Reason</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($pendingRequests as $req): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($req['username']); ?></td>
+                                    <td><span class="badge bg-<?php echo $req['request_type'] === 'reset' ? 'warning' : 'danger'; ?>"><?php echo strtoupper($req['request_type']); ?></span></td>
+                                    <td><?php echo htmlspecialchars($req['mod_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($req['reason']); ?></td>
+                                    <td><?php echo formatDate($req['created_at']); ?></td>
+                                    <td>
+                                        <form method="POST" style="display: inline;">
+                                            <input type="hidden" name="request_id" value="<?php echo $req['id']; ?>">
+                                            <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
+                                            <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">Reject</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+            </main>
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/dark-mode.js"></script>
+    <script>
+        function toggleSidebar(e) {
+            if (e) e.preventDefault();
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (sidebar) sidebar.classList.toggle('show');
+            if (overlay) overlay.classList.toggle('show');
+        }
+    </script>
 </body>
 </html>
