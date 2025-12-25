@@ -274,24 +274,42 @@ if ($_POST) {
         
         .theme-toggle {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            width: 44px;
-            height: 44px;
-            display: flex;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: var(--card) !important;
+            border: 2px solid var(--line) !important;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex !important;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            color: var(--text-secondary);
-            box-shadow: var(--shadow-medium);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 0;
+            font-size: 20px;
+            color: var(--text);
         }
-        
         .theme-toggle:hover {
+            transform: scale(1.1);
+            color: var(--accent);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+        @media (max-width: 768px) {
+            .theme-toggle {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 18px !important;
+                top: 12px !important;
+                right: 12px !important;
+                z-index: 1050 !important;
+            }
+        }
             color: var(--purple);
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
@@ -361,177 +379,3 @@ if ($_POST) {
                 padding: 12px 20px;
             }
             
-            .theme-toggle {
-                top: 16px;
-                right: 16px;
-                width: 40px;
-                height: 40px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Theme Toggle -->
-    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-        <i class="fas fa-moon" id="darkModeIcon"></i>
-    </button>
-    
-    <div class="login-container">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-lg-5 col-xl-4">
-                    <div class="login-card">
-                        <div class="login-header">
-                            <div class="logo">
-                                <div class="mb-3">
-                                    <i class="fas fa-crown fa-3x"></i>
-                                </div>
-                                <h3 class="mb-2">SilentMultiPanel Panel</h3>
-                                <p class="mb-0">Welcome back! Sign in to your account</p>
-                            </div>
-                        </div>
-                        <div class="login-body">
-                            <?php if ($error): ?>
-                                <div class="alert alert-danger" role="alert">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <?php echo htmlspecialchars($error); ?>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <form method="POST" class="needs-validation" novalidate>
-                                <div class="input-group">
-                                    <input type="text" class="form-control with-icon" id="username" name="username" 
-                                           value="<?php echo htmlspecialchars($username ?? ''); ?>" 
-                                           placeholder="Username or Email" required>
-                                    <i class="fas fa-user input-icon"></i>
-                                    <div class="invalid-feedback">
-                                        Please enter your username or email.
-                                    </div>
-                                </div>
-                                
-                                <div class="input-group">
-                                    <input type="password" class="form-control with-icon" id="password" name="password" 
-                                           placeholder="Password" required>
-                                    <i class="fas fa-lock input-icon"></i>
-                                    <button type="button" class="password-toggle" onclick="togglePassword()">
-                                        <i class="fas fa-eye" id="passwordIcon"></i>
-                                    </button>
-                                    <div class="invalid-feedback">
-                                        Please enter your password.
-                                    </div>
-                                </div>
-                                
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="force_logout" name="force_logout">
-                                    <label class="form-check-label" for="force_logout">
-                                        <i class="fas fa-mobile-alt me-1"></i>
-                                        Force logout from other devices
-                                    </label>
-                                    <small class="form-text text-muted d-block mt-1">
-                                        Check this if you want to login from this device and logout from all other devices
-                                    </small>
-                                </div>
-                                
-                                <button type="submit" class="btn btn-primary btn-login w-100 mb-4">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
-                                </button>
-                            </form>
-                            
-                            <div class="text-center">
-                                <p class="mb-3">Don't have an account? 
-                                    <a href="register.php" class="register-link">Create one here</a>
-                                </p>
-                                
-                                <p class="mb-3">
-                                    <a href="reset_device.php" class="register-link">
-                                        <i class="fas fa-mobile-alt me-1"></i>
-                                        Reset Device (Logout from all devices)
-                                    </a>
-                                </p>
-                                
-                                <div class="info-card text-center">
-                                    <small>
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        <strong>One Device Login:</strong> You can only be logged in from one device at a time. Use "Force logout from other devices" option or reset device if needed.
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Dark mode functionality
-        function toggleDarkMode() {
-            const body = document.body;
-            const icon = document.getElementById('darkModeIcon');
-            
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                icon.className = 'fas fa-sun';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-        
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            document.getElementById('darkModeIcon').className = 'fas fa-sun';
-        }
-        
-        // Password toggle functionality
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const passwordIcon = document.getElementById('passwordIcon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                passwordIcon.className = 'fas fa-eye-slash';
-            } else {
-                passwordInput.type = 'password';
-                passwordIcon.className = 'fas fa-eye';
-            }
-        }
-        
-        // Form validation
-        (function() {
-            'use strict';
-            window.addEventListener('load', function() {
-                var forms = document.getElementsByClassName('needs-validation');
-                var validation = Array.prototype.filter.call(forms, function(form) {
-                    form.addEventListener('submit', function(event) {
-                        if (form.checkValidity() === false) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-                        form.classList.add('was-validated');
-                    }, false);
-                });
-            }, false);
-        })();
-        
-        // Auto-hide alerts
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    alert.style.opacity = '0';
-                    alert.style.transform = 'translateY(-10px)';
-                    setTimeout(() => {
-                        alert.style.display = 'none';
-                    }, 300);
-                }, 5000);
-            });
-        });
-    </script>
-</body>
-</html>

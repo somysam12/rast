@@ -587,5 +587,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         </div>
     </div>
     
+        
+        // Mobile Button Touch Support (Auto-Init)
+        (function() {
+            const initMobileButtons = () => {
+                // Make all buttons touch-responsive
+                document.querySelectorAll("button, [onclick], .btn, a.nav-link").forEach(el => {
+                    // Add touch feedback
+                    el.addEventListener("touchstart", function() {
+                        this.style.opacity = "0.8";
+                    });
+                    el.addEventListener("touchend", function() {
+                        this.style.opacity = "1";
+                    });
+                });
+                
+                // Fix dark mode toggle
+                const themeBtn = document.querySelector(".theme-toggle");
+                if (themeBtn) {
+                    // Make it responsive
+                    themeBtn.addEventListener("click", function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (typeof toggleDarkMode === "function") {
+                            toggleDarkMode();
+                        } else if (typeof toggleTheme === "function") {
+                            toggleTheme();
+                        }
+                    });
+                    // Touch support for dark mode
+                    themeBtn.addEventListener("touchend", function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (typeof toggleDarkMode === "function") {
+                            toggleDarkMode();
+                        } else if (typeof toggleTheme === "function") {
+                            toggleTheme();
+                        }
+                    });
+                }
+            };
+            
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initMobileButtons);
+            } else {
+                initMobileButtons();
+            }
+        })();
+
+    
+    <script>
+    // Universal Mobile & Button Support (Fast Mode Init)
+    (function() {
+        const initMobileSupport = () => {
+            document.querySelectorAll("button, [onclick], .btn, a").forEach(el => {
+                el.style.touchAction = "manipulation";
+            });
+            const themeBtn = document.querySelector(".theme-toggle");
+            if (themeBtn && typeof toggleDarkMode === "function") {
+                themeBtn.addEventListener("click", toggleDarkMode);
+            }
+        };
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initMobileSupport);
+        } else {
+            initMobileSupport();
+        }
+    })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>

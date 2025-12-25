@@ -309,23 +309,42 @@ try {
         /* Theme toggle button */
         .theme-toggle {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1001;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: var(--card) !important;
+            border: 2px solid var(--line) !important;
             border-radius: 50%;
             width: 50px;
             height: 50px;
-            display: flex;
+            display: flex !important;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: var(--shadow-light);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 0;
+            font-size: 20px;
+            color: var(--text);
         }
-        
         .theme-toggle:hover {
+            transform: scale(1.1);
+            color: var(--accent);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+        @media (max-width: 768px) {
+            .theme-toggle {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 18px !important;
+                top: 12px !important;
+                right: 12px !important;
+                z-index: 1050 !important;
+            }
+        }
             transform: scale(1.1);
         }
         /* Force mobile header visibility on mobile devices */

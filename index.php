@@ -196,24 +196,42 @@ if ($isLoggedIn) {
         
         .theme-toggle {
             position: fixed;
-            top: 100px;
-            right: 20px;
-            z-index: 1001;
-            background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            width: 44px;
-            height: 44px;
-            display: flex;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: var(--card) !important;
+            border: 2px solid var(--line) !important;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex !important;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            color: var(--text-secondary);
-            box-shadow: var(--shadow-medium);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 0;
+            font-size: 20px;
+            color: var(--text);
         }
-        
         .theme-toggle:hover {
+            transform: scale(1.1);
+            color: var(--accent);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+        @media (max-width: 768px) {
+            .theme-toggle {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 18px !important;
+                top: 12px !important;
+                right: 12px !important;
+                z-index: 1050 !important;
+            }
+        }
             color: var(--purple);
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
@@ -283,188 +301,3 @@ if ($isLoggedIn) {
                 font-size: 2.5rem;
             }
             
-            .theme-toggle {
-                top: 80px;
-                right: 16px;
-                width: 40px;
-                height: 40px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-        <i class="fas fa-moon" id="darkModeIcon"></i>
-    </button>
-    
-    <nav class="navbar navbar-expand-lg navbar-custom" id="navbar">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-crown me-2"></i>SilentMultiPanel
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#about">About</a>
-                    </li>
-                    <?php if ($isLoggedIn): ?>
-                        <li class="nav-item">
-                            <a class="btn btn-primary-enhanced ms-2" href="<?php echo $dashboardUrl; ?>">
-                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                            </a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="login.php">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-primary-enhanced ms-2" href="register.php">
-                                <i class="fas fa-user-plus me-2"></i>Register
-                            </a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    
-    <section class="hero-section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <div class="hero-content">
-                        <h1 class="display-3 fw-bold mb-4 fade-in" style="background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 1px; text-shadow: 0 0 30px rgba(251, 191, 36, 0.3); line-height: 1.2;">
-                            Welcome To <span class="d-block" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.8rem; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 40px rgba(251, 191, 36, 0.5);">SilentMultiPanel</span>
-                        </h1>
-                        <p class="lead mb-5 fade-in">
-                            Best Multipanel And Instant Support.
-                        </p>
-                        <div class="d-flex flex-wrap gap-3 fade-in">
-                            <?php if ($isLoggedIn): ?>
-                                <a href="<?php echo $dashboardUrl; ?>" class="btn-cta">
-                                    <i class="fas fa-crown me-2"></i>Go To MultiPanel
-                                </a>
-                            <?php else: ?>
-                                <a href="register.php" class="btn-cta">
-                                    <i class="fas fa-rocket me-2"></i>Get Started Free
-                                </a>
-                                <a href="login.php" class="btn-outline-cta">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="hero-image fade-in">
-                        <img src="assets/images/hero-logo.jpg" alt="SilentMultiPanel Hero" style="max-width: 400px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <section class="stats-section" id="about">
-        <div class="container">
-            <div class="row align-items-center justify-content-center">
-                <div class="col-lg-8 text-center fade-in">
-                    <h1 class="display-3 fw-bold mb-4" style="background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                        <i class="fas fa-crown me-3" style="color: var(--purple);"></i>SilentMultiPanel
-                    </h1>
-                    <p class="lead text-muted mb-0">Best Multipanel And Instant Support</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <footer class="bg-dark text-white py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
-                    <p class="text-muted">Best Multipanel And Instant Support</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="text-muted mb-0">&copy; 2024 SilentMultiPanel. All rights reserved.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function toggleDarkMode() {
-            const body = document.body;
-            const icon = document.getElementById('darkModeIcon');
-            
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                icon.className = 'fas fa-sun';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-        
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            document.getElementById('darkModeIcon').className = 'fas fa-sun';
-        }
-        
-        window.addEventListener('scroll', function() {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
-        
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, observerOptions);
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const fadeElements = document.querySelectorAll('.fade-in');
-            fadeElements.forEach(el => {
-                observer.observe(el);
-            });
-            
-            const heroElements = document.querySelectorAll('.hero-content .fade-in');
-            heroElements.forEach((el, index) => {
-                setTimeout(() => {
-                    el.classList.add('visible');
-                }, index * 200);
-            });
-        });
-        
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html>

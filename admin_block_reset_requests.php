@@ -368,6 +368,26 @@ try {
         <?php endif; ?>
     </div>
     
+    
+    <script>
+    // Universal Mobile & Button Support (Fast Mode Init)
+    (function() {
+        const initMobileSupport = () => {
+            document.querySelectorAll("button, [onclick], .btn, a").forEach(el => {
+                el.style.touchAction = "manipulation";
+            });
+            const themeBtn = document.querySelector(".theme-toggle");
+            if (themeBtn && typeof toggleDarkMode === "function") {
+                themeBtn.addEventListener("click", toggleDarkMode);
+            }
+        };
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initMobileSupport);
+        } else {
+            initMobileSupport();
+        }
+    })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
