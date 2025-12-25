@@ -135,6 +135,7 @@ try {
             <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                 <h4 style="margin-bottom: 20px;">Transaction Filters</h4>
                 <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <input type="text" name="search" placeholder="Search username or reference..." value="<?php echo htmlspecialchars($filters['search'] ?? ''); ?>" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                     <select name="user_id" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         <option value="">All Users</option>
                         <?php foreach ($users as $user): ?>
@@ -175,7 +176,21 @@ try {
                                         <td style="padding: 12px; font-weight: 500; <?php echo $transaction['amount'] < 0 ? 'color: #ef4444;' : 'color: #10b981;'; ?>">
                                             <?php echo ($transaction['amount'] < 0 ? '-' : '+') . formatCurrency(abs($transaction['amount'] ?? 0)); ?>
                                         </td>
-                                        <td style="padding: 12px; font-size: 0.9em; color: #666;"><?php echo htmlspecialchars($transaction['description'] ?? ''); ?></td>
+                                        <td style="padding: 12px;">
+                                            <div style="font-size: 0.9em; color: #333; font-weight: 500;"><?php echo htmlspecialchars($transaction['description'] ?? ''); ?></div>
+                                            <?php if (!empty($transaction['reference']) && strpos($transaction['reference'], 'License purchase #') === 0): ?>
+                                                <?php 
+                                                $keyId = str_replace('License purchase #', '', $transaction['reference']);
+                                                $stmt = $pdo->prepare("SELECT license_key FROM license_keys WHERE id = ?");
+                                                $stmt->execute([$keyId]);
+                                                $lkey = $stmt->fetchColumn();
+                                                if ($lkey): ?>
+                                                    <div style="font-size: 0.8em; color: #8b5cf6; margin-top: 4px; font-family: monospace; background: #f3f0ff; padding: 2px 6px; border-radius: 4px; display: inline-block;">
+                                                        <i class="fas fa-key me-1"></i><?php echo htmlspecialchars($lkey); ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </td>
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($transaction['type'] ?? ''); ?></td>
                                         <td style="padding: 12px;">
                                             <?php 
