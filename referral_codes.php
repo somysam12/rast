@@ -43,7 +43,7 @@ if ($_POST && isset($_POST['generate_code']) && $pdo) {
             $code = generateReferralCode();
             $expiresAt = date('Y-m-d H:i:s', strtotime("+$expiryDays days"));
             
-            $stmt = $pdo->prepare("INSERT INTO referral_codes (code, created_by, expires_at, bonus_amount, usage_limit) VALUES (?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO referral_codes (code, created_by, expires_at, bonus_amount, usage_limit, usage_count) VALUES (?, ?, ?, ?, ?, 0)");
             if ($stmt->execute([$code, $_SESSION['user_id'], $expiresAt, $bonusAmount, $usageLimit])) {
                 $success = "Referral code generated successfully: $code";
             } else {
