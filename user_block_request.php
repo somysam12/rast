@@ -314,93 +314,103 @@ try {
                 <div class="card-section">
                     <h5><i class="fas fa-plus-circle me-2"></i>Submit New Request</h5>
                     
-                    <ul class="nav nav-tabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="dropdown-tab" data-bs-toggle="tab" data-bs-target="#dropdown-pane" type="button" role="tab">Select from List</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="paste-tab" data-bs-toggle="tab" data-bs-target="#paste-pane" type="button" role="tab">Paste License Key</button>
-                        </li>
-                    </ul>
-                    
-                    <div class="tab-content">
-                        <!-- Dropdown Tab -->
-                        <div class="tab-pane fade show active" id="dropdown-pane" role="tabpanel">
-                            <form method="POST">
-                                <input type="hidden" name="key_selection" value="dropdown">
-                                <div class="row mt-4">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Select License Key *</label>
-                                            <select class="form-control" name="key_id" required>
-                                                <option value="">-- Select a key --</option>
-                                                <?php foreach ($purchasedKeys as $key): ?>
-                                                <option value="<?php echo $key['id']; ?>">
-                                                    <?php echo htmlspecialchars($key['mod_name']); ?> - <?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?>
-                                                </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Request Type *</label>
-                                            <select class="form-control" name="request_type" required>
-                                                <option value="">-- Select type --</option>
-                                                <option value="block">Block Key</option>
-                                                <option value="reset">Reset Key</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Reason for Request *</label>
-                                    <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
-                                </div>
-                                <button type="submit" name="submit_request" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane me-2"></i>Submit Request
-                                </button>
-                            </form>
+                    <div class="mb-4">
+                        <label class="form-label">Search & Select License Key</label>
+                        <div class="input-group">
+                            <input type="text" id="keySearchInput" class="form-control" placeholder="Type license key or mod name to search...">
+                            <button class="btn btn-outline-primary" type="button" onclick="filterKeyList()"><i class="fas fa-search"></i></button>
                         </div>
-                        
-                        <!-- Paste Tab -->
-                        <div class="tab-pane fade" id="paste-pane" role="tabpanel">
-                            <div class="form-group mt-4">
-                                <label class="form-label">Paste Your License Key *</label>
-                                <input type="text" id="pasteKeyInput" class="form-control" placeholder="Paste your license key here...">
-                            </div>
-                            <button type="button" id="lookupBtn" class="btn btn-primary mb-4">
-                                <i class="fas fa-search me-2"></i>Lookup Key
+                        <div id="keySearchResults" class="list-group mt-2" style="max-height: 200px; overflow-y: auto; display: none;">
+                            <?php foreach ($purchasedKeys as $key): ?>
+                            <button type="button" class="list-group-item list-group-item-action key-item" 
+                                    data-id="<?php echo $key['id']; ?>" 
+                                    data-key="<?php echo htmlspecialchars($key['license_key']); ?>"
+                                    data-mod="<?php echo htmlspecialchars($key['mod_name']); ?>"
+                                    onclick="selectKey('<?php echo $key['id']; ?>', '<?php echo htmlspecialchars($key['mod_name']); ?>', '<?php echo htmlspecialchars($key['license_key']); ?>')">
+                                <strong><?php echo htmlspecialchars($key['mod_name']); ?></strong><br>
+                                <small class="text-muted"><?php echo htmlspecialchars($key['license_key']); ?></small>
                             </button>
-                            
-                            <div id="keyResultContainer"></div>
-                            
-                            <form id="pasteForm" method="POST" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Request Type *</label>
-                                            <select class="form-control" name="request_type" required>
-                                                <option value="">-- Select type --</option>
-                                                <option value="block">Block Key</option>
-                                                <option value="reset">Reset Key</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Reason for Request *</label>
-                                    <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
-                                </div>
-                                <input type="hidden" name="key_selection" value="pasted">
-                                <input type="hidden" id="licenseKeyHidden" name="license_key">
-                                <button type="submit" name="submit_request" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane me-2"></i>Submit Request
-                                </button>
-                            </form>
+                            <?php endforeach; ?>
                         </div>
                     </div>
+
+                    <form method="POST" id="requestForm">
+                        <input type="hidden" name="key_selection" value="dropdown">
+                        <input type="hidden" name="key_id" id="selectedKeyId" required>
+                        
+                        <div id="selectedKeyDisplay" class="key-display" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1" id="displayModName"></h6>
+                                    <code id="displayLicenseKey"></code>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelection()"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">Request Type *</label>
+                                    <select class="form-control" name="request_type" required>
+                                        <option value="">-- Select type --</option>
+                                        <option value="block">Block Key</option>
+                                        <option value="reset">Reset Key</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reason for Request *</label>
+                            <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
+                        </div>
+                        <button type="submit" name="submit_request" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Request
+                        </button>
+                    </form>
                 </div>
+
+                <script>
+                function filterKeyList() {
+                    const input = document.getElementById('keySearchInput').value.toLowerCase();
+                    const results = document.getElementById('keySearchResults');
+                    const items = results.getElementsByClassName('key-item');
+                    let hasMatch = false;
+
+                    if (input.length < 1) {
+                        results.style.display = 'none';
+                        return;
+                    }
+
+                    for (let item of items) {
+                        const key = item.getAttribute('data-key').toLowerCase();
+                        const mod = item.getAttribute('data-mod').toLowerCase();
+                        if (key.includes(input) || mod.includes(input)) {
+                            item.style.display = 'block';
+                            hasMatch = true;
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                    results.style.display = hasMatch ? 'block' : 'none';
+                }
+
+                document.getElementById('keySearchInput').addEventListener('input', filterKeyList);
+
+                function selectKey(id, mod, key) {
+                    document.getElementById('selectedKeyId').value = id;
+                    document.getElementById('displayModName').textContent = mod;
+                    document.getElementById('displayLicenseKey').textContent = key;
+                    document.getElementById('selectedKeyDisplay').style.display = 'block';
+                    document.getElementById('keySearchResults').style.display = 'none';
+                    document.getElementById('keySearchInput').value = '';
+                }
+
+                function clearSelection() {
+                    document.getElementById('selectedKeyId').value = '';
+                    document.getElementById('selectedKeyDisplay').style.display = 'none';
+                }
+                </script>
                 
                 <!-- Pending Requests -->
                 <div class="card-section">
