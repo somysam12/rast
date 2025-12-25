@@ -309,6 +309,7 @@ try {
             color: var(--text-primary);
         }
         
+        .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -327,6 +328,7 @@ try {
             color: var(--text-secondary);
         }
         
+        .theme-toggle:hover {
             color: var(--purple);
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
@@ -420,6 +422,7 @@ try {
                 font-size: 1rem;
             }
             
+            .theme-toggle {
                 top: 15px;
                 right: 15px;
                 width: 40px;
@@ -495,10 +498,12 @@ try {
     </style>
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-mode.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
     

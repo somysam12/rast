@@ -199,6 +199,7 @@ if ($_POST) {
             font-size: 0.8rem;
         }
         
+        .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -217,6 +218,7 @@ if ($_POST) {
             box-shadow: var(--shadow-medium);
         }
         
+        .theme-toggle:hover {
             color: var(--purple);
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
@@ -288,6 +290,7 @@ if ($_POST) {
                 padding: 12px 20px;
             }
             
+            .theme-toggle {
                 top: 16px;
                 right: 16px;
                 width: 40px;
@@ -299,6 +302,7 @@ if ($_POST) {
 </head>
 <body>
     <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
     
@@ -374,6 +378,7 @@ if ($_POST) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Dark mode functionality
+        function toggleDarkMode() {
             const body = document.body;
             const icon = document.getElementById('darkModeIcon');
             

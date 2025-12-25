@@ -261,6 +261,7 @@ try {
         }
     </style>
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-mode.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
@@ -309,120 +310,67 @@ try {
                 <div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
                 <?php endif; ?>
                 
-                <!-- Quick Key Lookup & Request -->
+                <!-- Submit Request Form -->
                 <div class="card-section">
-                    <h5><i class="fas fa-search me-2"></i>Quick Key Reset/Block</h5>
-                    <p class="text-muted small mb-3">Paste your license key here to quickly submit a reset or block request.</p>
+                    <h5><i class="fas fa-plus-circle me-2"></i>Submit New Request</h5>
                     
                     <div class="mb-4">
+                        <label class="form-label">Search & Select License Key</label>
                         <div class="input-group">
-                            <input type="text" id="quickKeyPaste" class="form-control" placeholder="Paste your license key here...">
-                            <button class="btn btn-primary" type="button" onclick="lookupQuickKey()">
-                                <i class="fas fa-search me-2"></i>Find Key
+                            <input type="text" id="keySearchInput" class="form-control" placeholder="Type license key or mod name to search...">
+                            <button class="btn btn-outline-primary" type="button" onclick="filterKeyList()"><i class="fas fa-search"></i></button>
+                        </div>
+                        <div id="keySearchResults" class="list-group mt-2" style="max-height: 200px; overflow-y: auto; display: none;">
+                            <?php foreach ($purchasedKeys as $key): ?>
+                            <button type="button" class="list-group-item list-group-item-action key-item" 
+                                    data-id="<?php echo $key['id']; ?>" 
+                                    data-key="<?php echo htmlspecialchars($key['license_key']); ?>"
+                                    data-mod="<?php echo htmlspecialchars($key['mod_name']); ?>"
+                                    onclick="selectKey('<?php echo $key['id']; ?>', '<?php echo htmlspecialchars($key['mod_name']); ?>', '<?php echo htmlspecialchars($key['license_key']); ?>')">
+                                <strong><?php echo htmlspecialchars($key['mod_name']); ?></strong><br>
+                                <small class="text-muted"><?php echo htmlspecialchars($key['license_key']); ?></small>
                             </button>
-                        </div>
-                        <div id="quickLookupError" class="text-danger small mt-2" style="display: none;"></div>
-                    </div>
-
-                    <div id="quickKeyDisplay" class="key-display" style="display: none; background: #f0f7ff; border-color: #bcd9ff;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1 text-primary" id="quickModName"></h6>
-                                <code id="quickLicenseKey" class="text-dark"></code>
-                                <div class="mt-2">
-                                    <span class="badge bg-info" id="quickDuration"></span>
-                                </div>
-                            </div>
-                            <div class="d-flex flex-column gap-2">
-                                <button type="button" class="btn btn-sm btn-danger" onclick="prepareQuickRequest('block')">
-                                    <i class="fas fa-ban me-1"></i>Block
-                                </button>
-                                <button type="button" class="btn btn-sm btn-warning" onclick="prepareQuickRequest('reset')">
-                                    <i class="fas fa-sync me-1"></i>Reset
-                                </button>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
-                </div>
 
-                <!-- Submit Request Form -->
-                <div id="fullRequestFormSection" class="card-section" style="display: none;">
-                    <h5><i class="fas fa-paper-plane me-2"></i>Submit <span id="requestTypeTitle"></span> Request</h5>
                     <form method="POST" id="requestForm">
                         <input type="hidden" name="key_selection" value="dropdown">
                         <input type="hidden" name="key_id" id="selectedKeyId" required>
-                        <input type="hidden" name="request_type" id="selectedRequestType" required>
                         
+                        <div id="selectedKeyDisplay" class="key-display" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1" id="displayModName"></h6>
+                                    <code id="displayLicenseKey"></code>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelection()"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">Request Type *</label>
+                                    <select class="form-control" name="request_type" required>
+                                        <option value="">-- Select type --</option>
+                                        <option value="block">Block Key</option>
+                                        <option value="reset">Reset Key</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="form-label">Reason for Request *</label>
                             <textarea class="form-control" name="reason" rows="4" placeholder="Explain why you need to block or reset this key..." required></textarea>
                         </div>
-                        <div class="mt-3 d-flex gap-2">
-                            <button type="submit" name="submit_request" class="btn btn-primary">
-                                <i class="fas fa-paper-plane me-2"></i>Confirm & Submit
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary" onclick="cancelQuickRequest()">Cancel</button>
-                        </div>
+                        <button type="submit" name="submit_request" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Request
+                        </button>
                     </form>
                 </div>
 
                 <script>
-                function lookupQuickKey() {
-                    const licenseKey = document.getElementById('quickKeyPaste').value.trim();
-                    const errorDiv = document.getElementById('quickLookupError');
-                    const displayDiv = document.getElementById('quickKeyDisplay');
-                    
-                    if (!licenseKey) {
-                        errorDiv.textContent = 'Please paste a license key first.';
-                        errorDiv.style.display = 'block';
-                        return;
-                    }
-
-                    errorDiv.style.display = 'none';
-                    
-                    // Simple AJAX lookup
-                    const formData = new FormData();
-                    formData.append('ajax_lookup', '1');
-                    formData.append('license_key', licenseKey);
-
-                    fetch('user_block_request.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById('quickModName').textContent = data.key.mod_name;
-                            document.getElementById('quickLicenseKey').textContent = data.key.license_key;
-                            document.getElementById('quickDuration').textContent = data.key.duration + ' ' + data.key.duration_type;
-                            document.getElementById('selectedKeyId').value = data.key.id;
-                            displayDiv.style.display = 'block';
-                        } else {
-                            errorDiv.textContent = data.message;
-                            errorDiv.style.display = 'block';
-                            displayDiv.style.display = 'none';
-                        }
-                    })
-                    .catch(err => {
-                        errorDiv.textContent = 'Error looking up key. Please try again.';
-                        errorDiv.style.display = 'block';
-                    });
-                }
-
-                function prepareQuickRequest(type) {
-                    document.getElementById('selectedRequestType').value = type;
-                    document.getElementById('requestTypeTitle').textContent = type.charAt(0).toUpperCase() + type.slice(1);
-                    document.getElementById('fullRequestFormSection').style.display = 'block';
-                    window.scrollTo({
-                        top: document.getElementById('fullRequestFormSection').offsetTop - 20,
-                        behavior: 'smooth'
-                    });
-                }
-
-                function cancelQuickRequest() {
-                    document.getElementById('fullRequestFormSection').style.display = 'none';
-                }
-
                 function filterKeyList() {
                     const input = document.getElementById('keySearchInput').value.toLowerCase();
                     const results = document.getElementById('keySearchResults');
@@ -516,31 +464,16 @@ try {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Auto-hide alerts
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    alert.style.opacity = '0';
-                    alert.style.transform = 'translateY(-10px)';
-                    setTimeout(() => {
-                        alert.style.display = 'none';
-                    }, 300);
-                }, 5000);
-            });
-        });
-
-        async function lookupQuickKey() {
-            const keyInput = document.getElementById('quickKeyPaste').value.trim();
-            const errorDiv = document.getElementById('quickLookupError');
-            const displayDiv = document.getElementById('quickKeyDisplay');
+        document.getElementById('lookupBtn').addEventListener('click', async function() {
+            const keyInput = document.getElementById('pasteKeyInput').value.trim();
+            const container = document.getElementById('keyResultContainer');
+            const form = document.getElementById('pasteForm');
             
             if (!keyInput) {
-                errorDiv.textContent = 'Please paste a license key first.';
-                errorDiv.style.display = 'block';
+                container.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Please enter a license key</div>';
                 return;
             }
-
+            
             try {
                 const formData = new FormData();
                 formData.append('ajax_lookup', '1');
@@ -554,75 +487,42 @@ try {
                 const data = await response.json();
                 
                 if (data.success) {
-                    errorDiv.style.display = 'none';
-                    document.getElementById('quickModName').textContent = data.key.mod_name;
-                    document.getElementById('quickLicenseKey').textContent = data.key.license_key;
-                    document.getElementById('quickDuration').textContent = data.key.duration + ' ' + data.key.duration_type;
-                    document.getElementById('selectedKeyId').value = data.key.id;
-                    displayDiv.style.display = 'block';
+                    const key = data.key;
+                    container.innerHTML = `
+                        <div class="key-display">
+                            <strong><i class="fas fa-check-circle me-2" style="color: #10b981;"></i>Key Found!</strong>
+                            <div class="key-detail-item mt-2">
+                                <span class="key-detail-label">Product:</span>
+                                <span class="key-detail-value">${key.mod_name}</span>
+                            </div>
+                            <div class="key-detail-item">
+                                <span class="key-detail-label">Duration:</span>
+                                <span class="key-detail-value">${key.duration} ${key.duration_type}</span>
+                            </div>
+                            <div class="key-detail-item">
+                                <span class="key-detail-label">License Key:</span>
+                                <span class="key-detail-value" style="font-family: monospace;">${key.license_key}</span>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('licenseKeyHidden').value = key.license_key;
+                    form.style.display = 'block';
                 } else {
-                    errorDiv.textContent = data.message;
-                    errorDiv.style.display = 'block';
-                    displayDiv.style.display = 'none';
+                    container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${data.message}</div>`;
+                    form.style.display = 'none';
                 }
             } catch (error) {
-                errorDiv.textContent = 'Error looking up key. Please try again.';
-                errorDiv.style.display = 'block';
-                displayDiv.style.display = 'none';
+                container.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}</div>`;
+                form.style.display = 'none';
             }
-        }
-
-        function prepareQuickRequest(type) {
-            document.getElementById('selectedRequestType').value = type;
-            document.getElementById('requestTypeTitle').textContent = type.charAt(0).toUpperCase() + type.slice(1);
-            document.getElementById('fullRequestFormSection').style.display = 'block';
-            window.scrollTo({
-                top: document.getElementById('fullRequestFormSection').offsetTop - 20,
-                behavior: 'smooth'
-            });
-        }
-
-        function cancelQuickRequest() {
-            document.getElementById('fullRequestFormSection').style.display = 'none';
-        }
-
-        function filterKeyList() {
-            const input = document.getElementById('keySearchInput').value.toLowerCase();
-            const results = document.getElementById('keySearchResults');
-            const items = results.getElementsByClassName('key-item');
-            let hasMatch = false;
-
-            if (input.length < 1) {
-                results.style.display = 'none';
-                return;
+        });
+        
+        document.getElementById('pasteKeyInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('lookupBtn').click();
             }
-
-            for (let item of items) {
-                const key = item.getAttribute('data-key').toLowerCase();
-                const mod = item.getAttribute('data-mod').toLowerCase();
-                if (key.includes(input) || mod.includes(input)) {
-                    item.style.display = 'block';
-                    hasMatch = true;
-                } else {
-                    item.style.display = 'none';
-                }
-            }
-            results.style.display = hasMatch ? 'block' : 'none';
-        }
-
-        function selectKey(id, mod, key) {
-            document.getElementById('selectedKeyId').value = id;
-            document.getElementById('displayModName').textContent = mod;
-            document.getElementById('displayLicenseKey').textContent = key;
-            document.getElementById('selectedKeyDisplay').style.display = 'block';
-            document.getElementById('keySearchResults').style.display = 'none';
-            document.getElementById('keySearchInput').value = '';
-        }
-
-        function clearSelection() {
-            document.getElementById('selectedKeyId').value = '';
-            document.getElementById('selectedKeyDisplay').style.display = 'none';
-        }
+        });
     </script>
+    <script src="assets/js/dark-mode.js"></script>
 </body>
 </html>

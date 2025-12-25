@@ -316,6 +316,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         /* Theme toggle button */
+        .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -333,6 +334,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: var(--shadow-light);
         }
         
+        .theme-toggle:hover {
             transform: scale(1.1);
         }
         /* Force mobile header visibility on mobile devices */
@@ -497,6 +499,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
     <!-- Theme Toggle Button -->
+    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
         <i class="fas fa-sun" id="theme-icon"></i>
     </div>
     
@@ -739,6 +742,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             updateThemeIcon(savedTheme);
         }
         
+        function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             

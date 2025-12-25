@@ -1,0 +1,84 @@
+/* Dark Mode Toggle Button */
+.theme-toggle {
+    position: fixed !important;
+    top: 15px !important;
+    right: 15px !important;
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4) !important;
+    transition: all 0.3s ease !important;
+    z-index: 2001 !important;
+    font-size: 1.5rem !important;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6) !important;
+}
+
+/* Dark Mode Colors - Applied only when data-theme="dark" */
+[data-theme="dark"] {
+    color-scheme: dark;
+}
+
+[data-theme="dark"] body {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .sidebar {
+    background-color: #1e293b !important;
+    border-right-color: #334155 !important;
+}
+
+[data-theme="dark"] .main-content {
+    background-color: #0f172a !important;
+}
+
+[data-theme="dark"] .page-header {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .stats-card,
+[data-theme="dark"] .card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .nav-link {
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .nav-link:hover,
+[data-theme="dark"] .nav-link.active {
+    background-color: #8b5cf6 !important;
+    color: white !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .theme-toggle {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1.2rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .theme-toggle {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1rem !important;
+    }
+}

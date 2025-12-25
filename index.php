@@ -80,6 +80,35 @@ if ($isLoggedIn) {
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
+        .feature-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-large);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-light);
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-medium);
+        }
+        
         .navbar-custom {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -112,6 +141,20 @@ if ($isLoggedIn) {
             border-top: 1px solid var(--border-light);
         }
         
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
         .btn-cta {
             background: white;
             color: var(--purple);
@@ -132,6 +175,84 @@ if ($isLoggedIn) {
             color: var(--purple-dark);
         }
         
+        .btn-outline-cta {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-outline-cta:hover {
+            background: white;
+            color: var(--purple);
+            transform: translateY(-1px);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-large);
+        }
+        
+        .theme-toggle:active {
+            transform: scale(0.8) rotate(45deg);
+        }
+
+        .theme-toggle:hover {
+            color: var(--purple);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+            transform: translateY(-3px);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-light: #334155;
+        }
+        
+        [data-theme="dark"] .navbar-custom {
+            background: rgba(30, 41, 59, 0.95);
+        }
+        
+        [data-theme="dark"] .feature-card {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-color: var(--border-light);
+        }
+        
+        [data-theme="dark"] .stats-section {
+            background: var(--card-bg);
+            border-color: var(--border-light);
+        }
+        
         .fade-in {
             opacity: 0;
             transform: translateY(20px);
@@ -147,14 +268,43 @@ if ($isLoggedIn) {
             .hero-section {
                 padding: 2rem 0;
             }
+            
             .hero-content h1 {
                 font-size: 2.5rem;
             }
+            
+            .feature-card {
+                padding: 1.5rem;
+            }
+            
+            .feature-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 1.3rem;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 16px;
+                right: 16px;
+                width: 44px;
+                height: 44px;
+            }
         }
     </style>
+    <link href="assets/css/dark-mode-button.css" rel="stylesheet">
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-mode.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Global Theme Toggle -->
+    <button class="theme-toggle" id="global-theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+        <i class="fas fa-moon" id="darkModeIcon"></i>
+    </button>
+    
     <nav class="navbar navbar-expand-lg navbar-custom" id="navbar">
         <div class="container">
             <a class="navbar-brand" href="#">
@@ -245,6 +395,27 @@ if ($isLoggedIn) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function toggleDarkMode() {
+            const body = document.body;
+            const icon = document.getElementById('darkModeIcon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('darkModeIcon').className = 'fas fa-sun';
+        }
+        
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 50) {
@@ -294,5 +465,6 @@ if ($isLoggedIn) {
             });
         });
     </script>
+    <script src="assets/js/dark-mode.js"></script>
 </body>
 </html>

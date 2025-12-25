@@ -257,6 +257,7 @@ if ($_POST) {
             color: #dc2626;
         }
         
+        .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -275,6 +276,7 @@ if ($_POST) {
             color: var(--text-secondary);
         }
         
+        .theme-toggle:hover {
             color: var(--purple);
             box-shadow: var(--shadow-large);
             transform: translateY(-1px);
@@ -314,6 +316,7 @@ if ($_POST) {
                 padding: 1.5rem;
             }
             
+            .theme-toggle {
                 top: 15px;
                 right: 15px;
                 width: 40px;
@@ -325,6 +328,7 @@ if ($_POST) {
 </head>
 <body>
     <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
     
