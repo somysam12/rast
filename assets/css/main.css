@@ -67,43 +67,6 @@
     --border-color: var(--dark-border-color);
 }
 
-/* Global Theme Toggle - Bottom Right */
-.theme-toggle {
-    position: fixed !important;
-    bottom: 20px !important;
-    right: 20px !important;
-    top: auto !important;
-    z-index: 9999 !important;
-    width: 50px !important;
-    height: 50px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 50% !important;
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
-    color: white !important;
-    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.5) !important;
-    border: 2px solid white !important;
-    cursor: pointer !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.theme-toggle:active {
-    transform: scale(0.8) rotate(45deg) !important;
-}
-
-.theme-toggle:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6) !important;
-}
-
-/* Hide any other top-positioned toggles that might be hardcoded in styles */
-.navbar-custom .theme-toggle, 
-.modern-header .theme-toggle,
-header .theme-toggle {
-    display: none !important;
-}
-
 /* Global Styles */
 * {
     box-sizing: border-box;

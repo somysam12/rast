@@ -476,7 +476,6 @@ try {
         }
         
         /* Theme toggle button */
-        .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -494,7 +493,6 @@ try {
             box-shadow: var(--shadow-light);
         }
         
-        .theme-toggle:hover {
             transform: scale(1.1);
         }
         
@@ -608,7 +606,6 @@ try {
 </head>
 <body>
     <!-- Theme Toggle Button -->
-    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
         <i class="fas fa-sun" id="theme-icon"></i>
     </div>
     
@@ -937,7 +934,6 @@ try {
             updateThemeIcon(savedTheme);
         }
         
-        function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             
@@ -1300,7 +1296,6 @@ try {
             // Ctrl/Cmd + D for theme toggle
             if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
                 e.preventDefault();
-                toggleTheme();
             }
             
             // Ctrl/Cmd + G for generate focus

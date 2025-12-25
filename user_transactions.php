@@ -438,7 +438,6 @@ function formatDate($date) {
 </head>
 <body>
     <!-- Dark Mode Toggle -->
-    <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
     

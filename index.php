@@ -194,7 +194,6 @@ if ($isLoggedIn) {
             transform: translateY(-1px);
         }
         
-        .theme-toggle {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -213,11 +212,9 @@ if ($isLoggedIn) {
             box-shadow: var(--shadow-large);
         }
         
-        .theme-toggle:active {
             transform: scale(0.8) rotate(45deg);
         }
 
-        .theme-toggle:hover {
             color: var(--purple);
             box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
             transform: translateY(-3px);
@@ -287,7 +284,6 @@ if ($isLoggedIn) {
                 font-size: 2.5rem;
             }
             
-            .theme-toggle {
                 bottom: 16px;
                 right: 16px;
                 width: 44px;
@@ -297,13 +293,8 @@ if ($isLoggedIn) {
     </style>
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
-    <link href="assets/css/dark-mode.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Global Theme Toggle -->
-    <button class="theme-toggle" id="global-theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-        <i class="fas fa-moon" id="darkModeIcon"></i>
-    </button>
     
     <nav class="navbar navbar-expand-lg navbar-custom" id="navbar">
         <div class="container">
@@ -395,7 +386,6 @@ if ($isLoggedIn) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function toggleDarkMode() {
             const body = document.body;
             const icon = document.getElementById('darkModeIcon');
             
@@ -465,6 +455,5 @@ if ($isLoggedIn) {
             });
         });
     </script>
-    <script src="assets/js/dark-mode.js"></script>
 </body>
 </html>
