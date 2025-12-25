@@ -47,7 +47,6 @@ try {
                         MAX(lk.price) as max_price
                         FROM license_keys lk 
                         LEFT JOIN mods m ON lk.mod_id = m.id 
-                        WHERE lk.status = 'available'
                         GROUP BY lk.mod_id, m.name
                         ORDER BY m.name");
     $modStats = $stmt->fetchAll(PDO::FETCH_ASSOC);

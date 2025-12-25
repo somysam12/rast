@@ -609,22 +609,22 @@ function formatDate($date) {
                                             <span class="fw-semibold">#<?php echo $transaction['id']; ?></span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-<?php echo $transaction['type'] === 'purchase' ? 'primary' : ($transaction['type'] === 'balance_add' ? 'success' : 'warning'); ?>">
-                                                <i class="fas fa-<?php echo $transaction['type'] === 'purchase' ? 'shopping-cart' : ($transaction['type'] === 'balance_add' ? 'plus' : 'exchange-alt'); ?> me-1"></i>
+                                            <span class="badge bg-<?php echo $transaction['type'] === 'purchase' || $transaction['type'] === 'debit' ? 'primary' : ($transaction['type'] === 'balance_add' ? 'success' : 'warning'); ?>">
+                                                <i class="fas fa-<?php echo $transaction['type'] === 'purchase' || $transaction['type'] === 'debit' ? 'shopping-cart' : ($transaction['type'] === 'balance_add' ? 'plus' : 'exchange-alt'); ?> me-1"></i>
                                                 <?php echo ucfirst(str_replace('_', ' ', $transaction['type'])); ?>
                                             </span>
                                         </td>
                                         <td>
                                             <span class="fw-bold <?php echo $transaction['amount'] < 0 ? 'text-danger' : 'text-success'; ?>">
                                                 <?php if ($transaction['amount'] < 0): ?>
-                                                    <i class="fas fa-minus me-1"></i><?php echo formatCurrency(abs($transaction['amount'])); ?>
+                                                    -<?php echo formatCurrency(abs($transaction['amount'])); ?>
                                                 <?php else: ?>
-                                                    <i class="fas fa-plus me-1"></i><?php echo formatCurrency($transaction['amount']); ?>
+                                                    +<?php echo formatCurrency($transaction['amount']); ?>
                                                 <?php endif; ?>
                                             </span>
                                         </td>
                                         <td class="d-none d-md-table-cell">
-                                            <span class="text-muted small"><?php echo htmlspecialchars($transaction['reference'] ?? 'N/A'); ?></span>
+                                            <span class="text-muted small"><?php echo htmlspecialchars($transaction['description'] ?? ($transaction['reference'] ?? 'N/A')); ?></span>
                                         </td>
                                         <td>
                                             <span class="badge bg-<?php echo $transaction['status'] === 'completed' ? 'success' : ($transaction['status'] === 'pending' ? 'warning' : 'danger'); ?>">

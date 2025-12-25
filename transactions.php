@@ -160,6 +160,7 @@ try {
                                 <th style="padding: 12px; text-align: left;">Date</th>
                                 <th style="padding: 12px; text-align: left;">User</th>
                                 <th style="padding: 12px; text-align: left;">Amount</th>
+                                <th style="padding: 12px; text-align: left;">Description</th>
                                 <th style="padding: 12px; text-align: left;">Type</th>
                                 <th style="padding: 12px; text-align: left;">Status</th>
                                 <th style="padding: 12px; text-align: left;">Reference</th>
@@ -171,7 +172,10 @@ try {
                                     <tr style="border-bottom: 1px solid #e0e0e0;">
                                         <td style="padding: 12px;"><?php echo formatDate($transaction['created_at'] ?? ''); ?></td>
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($transaction['username'] ?? 'N/A'); ?></td>
-                                        <td style="padding: 12px; font-weight: 500;"><?php echo formatCurrency($transaction['amount'] ?? 0); ?></td>
+                                        <td style="padding: 12px; font-weight: 500; <?php echo $transaction['amount'] < 0 ? 'color: #ef4444;' : 'color: #10b981;'; ?>">
+                                            <?php echo ($transaction['amount'] < 0 ? '-' : '+') . formatCurrency(abs($transaction['amount'] ?? 0)); ?>
+                                        </td>
+                                        <td style="padding: 12px; font-size: 0.9em; color: #666;"><?php echo htmlspecialchars($transaction['description'] ?? ''); ?></td>
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($transaction['type'] ?? ''); ?></td>
                                         <td style="padding: 12px;">
                                             <?php 

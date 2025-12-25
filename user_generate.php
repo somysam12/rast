@@ -88,9 +88,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             }
 
             try {
-                $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, "debit", ?, ?, CURRENT_TIMESTAMP)');
-                $desc = $quantity === 1 ? 'License key purchase' : $quantity . ' License keys purchase';
-                $stmt->execute([$user['id'], $totalPrice, $desc]);
+                // Get Mod Name for description
+                $stmt = $pdo->prepare('SELECT name FROM mods WHERE id = ?');
+                $stmt->execute([$key['mod_id']]);
+                $modData = $stmt->fetch();
+                $modName = $modData['name'] ?? 'Unknown Mod';
+
+                $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, description, status, created_at) VALUES (?, "debit", ?, ?, "completed", CURRENT_TIMESTAMP)');
+                $desc = ($quantity === 1 ? 'License key purchase' : $quantity . ' License keys purchase') . " - " . $modName;
+                $stmt->execute([$user['id'], -$totalPrice, $desc]);
             } catch (Throwable $ignored) {}
 
             $pdo->commit();
