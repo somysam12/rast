@@ -199,8 +199,8 @@ if ($isLoggedIn) {
             top: 15px;
             right: 15px;
             z-index: 1050;
-            background: var(--card) !important;
-            border: 2px solid var(--line) !important;
+            background: var(--card-bg);
+            border: 2px solid var(--border-light);
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -212,16 +212,19 @@ if ($isLoggedIn) {
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             padding: 0;
             font-size: 20px;
-            color: var(--text);
+            color: #333;
         }
+        
         .theme-toggle:hover {
             transform: scale(1.1);
-            color: var(--accent);
+            color: var(--purple);
             box-shadow: 0 6px 16px rgba(0,0,0,0.25);
         }
+        
         .theme-toggle:active {
             transform: scale(0.95);
         }
+        
         @media (max-width: 768px) {
             .theme-toggle {
                 width: 50px !important;
@@ -231,10 +234,6 @@ if ($isLoggedIn) {
                 right: 12px !important;
                 z-index: 1050 !important;
             }
-        }
-            color: var(--purple);
-            box-shadow: var(--shadow-large);
-            transform: translateY(-1px);
         }
         
         .glass-card {
@@ -300,4 +299,178 @@ if ($isLoggedIn) {
             .stat-number {
                 font-size: 2.5rem;
             }
-            
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="/">SilentMultiPanel</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#stats">Stats</a></li>
+                    <?php if ($isLoggedIn): ?>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-sm btn-outline-primary ms-2" href="<?php echo $dashboardUrl; ?>">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logout.php">Logout</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-sm btn-primary ms-2" href="login.php">Login</a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">☀️</button>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <h1 class="display-4 fw-bold mb-4">Welcome to SilentMultiPanel</h1>
+                    <p class="lead mb-5">The best multipanel solution for instant support and APK management. Manage your licenses and distribute APK files with ease.</p>
+                    <div class="gap-3">
+                        <?php if ($isLoggedIn): ?>
+                            <a href="<?php echo $dashboardUrl; ?>" class="btn btn-cta me-3">
+                                <i class="fas fa-arrow-right me-2"></i> Go to Dashboard
+                            </a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn btn-cta me-3">
+                                <i class="fas fa-sign-in-alt me-2"></i> Login Now
+                            </a>
+                            <a href="register.php" class="btn btn-outline-cta">
+                                <i class="fas fa-user-plus me-2"></i> Create Account
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="col-lg-6 hero-image d-none d-lg-flex">
+                    <i class="fas fa-mobile-alt" style="font-size: 150px; color: white; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-2">Powerful Features</h2>
+                <p class="text-secondary">Everything you need for license and APK management</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon"><i class="fas fa-key"></i></div>
+                        <h5 class="fw-bold">License Keys</h5>
+                        <p class="text-secondary">Manage and distribute license keys efficiently</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                        <h5 class="fw-bold">APK Upload</h5>
+                        <p class="text-secondary">Upload and manage your APK files</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon"><i class="fas fa-moon"></i></div>
+                        <h5 class="fw-bold">Dark Mode</h5>
+                        <p class="text-secondary">Comfortable viewing in any lighting</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                        <h5 class="fw-bold">Mobile Ready</h5>
+                        <p class="text-secondary">Fully responsive design for all devices</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-number">1000+</div>
+                        <p class="text-secondary">Active Users</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-number">5000+</div>
+                        <p class="text-secondary">Licenses Distributed</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <p class="text-secondary">Uptime</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            html.setAttribute('data-theme', 'dark');
+            themeToggle.textContent = '☀️';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '☀️';
+            localStorage.setItem('theme', newTheme);
+        });
+        
+        // Scroll animations
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        });
+        
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar-custom');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>
