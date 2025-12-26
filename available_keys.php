@@ -739,6 +739,15 @@ try {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Restore scroll position after delete
+        document.addEventListener("DOMContentLoaded", function() {
+            const savedPos = localStorage.getItem("scrollPos");
+            if (savedPos !== null) {
+                setTimeout(() => window.scrollTo(0, parseInt(savedPos)), 100);
+                localStorage.removeItem("scrollPos");
+            }
+        });
+
         // Theme Management
         function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'light';

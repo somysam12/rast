@@ -26,7 +26,8 @@ if ($confirm == 1 && $_POST) {
     try {
         $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id = ?");
         if ($stmt->execute([$keyId])) {
-            header('Location: available_keys.php?success=License key deleted successfully');
+            // Save scroll position to localStorage before redirect
+            echo '<script>localStorage.setItem("scrollPos", window.scrollY); window.location.href="available_keys.php?success=License key deleted successfully";</script>';
             exit();
         } else {
             $error = 'Failed to delete license key';
