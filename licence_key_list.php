@@ -488,24 +488,6 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <i class="fas fa-link"></i>Referral Code
             </a>
             <a href="mod_list.php" class="nav-link">
-                <i class="fas fa-list"></i>Mod APK List
-            </a>
-            <a href="delete_mod.php" class="nav-link">
-                <i class="fas fa-trash"></i>Delete Mod
-            </a>
-            <a href="delete_key.php" class="nav-link">
-                <i class="fas fa-trash"></i>Delete Key
-            </a>
-            <a href="edit_user.php" class="nav-link">
-                <i class="fas fa-user-edit"></i>Edit User
-            </a>
-            <a href="admin_block_reset_requests.php" class="nav-link">
-                <i class="fas fa-shield-alt"></i>Block & Reset Requests
-            </a>
-            <a href="reset_device.php" class="nav-link">
-                <i class="fas fa-mobile-alt"></i>Reset Device
-            </a>
-            <a href="force_logout.php" class="nav-link">
                 <i class="fas fa-sign-out-alt"></i>Force Logout
             </a>
             <a href="logout.php" class="nav-link" style="color: #ef4444; margin-top: 2rem;">

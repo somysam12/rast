@@ -413,21 +413,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </a>
                     <a class="nav-link" href="available_keys.php">
                     <a class="nav-link" href="delete_mod.php">
-                        <i class="fas fa-trash"></i>Delete Mod
-                    </a>
-                    <a class="nav-link" href="delete_key.php">
-                        <i class="fas fa-trash"></i>Delete Key
-                    </a>
-                    <a class="nav-link" href="edit_user.php">
-                        <i class="fas fa-user-edit"></i>Edit User
-                    </a>
-                    <a class="nav-link" href="admin_block_reset_requests.php">
-                        <i class="fas fa-shield-alt"></i>Block & Reset Requests
-                    </a>
-                    <a class="nav-link" href="reset_device.php">
-                        <i class="fas fa-mobile-alt"></i>Reset Device
-                    </a>
-                    <a class="nav-link" href="force_logout.php">
                         <i class="fas fa-sign-out-alt"></i>Force Logout
                     </a>
                         <i class="fas fa-key"></i>Available Keys
@@ -639,9 +624,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         function confirmDeleteMod(element) {
             const href = element.getAttribute('href');
             Swal.fire({
-                title: 'Delete Mod?',
-                html: '<p style="font-size: 1rem; color: #666;">This mod and all associated license keys will be permanently deleted.</p>',
-                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
