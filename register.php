@@ -51,7 +51,7 @@ if ($_POST) {
                 $bonusAmount = 50.00; // Default bonus amount for user referrals
                 
                     // First check admin-generated referral codes
-                    $stmt = $pdo->prepare("SELECT created_by, status, expires_at, bonus_amount FROM referral_codes WHERE code = ?");
+                    $stmt = $pdo->prepare("SELECT created_by, status, expires_at, bonus_amount, usage_limit, usage_count FROM referral_codes WHERE code = ?");
                     $stmt->execute([$referralCode]);
                     $refData = $stmt->fetch(PDO::FETCH_ASSOC);
                     
@@ -60,7 +60,7 @@ if ($_POST) {
                                 $error = 'This referral code has already been used or is inactive';
                             } elseif ($refData['expires_at'] !== null && strtotime($refData['expires_at']) < time()) {
                                 $error = 'This referral code has expired';
-                            } elseif ($refData['usage_limit'] !== null && $refData['usage_count'] >= $refData['usage_limit']) {
+                            } elseif (!empty($refData['usage_limit']) && !empty($refData['usage_count']) && $refData['usage_count'] >= $refData['usage_limit']) {
                                 $error = 'This referral code usage limit has been reached';
                             } else {
                                 $referredBy = $refData['created_by'];
@@ -113,16 +113,31 @@ if ($_POST) {
                             $stmt->execute([$newUserReferralCode, $referredBy]);
                         }
                         
-                        // Give bonus to referrer
+                        // Give bonus to NEW USER
                         $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
-                        $stmt->execute([$bonusToGive, $referredBy]);
+                        $stmt->execute([$bonusToGive, $userId]);
                         
-                        // Record referral transaction for referrer
+                        // Record referral transaction for NEW USER
                         try {
-                            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', ?, 'Referral bonus for referring new user', CURRENT_TIMESTAMP)");
-                            $stmt->execute([$referredBy, $bonusToGive]);
+                            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', ?, 'Referral signup bonus', CURRENT_TIMESTAMP)");
+                            $stmt->execute([$userId, $bonusToGive]);
                         } catch (Exception $e) {
                             // Ignore transaction errors
+                        }
+                        
+                        // Also give bonus to referrer if they earned a reward
+                        if ($referralType === 'admin') {
+                            $referrerBonus = $bonusToGive * 0.5; // 50% of what new user gets
+                            $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+                            $stmt->execute([$referrerBonus, $referredBy]);
+                            
+                            // Record referrer bonus transaction
+                            try {
+                                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', ?, 'Referral reward for user signup', CURRENT_TIMESTAMP)");
+                                $stmt->execute([$referredBy, $referrerBonus]);
+                            } catch (Exception $e) {
+                                // Ignore transaction errors
+                            }
                         }
                     }
                     
