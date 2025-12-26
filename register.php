@@ -48,9 +48,10 @@ if ($_POST) {
                 // Check if referral code is provided and valid
                 $referredBy = null;
                 $referralType = null;
+                $bonusAmount = 50.00; // Default bonus amount for user referrals
                 
                     // First check admin-generated referral codes
-                    $stmt = $pdo->prepare("SELECT created_by, status, expires_at FROM referral_codes WHERE code = ?");
+                    $stmt = $pdo->prepare("SELECT created_by, status, expires_at, bonus_amount FROM referral_codes WHERE code = ?");
                     $stmt->execute([$referralCode]);
                     $refData = $stmt->fetch(PDO::FETCH_ASSOC);
                     

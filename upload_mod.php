@@ -184,6 +184,9 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                 
                                 .upload-progress-wrapper {
                                     animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                                    will-change: transform, opacity;
+                                    transform: translateZ(0);
+                                    backface-visibility: hidden;
                                 }
                                 
                                 .progress-section {
@@ -241,6 +244,10 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                     box-shadow: 0 0 15px rgba(139, 92, 246, 0.5), inset 0 0 5px rgba(255,255,255,0.5);
                                     position: relative;
                                     animation: glow 2s ease-in-out infinite;
+                                    will-change: width;
+                                    transform: translateZ(0);
+                                    backface-visibility: hidden;
+                                    -webkit-font-smoothing: antialiased;
                                 }
                                 
                                 .progress-fill::before {
@@ -269,6 +276,10 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                     text-align: center;
                                     transition: all 0.3s ease;
                                     animation: float 3s ease-in-out infinite;
+                                    will-change: transform;
+                                    transform: translateZ(0);
+                                    backface-visibility: hidden;
+                                    -webkit-font-smoothing: antialiased;
                                 }
                                 
                                 .stat-card:hover {
@@ -326,6 +337,21 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                 @keyframes pulse {
                                     0%, 100% { opacity: 1; }
                                     50% { opacity: 0.5; }
+                                }
+                                
+                                @media (max-width: 1024px) {
+                                    .stats-grid {
+                                        grid-template-columns: 1fr 1fr;
+                                    }
+                                }
+                                
+                                @media (max-width: 600px) {
+                                    .progress-container, .progress-fill, .stat-card {
+                                        will-change: auto;
+                                    }
+                                    .stats-grid {
+                                        grid-template-columns: 1fr;
+                                    }
                                 }
                             </style>
                             

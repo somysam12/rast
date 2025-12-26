@@ -99,6 +99,8 @@ try {
     <title>User Management - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -184,8 +186,8 @@ try {
                                         <td style="padding: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
                                             <a href="edit_user.php?id=<?php echo $user['id']; ?>" style="display: inline-flex; align-items: center; gap: 6px; background: #8b5cf6; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#7c3aed'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#8b5cf6'; this.style.transform='translateY(0)';"><i class="fas fa-edit"></i>Edit</a>
                                             <a href="edit_user.php?id=<?php echo $user['id']; ?>#balance" style="display: inline-flex; align-items: center; gap: 6px; background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#059669'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#10b981'; this.style.transform='translateY(0)';"><i class="fas fa-wallet"></i>Balance</a>
-                                            <a href="force_logout.php?id=<?php echo $user['id']; ?>" onclick="return confirm('Force logout this user?');" style="display: inline-flex; align-items: center; gap: 6px; background: #f59e0b; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#d97706'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#f59e0b'; this.style.transform='translateY(0)';"><i class="fas fa-sign-out-alt"></i>Logout</a>
-                                            <a href="?delete=<?php echo $user['id']; ?>" onclick="return confirm('Delete this user?');" style="display: inline-flex; align-items: center; gap: 6px; background: #ef4444; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#dc2626'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#ef4444'; this.style.transform='translateY(0)';"><i class="fas fa-trash"></i>Delete</a>
+                                            <a href="force_logout.php?id=<?php echo $user['id']; ?>" onclick="confirmAction('logout', this.href); return false;" style="display: inline-flex; align-items: center; gap: 6px; background: #f59e0b; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#d97706'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#f59e0b'; this.style.transform='translateY(0)';"><i class="fas fa-sign-out-alt"></i>Logout</a>
+                                            <a href="?delete=<?php echo $user['id']; ?>" onclick="confirmAction('delete', this.href); return false;" style="display: inline-flex; align-items: center; gap: 6px; background: #ef4444; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#dc2626'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#ef4444'; this.style.transform='translateY(0)';"><i class="fas fa-trash"></i>Delete</a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -198,5 +200,66 @@ try {
             </div>
         </div>
     </div>
+    <script>
+        function confirmAction(type, url) {
+            if (type === 'delete') {
+                Swal.fire({
+                    title: 'Delete User?',
+                    html: '<p style="font-size: 1rem; color: #666;">This action cannot be undone. The user account and all associated data will be permanently deleted.</p>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, Delete',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        popup: 'swal-popup-style',
+                        confirmButton: 'swal-btn-confirm',
+                        cancelButton: 'swal-btn-cancel'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = url;
+                    }
+                });
+            } else if (type === 'logout') {
+                Swal.fire({
+                    title: 'Force Logout?',
+                    html: '<p style="font-size: 1rem; color: #666;">This will immediately log out the user from all devices.</p>',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f59e0b',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, Logout',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        popup: 'swal-popup-style',
+                        confirmButton: 'swal-btn-confirm',
+                        cancelButton: 'swal-btn-cancel'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = url;
+                    }
+                });
+            }
+        }
+    </script>
+    <style>
+        .swal-popup-style {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+        }
+        .swal-btn-confirm, .swal-btn-cancel {
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            transition: all 0.2s ease !important;
+        }
+        .swal-btn-confirm:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+    </style>
 </body>
 </html>

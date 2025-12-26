@@ -724,11 +724,11 @@ try {
                                             <td>
                                                 <div class="btn-group">
                                                     <?php if ($code['status'] === 'active' && !$isExpired && !$isLimitReached): ?>
-                                                        <a href="?deactivate=<?php echo $code['id']; ?>" class="btn btn-sm btn-outline-warning" onclick="return confirm('Deactivate this code?')">
+                                                        <a href="?deactivate=<?php echo $code['id']; ?>" class="btn btn-sm btn-outline-warning" onclick="confirmDelete('deactivate', this.href); return false;">
                                                             <i class="fas fa-ban"></i>
                                                         </a>
                                                     <?php endif; ?>
-                                                    <a href="?delete=<?php echo $code['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this code permanently?')">
+                                                    <a href="?delete=<?php echo $code['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="confirmDelete('delete', this.href); return false;">
                                                         <i class="fas fa-trash"></i>
                                                     </a>
                                                 </div>
@@ -752,6 +752,49 @@ try {
             document.getElementById('overlay').classList.toggle('show');
         }
 
+        function confirmDelete(type, url) {
+            const titles = {
+                delete: 'Delete Referral Code?',
+                deactivate: 'Deactivate Referral Code?'
+            };
+            const messages = {
+                delete: 'This referral code will be permanently deleted and cannot be recovered.',
+                deactivate: 'This referral code will be deactivated. Existing users can still use it, but it won\'t be available for new registrations.'
+            };
+            const confirmTexts = {
+                delete: 'Yes, Delete',
+                deactivate: 'Yes, Deactivate'
+            };
+            const colors = {
+                delete: '#ef4444',
+                deactivate: '#f59e0b'
+            };
+            
+            Swal.fire({
+                title: titles[type],
+                html: `<p style="font-size: 0.95rem; color: #666; margin-top: 10px;">${messages[type]}</p>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: colors[type],
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: confirmTexts[type],
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'swal-modern-popup',
+                    title: 'swal-modern-title',
+                    confirmButton: 'swal-modern-btn swal-modern-btn-confirm',
+                    cancelButton: 'swal-modern-btn swal-modern-btn-cancel'
+                },
+                didOpen: (modal) => {
+                    modal.style.animation = 'slideIn 0.3s ease-out';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+        
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 const Toast = Swal.mixin({
@@ -770,6 +813,46 @@ try {
                     title: 'Copied to clipboard!'
                 });
             });
+        }
+    </script>
+    <style>
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .swal-modern-popup {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        .swal-modern-title {
+            font-size: 1.4rem !important;
+            color: #1e293b !important;
+            font-weight: 700 !important;
+        }
+        .swal-modern-btn {
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            transition: all 0.2s ease !important;
+        }
+        .swal-modern-btn-confirm:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+        .swal-modern-btn-cancel {
+            background-color: #e5e7eb !important;
+            color: #374151 !important;
+        }
+        .swal-modern-btn-cancel:hover {
+            background-color: #d1d5db !important;
+            transform: translateY(-2px) !important;
         }
 
         // Show success animation if code was generated
