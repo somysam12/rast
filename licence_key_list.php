@@ -38,19 +38,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_keys'])) {
     
     $keyIds = array_filter(array_map('intval', $rawKeyIds));
     
-    if (!empty($keyIds)) {
+    if (!empty($keyIds) && $pdo) {
         try {
             $placeholders = implode(',', array_fill(0, count($keyIds), '?'));
             $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id IN ($placeholders)");
             if ($stmt->execute(array_values($keyIds))) {
                 $deletedCount = $stmt->rowCount();
-                $success = 'Successfully deleted ' . $deletedCount . ' license key(s)!';
+                if ($deletedCount > 0) {
+                    $success = 'Successfully deleted ' . $deletedCount . ' license key(s)!';
+                } else {
+                    $error = 'No keys were deleted. Please check if keys exist.';
+                }
             } else {
-                $error = 'Failed to delete selected license keys';
+                $error = 'Failed to delete selected license keys. Database error.';
             }
         } catch (Exception $e) {
-            $error = 'Error: ' . $e->getMessage();
+            $error = 'Database Error: ' . $e->getMessage();
         }
+    } else {
+        $error = 'No keys selected or database connection failed.';
     }
 }
 
@@ -858,6 +864,16 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             console.log('Starting deletion for keys:', keyIds);
             console.log('Total keys to delete:', keyIds.length);
             
+            if (!keyIds || keyIds.length === 0) {
+                Swal.fire({
+                    title: 'Error!',
+                    html: '<p style="color: var(--text-secondary);">No keys selected to delete.</p>',
+                    icon: 'error',
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+            
             Swal.fire({
                 title: `Deleting ${keyIds.length} key(s)...`,
                 html: `<div style="display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px;">
@@ -869,77 +885,68 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     popup: 'swal-delete-popup',
                     htmlContainer: 'swal-html-container'
                 },
-                allowOutsideClick: true,
-                allowEscapeKey: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
                 didOpen: () => {
-                    // Build URL params for each key
-                    const params = new URLSearchParams();
-                    params.append('delete_keys', '1');
+                    // Build form data for delete
+                    const formData = new FormData();
+                    formData.append('delete_keys', '1');
                     
                     keyIds.forEach((id) => {
-                        params.append('key_ids[]', id);
-                        console.log('Adding to params:', id);
+                        formData.append('key_ids[]', id);
                     });
                     
-                    console.log('Final params:', params.toString());
-                    
-                    // Use fetch with form-encoded data
+                    // Send delete request
                     fetch(window.location.href, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: params.toString()
+                        body: formData
                     })
                     .then(response => {
-                        console.log('Response status:', response.status);
                         if (response.ok) {
-                            // Show success
-                            Swal.fire({
-                                title: 'Deleted Successfully!',
-                                html: `<div style="text-align: center;">
-                                    <div style="font-size: 3rem; margin-bottom: 1rem;">
-                                        <i class="fas fa-check-circle" style="color: #51cf66;"></i>
-                                    </div>
-                                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                                        ${keyIds.length} license key(s) have been permanently deleted.
-                                    </p>
-                                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                                        Redirecting back to list...
-                                    </div>
-                                </div>`,
-                                icon: undefined,
-                                customClass: {
-                                    popup: 'swal-delete-popup',
-                                    htmlContainer: 'swal-html-container'
-                                },
-                                allowOutsideClick: false,
-                                allowEscapeKey: false,
-                                didOpen: () => {
-                                    setTimeout(() => {
-                                        window.location.reload();
-                                    }, 1000);
-                                }
-                            });
+                            return response.text();
                         } else {
-                            throw new Error('Server error');
+                            throw new Error('Server returned status ' + response.status);
                         }
+                    })
+                    .then(data => {
+                        // Show success and reload
+                        Swal.fire({
+                            title: 'Deleted Successfully!',
+                            html: `<div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">
+                                    <i class="fas fa-check-circle" style="color: #51cf66;"></i>
+                                </div>
+                                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                                    ${keyIds.length} license key(s) have been permanently deleted.
+                                </p>
+                                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                    Redirecting back to list...
+                                </div>
+                            </div>`,
+                            icon: undefined,
+                            customClass: {
+                                popup: 'swal-delete-popup',
+                                htmlContainer: 'swal-html-container'
+                            },
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => {
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1500);
+                            }
+                        });
                     })
                     .catch(error => {
                         console.error('Delete error:', error);
                         Swal.fire({
                             title: 'Error!',
-                            html: '<p style="color: var(--text-secondary);">Failed to delete keys. Please try again.</p>',
+                            html: '<p style="color: var(--text-secondary);">Failed to delete keys. Error: ' + error.message + '</p>',
                             icon: 'error',
                             confirmButtonColor: '#ef4444',
                             customClass: {
                                 popup: 'swal-delete-popup',
                                 confirmButton: 'swal-delete-confirm'
-                            },
-                            didOpen: () => {
-                                setTimeout(() => {
-                                    Swal.close();
-                                }, 2000);
                             }
                         });
                     });
