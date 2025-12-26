@@ -151,6 +151,19 @@ if ($confirm == 1 && $_POST) {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        
+        /* Force hide all backdrops */
+        .swal2-backdrop-show {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        
+        .swal2-backdrop {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
     </style>
 </head>
 <body>
@@ -253,7 +266,10 @@ if ($confirm == 1 && $_POST) {
                     htmlContainer: 'swal-html-container'
                 },
                 allowOutsideClick: false,
-                allowEscapeKey: false
+                allowEscapeKey: false,
+                didClose: () => {
+                    document.querySelectorAll('.swal2-backdrop').forEach(el => el.remove());
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Show loading animation
@@ -277,12 +293,6 @@ if ($confirm == 1 && $_POST) {
                             }, 500);
                         }
                     });
-                } else {
-                    // Ensure backdrop is removed on dismiss
-                    const backdrop = document.querySelector('.swal2-backdrop-show');
-                    if (backdrop) {
-                        backdrop.remove();
-                    }
                 }
             });
         });

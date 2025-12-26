@@ -708,6 +708,19 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 transform: translateY(0) scale(1);
             }
         }
+        
+        /* Force hide all backdrops */
+        .swal2-backdrop-show {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        
+        .swal2-backdrop {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
     </style>
     <script>
         // Mobile sidebar toggle
@@ -794,18 +807,14 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     cancelButton: 'swal-delete-cancel'
                 },
                 allowOutsideClick: true,
-                allowEscapeKey: true
+                allowEscapeKey: true,
+                didClose: () => {
+                    document.querySelectorAll('.swal2-backdrop').forEach(el => el.remove());
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     performDelete(currentSelected);
-                } else {
-                    // Ensure backdrop is removed on dismiss
-                    const backdrop = document.querySelector('.swal2-backdrop-show');
-                    if (backdrop) {
-                        backdrop.remove();
-                    }
                 }
-                // Dialog closes automatically for any other action (cancel, escape, outside click)
             });
         }
         
@@ -831,18 +840,14 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     cancelButton: 'swal-delete-cancel'
                 },
                 allowOutsideClick: true,
-                allowEscapeKey: true
+                allowEscapeKey: true,
+                didClose: () => {
+                    document.querySelectorAll('.swal2-backdrop').forEach(el => el.remove());
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     performDelete([keyId]);
-                } else {
-                    // Ensure backdrop is removed on dismiss
-                    const backdrop = document.querySelector('.swal2-backdrop-show');
-                    if (backdrop) {
-                        backdrop.remove();
-                    }
                 }
-                // Dialog closes automatically for any other action (cancel, escape, outside click)
             });
         }
         
