@@ -660,6 +660,33 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     
+    <!-- Improved Confirmation Modal for Form Resubmission -->
+    <div id="formResubmissionModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-light); padding: 1.5rem;">
+                    <h5 class="modal-title" style="font-weight: 700; color: var(--text-primary);">
+                        <i class="fas fa-sync-alt me-2" style="color: var(--purple);"></i>Confirm Form Resubmission
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem;">
+                    <p style="color: var(--text-secondary); margin-bottom: 0;">
+                        The page that you're looking for used information that you entered. Returning to that page might cause any action you took to be repeated. Do you want to continue?
+                    </p>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-light); padding: 1.5rem; gap: 1rem;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 600;">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 600; background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); border: none;">
+                        <i class="fas fa-check me-2"></i>Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form id="bulkDeleteForm" method="POST" style="display: none;">
         <input type="hidden" name="delete_keys" value="1">
         <div id="keyIdsContainer"></div>
@@ -667,6 +694,43 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/scroll-restore.js"></script>
+    <style>
+        /* Smooth Modal Animations */
+        .modal.fade .modal-dialog {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+            transform: translateY(50px) scale(0.95);
+            opacity: 0;
+        }
+        
+        .modal.show .modal-dialog {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        
+        .modal-backdrop.fade {
+            transition: opacity 0.4s ease !important;
+        }
+        
+        .modal-backdrop.show {
+            opacity: 0.5;
+        }
+        
+        /* SweetAlert2 Animations */
+        .swal2-popup {
+            animation: smoothPopup 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+        }
+        
+        @keyframes smoothPopup {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
     <script>
         // Mobile sidebar toggle
         function toggleSidebar() {
@@ -712,32 +776,49 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         function confirmBulkDelete() {
             if (selectedKeys.length === 0) {
-                Swal.fire('No Selection', 'Please select at least one key', 'info');
+                Swal.fire({
+                    title: 'No Selection',
+                    html: 'Please select at least one key to delete',
+                    icon: 'info',
+                    confirmButtonColor: 'var(--purple)',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'swal-delete-popup',
+                        confirmButton: 'swal-delete-confirm'
+                    }
+                });
                 return;
             }
             
             Swal.fire({
                 title: `Delete ${selectedKeys.length} Key(s)?`,
-                html: `<p style="font-size: 0.95rem; color: #666;">You are about to permanently delete <strong>${selectedKeys.length}</strong> license key(s). This action cannot be undone.</p>`,
+                html: `<div style="text-align: left; color: var(--text-secondary);">
+                    <p style="font-size: 0.95rem; margin-bottom: 1rem;">You are about to permanently delete <strong style="color: var(--text-primary);">${selectedKeys.length}</strong> license key(s).</p>
+                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 6px;">
+                        <strong style="color: #991b1b;"><i class="fas fa-exclamation-circle me-2"></i>This action cannot be undone.</strong>
+                    </div>
+                </div>`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, Delete All',
+                confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, Delete All',
                 cancelButtonText: 'Cancel',
                 customClass: {
                     popup: 'swal-delete-popup',
                     title: 'swal-delete-title',
                     confirmButton: 'swal-delete-confirm',
-                    cancelButton: 'swal-delete-cancel'
+                    cancelButton: 'swal-delete-cancel',
+                    htmlContainer: 'swal-html-container'
                 },
-                didOpen: (modal) => {
-                    modal.style.animation = 'slideInDelete 0.4s ease-out';
-                }
+                allowOutsideClick: false,
+                allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
                     const container = document.getElementById('keyIdsContainer');
                     container.innerHTML = '';
+                    
+                    // Create hidden inputs for each selected key
                     selectedKeys.forEach(id => {
                         const input = document.createElement('input');
                         input.type = 'hidden';
@@ -745,6 +826,14 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         input.value = id;
                         container.appendChild(input);
                     });
+                    
+                    // Also ensure delete_keys is set
+                    const deleteKeyInput = document.querySelector('input[name="delete_keys"]');
+                    if (deleteKeyInput) {
+                        deleteKeyInput.value = '1';
+                    }
+                    
+                    // Submit the form
                     document.getElementById('bulkDeleteForm').submit();
                 }
             });
@@ -753,12 +842,12 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         function deleteKey(keyId) {
             Swal.fire({
                 title: 'Delete License Key?',
-                html: '<p style="font-size: 0.95rem; color: #666;">This license key will be permanently deleted. This action cannot be undone.</p>',
+                html: '<div style="text-align: left; color: var(--text-secondary);"><p style="font-size: 0.95rem; margin-bottom: 1rem;">This license key will be permanently deleted.</p><div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 6px;"><strong style="color: #991b1b;"><i class="fas fa-exclamation-circle me-2"></i>This action cannot be undone.</strong></div></div>',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, Delete',
+                confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, Delete',
                 cancelButtonText: 'Cancel',
                 customClass: {
                     popup: 'swal-delete-popup',
@@ -766,12 +855,19 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     confirmButton: 'swal-delete-confirm',
                     cancelButton: 'swal-delete-cancel'
                 },
-                didOpen: (modal) => {
-                    modal.style.animation = 'slideInDelete 0.3s ease-out';
-                }
+                allowOutsideClick: false,
+                allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.getElementById('keyIdsContainer').innerHTML = '<input type="hidden" name="key_ids[]" value="' + keyId + '">';
+                    const container = document.getElementById('keyIdsContainer');
+                    container.innerHTML = '';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'key_ids[]';
+                    input.value = keyId;
+                    container.appendChild(input);
+                    
                     document.getElementById('bulkDeleteForm').submit();
                 }
             });
@@ -797,7 +893,19 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         }
 
-        document.addEventListener('DOMContentLoaded', updateBulkDelete);
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBulkDelete();
+            
+            // Handle form resubmission with improved modal
+            if (window.history && window.history.navigationMode === 'replace') {
+                window.addEventListener('beforeunload', function(e) {
+                    if (document.getElementById('bulkDeleteForm').classList.contains('submitted')) {
+                        e.preventDefault();
+                        e.returnValue = '';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
