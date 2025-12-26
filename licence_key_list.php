@@ -28,7 +28,7 @@ try {
 
 // Handle bulk delete for license keys
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_keys'])) {
-    $keyIds = isset($_POST['key_ids']) ? array_filter(array_map('intval', $_POST['key_ids'])) : [];
+    $keyIds = isset($_POST['key_ids']) ? array_filter(array_map('intval', (array)$_POST['key_ids'])) : [];
     
     if (!empty($keyIds)) {
         try {
@@ -775,7 +775,10 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         function confirmBulkDelete() {
-            if (selectedKeys.length === 0) {
+            // Get fresh selection
+            const currentSelected = Array.from(document.querySelectorAll('.key-checkbox:checked')).map(cb => cb.value);
+            
+            if (currentSelected.length === 0) {
                 Swal.fire({
                     title: 'No Selection',
                     html: 'Please select at least one key to delete',
@@ -791,9 +794,9 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
             
             Swal.fire({
-                title: `Delete ${selectedKeys.length} Key(s)?`,
+                title: `Delete ${currentSelected.length} Key(s)?`,
                 html: `<div style="text-align: left; color: var(--text-secondary);">
-                    <p style="font-size: 0.95rem; margin-bottom: 1rem;">You are about to permanently delete <strong style="color: var(--text-primary);">${selectedKeys.length}</strong> license key(s).</p>
+                    <p style="font-size: 0.95rem; margin-bottom: 1rem;">You are about to permanently delete <strong style="color: var(--text-primary);">${currentSelected.length}</strong> license key(s).</p>
                     <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 6px;">
                         <strong style="color: #991b1b;"><i class="fas fa-exclamation-circle me-2"></i>This action cannot be undone.</strong>
                     </div>
@@ -815,51 +818,41 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Create a proper form dynamically
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.style.display = 'none';
+                    
+                    // Add delete_keys flag
+                    const deleteInput = document.createElement('input');
+                    deleteInput.type = 'hidden';
+                    deleteInput.name = 'delete_keys';
+                    deleteInput.value = '1';
+                    form.appendChild(deleteInput);
+                    
+                    // Add each key ID
+                    currentSelected.forEach((keyId) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'key_ids[]';
+                        input.value = keyId;
+                        form.appendChild(input);
+                    });
+                    
+                    // Add form to page and submit
+                    document.body.appendChild(form);
+                    
                     // Show loading state
                     Swal.fire({
                         title: 'Deleting...',
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <div style="width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top: 3px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            <span>Deleting ${selectedKeys.length} key(s)...</span>
+                            <span>Deleting ${currentSelected.length} key(s)...</span>
                         </div>`,
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         didOpen: () => {
-                            // Submit form with proper FormData
-                            const formData = new FormData();
-                            formData.append('delete_keys', '1');
-                            
-                            // Add each selected key ID to FormData
-                            selectedKeys.forEach(id => {
-                                formData.append('key_ids[]', id);
-                            });
-                            
-                            // Use fetch to submit with proper array handling
-                            fetch(window.location.href, {
-                                method: 'POST',
-                                body: formData
-                            })
-                            .then(response => {
-                                if (response.ok) {
-                                    window.location.reload();
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error',
-                                        html: 'Failed to delete keys. Please try again.',
-                                        icon: 'error',
-                                        confirmButtonColor: '#ef4444'
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Delete error:', error);
-                                Swal.fire({
-                                    title: 'Error',
-                                    html: 'An error occurred. Please try again.',
-                                    icon: 'error',
-                                    confirmButtonColor: '#ef4444'
-                                });
-                            });
+                            form.submit();
                         }
                     });
                 }
