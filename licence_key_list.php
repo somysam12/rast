@@ -660,37 +660,6 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     
-    <!-- Improved Confirmation Modal for Form Resubmission -->
-    <div id="formResubmissionModal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="border-bottom: 1px solid var(--border-light); padding: 1.5rem;">
-                    <h5 class="modal-title" style="font-weight: 700; color: var(--text-primary);">
-                        <i class="fas fa-sync-alt me-2" style="color: var(--purple);"></i>Confirm Form Resubmission
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" style="padding: 1.5rem;">
-                    <p style="color: var(--text-secondary); margin-bottom: 0;">
-                        The page that you're looking for used information that you entered. Returning to that page might cause any action you took to be repeated. Do you want to continue?
-                    </p>
-                </div>
-                <div class="modal-footer" style="border-top: 1px solid var(--border-light); padding: 1.5rem; gap: 1rem;">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 600;">
-                        Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 600; background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); border: none;">
-                        <i class="fas fa-check me-2"></i>Continue
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <form id="bulkDeleteForm" method="POST" style="display: none;">
-        <input type="hidden" name="delete_keys" value="1">
-        <div id="keyIdsContainer"></div>
-    </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/scroll-restore.js"></script>
@@ -775,7 +744,6 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         function confirmBulkDelete() {
-            // Get fresh selection
             const currentSelected = Array.from(document.querySelectorAll('.key-checkbox:checked')).map(cb => cb.value);
             
             if (currentSelected.length === 0) {
@@ -783,7 +751,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     title: 'No Selection',
                     html: 'Please select at least one key to delete',
                     icon: 'info',
-                    confirmButtonColor: 'var(--purple)',
+                    confirmButtonColor: '#8b5cf6',
                     confirmButtonText: 'OK',
                     customClass: {
                         popup: 'swal-delete-popup',
@@ -797,8 +765,11 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 title: `Delete ${currentSelected.length} Key(s)?`,
                 html: `<div style="text-align: left; color: var(--text-secondary);">
                     <p style="font-size: 0.95rem; margin-bottom: 1rem;">You are about to permanently delete <strong style="color: var(--text-primary);">${currentSelected.length}</strong> license key(s).</p>
-                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 6px;">
+                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                         <strong style="color: #991b1b;"><i class="fas fa-exclamation-circle me-2"></i>This action cannot be undone.</strong>
+                    </div>
+                    <div style="background: rgba(139, 92, 246, 0.1); border-left: 4px solid #8b5cf6; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem;">
+                        Keys to delete: <strong>${currentSelected.join(', ')}</strong>
                     </div>
                 </div>`,
                 icon: 'warning',
@@ -811,50 +782,13 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     popup: 'swal-delete-popup',
                     title: 'swal-delete-title',
                     confirmButton: 'swal-delete-confirm',
-                    cancelButton: 'swal-delete-cancel',
-                    htmlContainer: 'swal-html-container'
+                    cancelButton: 'swal-delete-cancel'
                 },
                 allowOutsideClick: false,
                 allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Create a proper form dynamically
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.style.display = 'none';
-                    
-                    // Add delete_keys flag
-                    const deleteInput = document.createElement('input');
-                    deleteInput.type = 'hidden';
-                    deleteInput.name = 'delete_keys';
-                    deleteInput.value = '1';
-                    form.appendChild(deleteInput);
-                    
-                    // Add each key ID
-                    currentSelected.forEach((keyId) => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'key_ids[]';
-                        input.value = keyId;
-                        form.appendChild(input);
-                    });
-                    
-                    // Add form to page and submit
-                    document.body.appendChild(form);
-                    
-                    // Show loading state
-                    Swal.fire({
-                        title: 'Deleting...',
-                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                            <div style="width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top: 3px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            <span>Deleting ${currentSelected.length} key(s)...</span>
-                        </div>`,
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: () => {
-                            form.submit();
-                        }
-                    });
+                    performDelete(currentSelected);
                 }
             });
         }
@@ -862,7 +796,12 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         function deleteKey(keyId) {
             Swal.fire({
                 title: 'Delete License Key?',
-                html: '<div style="text-align: left; color: var(--text-secondary);"><p style="font-size: 0.95rem; margin-bottom: 1rem;">This license key will be permanently deleted.</p><div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 6px;"><strong style="color: #991b1b;"><i class="fas fa-exclamation-circle me-2"></i>This action cannot be undone.</strong></div></div>',
+                html: `<div style="text-align: left; color: var(--text-secondary);">
+                    <p style="font-size: 0.95rem; margin-bottom: 1rem;">This license key will be permanently deleted.</p>
+                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 8px;">
+                        <strong style="color: #991b1b;"><i class="fas fa-exclamation-circle me-2"></i>This action cannot be undone.</strong>
+                    </div>
+                </div>`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
@@ -879,17 +818,89 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const container = document.getElementById('keyIdsContainer');
-                    container.innerHTML = '';
-                    
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'key_ids[]';
-                    input.value = keyId;
-                    container.appendChild(input);
-                    
-                    document.getElementById('bulkDeleteForm').submit();
+                    performDelete([keyId]);
                 }
+            });
+        }
+        
+        function performDelete(keyIds) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'center',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: (toast) => {
+                    Swal.showLoading();
+                }
+            });
+
+            Toast.fire({
+                title: `Deleting ${keyIds.length} key(s)...`,
+                html: `<div style="display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px;">
+                    <div style="width: 30px; height: 30px; border: 3px solid rgba(139, 92, 246, 0.2); border-top: 3px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <span style="font-size: 1rem; font-weight: 500;">Processing deletion...</span>
+                </div>`,
+                icon: undefined,
+                customClass: {
+                    popup: 'swal-delete-popup',
+                    htmlContainer: 'swal-html-container'
+                }
+            });
+
+            const formData = new FormData();
+            formData.append('delete_keys', '1');
+            keyIds.forEach(id => {
+                formData.append('key_ids[]', id);
+            });
+
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'Deleted Successfully!',
+                        html: `<div style="text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">
+                                <i class="fas fa-check-circle" style="color: #51cf66;"></i>
+                            </div>
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                                ${keyIds.length} license key(s) have been permanently deleted.
+                            </p>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                Redirecting back to list...
+                            </div>
+                        </div>`,
+                        icon: undefined,
+                        customClass: {
+                            popup: 'swal-delete-popup',
+                            htmlContainer: 'swal-html-container'
+                        },
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        }
+                    });
+                } else {
+                    throw new Error('Delete failed');
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error!',
+                    html: '<p style="color: var(--text-secondary);">Failed to delete keys. Please try again.</p>',
+                    icon: 'error',
+                    confirmButtonColor: '#ef4444',
+                    customClass: {
+                        popup: 'swal-delete-popup',
+                        confirmButton: 'swal-delete-confirm'
+                    }
+                });
             });
         }
         
@@ -915,16 +926,6 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         document.addEventListener('DOMContentLoaded', function() {
             updateBulkDelete();
-            
-            // Handle form resubmission with improved modal
-            if (window.history && window.history.navigationMode === 'replace') {
-                window.addEventListener('beforeunload', function(e) {
-                    if (document.getElementById('bulkDeleteForm').classList.contains('submitted')) {
-                        e.preventDefault();
-                        e.returnValue = '';
-                    }
-                });
-            }
         });
     </script>
 </body>
