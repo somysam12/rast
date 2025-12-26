@@ -26,37 +26,65 @@ try {
     $pdo = null;
 }
 
-// Handle bulk delete for license keys
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_keys'])) {
-    // Get the raw array from POST
-    $rawKeyIds = isset($_POST['key_ids']) ? $_POST['key_ids'] : [];
-    
-    // Ensure it's an array and convert to integers
-    if (!is_array($rawKeyIds)) {
-        $rawKeyIds = [$rawKeyIds];
+// Handle delete - single key deletion via GET
+if (isset($_GET['delete_id']) && !empty($_GET['delete_id'])) {
+    $deleteId = intval($_GET['delete_id']);
+    if ($pdo && $deleteId > 0) {
+        try {
+            $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id = ?");
+            if ($stmt->execute([$deleteId])) {
+                if ($stmt->rowCount() > 0) {
+                    $success = 'License key deleted successfully!';
+                    // Refresh the keys list
+                    header('Refresh: 2; url=' . $_SERVER['PHP_SELF']);
+                } else {
+                    $error = 'Key not found.';
+                }
+            }
+        } catch (Exception $e) {
+            $error = 'Error deleting key: ' . $e->getMessage();
+        }
     }
+}
+
+// Handle bulk delete for license keys via POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_keys'])) {
+    $keyIds = [];
     
-    $keyIds = array_filter(array_map('intval', $rawKeyIds));
+    // Get key IDs from POST
+    foreach ($_POST as $key => $value) {
+        if (strpos($key, 'key_id_') === 0) {
+            $id = intval(str_replace('key_id_', '', $key));
+            if ($id > 0) {
+                $keyIds[] = $id;
+            }
+        }
+    }
     
     if (!empty($keyIds) && $pdo) {
         try {
             $placeholders = implode(',', array_fill(0, count($keyIds), '?'));
             $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id IN ($placeholders)");
-            if ($stmt->execute(array_values($keyIds))) {
+            if ($stmt->execute($keyIds)) {
                 $deletedCount = $stmt->rowCount();
                 if ($deletedCount > 0) {
                     $success = 'Successfully deleted ' . $deletedCount . ' license key(s)!';
+                    header('Refresh: 2; url=' . $_SERVER['PHP_SELF']);
                 } else {
-                    $error = 'No keys were deleted. Please check if keys exist.';
+                    $error = 'No keys were deleted.';
                 }
             } else {
-                $error = 'Failed to delete selected license keys. Database error.';
+                $error = 'Failed to delete keys.';
             }
         } catch (Exception $e) {
-            $error = 'Database Error: ' . $e->getMessage();
+            $error = 'Error: ' . $e->getMessage();
         }
     } else {
-        $error = 'No keys selected or database connection failed.';
+        if (empty($keyIds)) {
+            $error = 'No keys selected for deletion.';
+        } else {
+            $error = 'Database connection failed.';
+        }
     }
 }
 
@@ -661,11 +689,12 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                     title="Copy Key">
                                                 <i class="fas fa-copy"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger" 
-                                                    onclick="deleteKey(<?php echo $key['id']; ?>)" 
-                                                    title="Delete">
+                                            <a href="?delete_id=<?php echo $key['id']; ?>" 
+                                               class="btn btn-sm btn-outline-danger" 
+                                               onclick="return confirm('Are you sure you want to delete this license key? This action cannot be undone.');"
+                                               title="Delete">
                                                 <i class="fas fa-trash"></i>
-                                            </button>
+                                            </a>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -775,183 +804,33 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         function confirmBulkDelete() {
-            const currentSelected = Array.from(document.querySelectorAll('.key-checkbox:checked')).map(cb => cb.value);
-            
-            if (currentSelected.length === 0) {
-                Swal.fire({
-                    title: 'No Selection',
-                    html: 'Please select at least one key to delete',
-                    icon: 'info',
-                    confirmButtonColor: '#8b5cf6',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        popup: 'swal-delete-popup',
-                        confirmButton: 'swal-delete-confirm'
-                    }
-                });
+            const selected = Array.from(document.querySelectorAll('.key-checkbox:checked')).map(cb => cb.value);
+            if (selected.length === 0) {
+                alert('Please select at least one key to delete.');
                 return;
             }
-            
-            Swal.fire({
-                title: `Delete ${currentSelected.length} Key(s)?`,
-                html: `<div style="text-align: left; color: var(--text-secondary);">
-                    <p style="font-size: 0.95rem; margin-bottom: 1rem;">You are about to permanently delete <strong style="color: var(--text-primary);">${currentSelected.length}</strong> license key(s).</p>
-                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                        <strong style="color: #991b1b;"><i class="fas fa-exclamation-circle me-2"></i>This action cannot be undone.</strong>
-                    </div>
-                    <div style="background: rgba(139, 92, 246, 0.1); border-left: 4px solid #8b5cf6; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem;">
-                        Keys to delete: <strong>${currentSelected.join(', ')}</strong>
-                    </div>
-                </div>`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, Delete All',
-                cancelButtonText: 'Cancel',
-                customClass: {
-                    popup: 'swal-delete-popup',
-                    title: 'swal-delete-title',
-                    confirmButton: 'swal-delete-confirm',
-                    cancelButton: 'swal-delete-cancel'
-                },
-                allowOutsideClick: true,
-                allowEscapeKey: true,
-                didClose: () => {
-                    document.querySelectorAll('.swal2-backdrop').forEach(el => el.remove());
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    performDelete(currentSelected);
-                }
-            });
-        }
-        
-        function deleteKey(keyId) {
-            Swal.fire({
-                title: 'Delete License Key?',
-                html: `<div style="text-align: left; color: var(--text-secondary);">
-                    <p style="font-size: 0.95rem; margin-bottom: 1rem;">This license key will be permanently deleted.</p>
-                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 8px;">
-                        <strong style="color: #991b1b;"><i class="fas fa-exclamation-circle me-2"></i>This action cannot be undone.</strong>
-                    </div>
-                </div>`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, Delete',
-                cancelButtonText: 'Cancel',
-                customClass: {
-                    popup: 'swal-delete-popup',
-                    title: 'swal-delete-title',
-                    confirmButton: 'swal-delete-confirm',
-                    cancelButton: 'swal-delete-cancel'
-                },
-                allowOutsideClick: true,
-                allowEscapeKey: true,
-                didClose: () => {
-                    document.querySelectorAll('.swal2-backdrop').forEach(el => el.remove());
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    performDelete([keyId]);
-                }
-            });
-        }
-        
-        function performDelete(keyIds) {
-            console.log('Starting deletion for keys:', keyIds);
-            console.log('Total keys to delete:', keyIds.length);
-            
-            if (!keyIds || keyIds.length === 0) {
-                Swal.fire({
-                    title: 'Error!',
-                    html: '<p style="color: var(--text-secondary);">No keys selected to delete.</p>',
-                    icon: 'error',
-                    confirmButtonColor: '#ef4444'
+            if (confirm('Are you sure you want to delete ' + selected.length + ' license key(s)? This action cannot be undone.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = window.location.href;
+                
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'delete_keys';
+                input.value = '1';
+                form.appendChild(input);
+                
+                selected.forEach(id => {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'key_id_' + id;
+                    hiddenInput.value = '1';
+                    form.appendChild(hiddenInput);
                 });
-                return;
+                
+                document.body.appendChild(form);
+                form.submit();
             }
-            
-            Swal.fire({
-                title: `Deleting ${keyIds.length} key(s)...`,
-                html: `<div style="display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px;">
-                    <div style="width: 30px; height: 30px; border: 3px solid rgba(139, 92, 246, 0.2); border-top: 3px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                    <span style="font-size: 1rem; font-weight: 500;">Processing deletion...</span>
-                </div>`,
-                icon: undefined,
-                customClass: {
-                    popup: 'swal-delete-popup',
-                    htmlContainer: 'swal-html-container'
-                },
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                didOpen: () => {
-                    // Build form data for delete
-                    const formData = new FormData();
-                    formData.append('delete_keys', '1');
-                    
-                    keyIds.forEach((id) => {
-                        formData.append('key_ids[]', id);
-                    });
-                    
-                    // Send delete request
-                    fetch(window.location.href, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            return response.text();
-                        } else {
-                            throw new Error('Server returned status ' + response.status);
-                        }
-                    })
-                    .then(data => {
-                        // Show success and reload
-                        Swal.fire({
-                            title: 'Deleted Successfully!',
-                            html: `<div style="text-align: center;">
-                                <div style="font-size: 3rem; margin-bottom: 1rem;">
-                                    <i class="fas fa-check-circle" style="color: #51cf66;"></i>
-                                </div>
-                                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                                    ${keyIds.length} license key(s) have been permanently deleted.
-                                </p>
-                                <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                                    Redirecting back to list...
-                                </div>
-                            </div>`,
-                            icon: undefined,
-                            customClass: {
-                                popup: 'swal-delete-popup',
-                                htmlContainer: 'swal-html-container'
-                            },
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            didOpen: () => {
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 1500);
-                            }
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Delete error:', error);
-                        Swal.fire({
-                            title: 'Error!',
-                            html: '<p style="color: var(--text-secondary);">Failed to delete keys. Error: ' + error.message + '</p>',
-                            icon: 'error',
-                            confirmButtonColor: '#ef4444',
-                            customClass: {
-                                popup: 'swal-delete-popup',
-                                confirmButton: 'swal-delete-confirm'
-                            }
-                        });
-                    });
-                }
-            });
         }
         
         function copyToClipboard(text) {
