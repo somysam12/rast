@@ -28,14 +28,23 @@ try {
 
 // Handle bulk delete for license keys
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_keys'])) {
-    $keyIds = isset($_POST['key_ids']) ? array_filter(array_map('intval', (array)$_POST['key_ids'])) : [];
+    // Get the raw array from POST
+    $rawKeyIds = isset($_POST['key_ids']) ? $_POST['key_ids'] : [];
+    
+    // Ensure it's an array and convert to integers
+    if (!is_array($rawKeyIds)) {
+        $rawKeyIds = [$rawKeyIds];
+    }
+    
+    $keyIds = array_filter(array_map('intval', $rawKeyIds));
     
     if (!empty($keyIds)) {
         try {
             $placeholders = implode(',', array_fill(0, count($keyIds), '?'));
             $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id IN ($placeholders)");
-            if ($stmt->execute($keyIds)) {
-                $success = 'Successfully deleted ' . count($keyIds) . ' license key(s)!';
+            if ($stmt->execute(array_values($keyIds))) {
+                $deletedCount = $stmt->rowCount();
+                $success = 'Successfully deleted ' . $deletedCount . ' license key(s)!';
             } else {
                 $error = 'Failed to delete selected license keys';
             }
@@ -824,18 +833,9 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         function performDelete(keyIds) {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'center',
-                showConfirmButton: false,
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                didOpen: (toast) => {
-                    Swal.showLoading();
-                }
-            });
-
-            Toast.fire({
+            console.log('Attempting to delete keys:', keyIds);
+            
+            Swal.fire({
                 title: `Deleting ${keyIds.length} key(s)...`,
                 html: `<div style="display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px;">
                     <div style="width: 30px; height: 30px; border: 3px solid rgba(139, 92, 246, 0.2); border-top: 3px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
@@ -845,62 +845,45 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 customClass: {
                     popup: 'swal-delete-popup',
                     htmlContainer: 'swal-html-container'
-                }
-            });
-
-            const formData = new FormData();
-            formData.append('delete_keys', '1');
-            keyIds.forEach(id => {
-                formData.append('key_ids[]', id);
-            });
-
-            fetch(window.location.href, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    Swal.fire({
-                        title: 'Deleted Successfully!',
-                        html: `<div style="text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 1rem;">
-                                <i class="fas fa-check-circle" style="color: #51cf66;"></i>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                                ${keyIds.length} license key(s) have been permanently deleted.
-                            </p>
-                            <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                                Redirecting back to list...
-                            </div>
-                        </div>`,
-                        icon: undefined,
-                        customClass: {
-                            popup: 'swal-delete-popup',
-                            htmlContainer: 'swal-html-container'
-                        },
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: () => {
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500);
-                        }
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    const formData = new FormData();
+                    formData.append('delete_keys', '1');
+                    
+                    keyIds.forEach((id, idx) => {
+                        console.log(`Adding key ${idx}: ${id}`);
+                        formData.append('key_ids[]', id);
                     });
-                } else {
-                    throw new Error('Delete failed');
+                    
+                    // Create a temporary form and submit it the traditional way
+                    const tempForm = document.createElement('form');
+                    tempForm.method = 'POST';
+                    tempForm.style.display = 'none';
+                    
+                    const deleteKeyInput = document.createElement('input');
+                    deleteKeyInput.type = 'hidden';
+                    deleteKeyInput.name = 'delete_keys';
+                    deleteKeyInput.value = '1';
+                    tempForm.appendChild(deleteKeyInput);
+                    
+                    keyIds.forEach((id) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'key_ids[]';
+                        input.value = id;
+                        tempForm.appendChild(input);
+                    });
+                    
+                    document.body.appendChild(tempForm);
+                    console.log('Form ready, submitting with', keyIds.length, 'keys');
+                    
+                    // Add a small delay to ensure form is in DOM
+                    setTimeout(() => {
+                        tempForm.submit();
+                    }, 100);
                 }
-            })
-            .catch(error => {
-                Swal.fire({
-                    title: 'Error!',
-                    html: '<p style="color: var(--text-secondary);">Failed to delete keys. Please try again.</p>',
-                    icon: 'error',
-                    confirmButtonColor: '#ef4444',
-                    customClass: {
-                        popup: 'swal-delete-popup',
-                        confirmButton: 'swal-delete-confirm'
-                    }
-                });
             });
         }
         
@@ -923,6 +906,67 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 });
             });
         }
+
+        // Handle browser form resubmission warning with custom modal
+        let isFormResubmission = false;
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (document.querySelector('form[method="POST"]') && !isFormResubmission) {
+                // Don't show browser warning - we'll handle it with custom modal
+                e.preventDefault();
+                e.returnValue = '';
+                isFormResubmission = true;
+            }
+        });
+        
+        // Handle popstate (back button) with custom modal
+        window.addEventListener('popstate', function(e) {
+            if (isFormResubmission) {
+                showResubmissionModal();
+            }
+        });
+        
+        function showResubmissionModal() {
+            Swal.fire({
+                title: 'Confirm Form Resubmission',
+                html: `<div style="text-align: left; color: var(--text-secondary);">
+                    <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                        <i class="fas fa-sync-alt" style="font-size: 2.5rem; color: #8b5cf6;"></i>
+                    </div>
+                    <p style="margin-bottom: 1rem;">
+                        The page you're trying to access used information that you entered. Returning to that page might cause any action you took to be repeated.
+                    </p>
+                    <p style="color: #667eea; font-weight: 600;">
+                        Do you want to continue?
+                    </p>
+                </div>`,
+                icon: undefined,
+                showCancelButton: true,
+                confirmButtonColor: '#667eea',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fas fa-arrow-right me-2"></i>Continue',
+                cancelButtonText: 'Go Back',
+                customClass: {
+                    popup: 'swal-delete-popup',
+                    title: 'swal-delete-title',
+                    confirmButton: 'swal-delete-confirm',
+                    cancelButton: 'swal-delete-cancel'
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    window.history.forward();
+                }
+            });
+        }
+        
+        // Monitor for form submissions
+        document.addEventListener('submit', function(e) {
+            if (e.target.method && e.target.method.toUpperCase() === 'POST') {
+                isFormResubmission = true;
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', function() {
             updateBulkDelete();
