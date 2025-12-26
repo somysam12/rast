@@ -412,6 +412,24 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-key"></i>License Key List
                     </a>
                     <a class="nav-link" href="available_keys.php">
+                    <a class="nav-link" href="delete_mod.php">
+                        <i class="fas fa-trash"></i>Delete Mod
+                    </a>
+                    <a class="nav-link" href="delete_key.php">
+                        <i class="fas fa-trash"></i>Delete Key
+                    </a>
+                    <a class="nav-link" href="edit_user.php">
+                        <i class="fas fa-user-edit"></i>Edit User
+                    </a>
+                    <a class="nav-link" href="admin_block_reset_requests.php">
+                        <i class="fas fa-shield-alt"></i>Block & Reset Requests
+                    </a>
+                    <a class="nav-link" href="reset_device.php">
+                        <i class="fas fa-mobile-alt"></i>Reset Device
+                    </a>
+                    <a class="nav-link" href="force_logout.php">
+                        <i class="fas fa-sign-out-alt"></i>Force Logout
+                    </a>
                         <i class="fas fa-key"></i>Available Keys
                     </a>
                     <a class="nav-link" href="manage_users.php">
