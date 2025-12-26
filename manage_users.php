@@ -261,5 +261,6 @@ try {
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
         }
     </style>
+    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>

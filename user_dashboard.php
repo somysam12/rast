@@ -1050,5 +1050,6 @@ function formatDate($date) {
             }
         });
     </script>
+    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>

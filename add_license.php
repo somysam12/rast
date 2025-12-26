@@ -1021,5 +1021,6 @@ if ($_POST) {
         setTimeout(forceMobileHeader, 500);
         window.addEventListener('resize', forceMobileHeader);
     </script>
+    <script src="assets/js/scroll-restore.js"></script>
 <script src="assets/js/menu-logic.js"></script></body>
 </html>`

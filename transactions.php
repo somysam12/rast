@@ -221,5 +221,6 @@ try {
             </div>
         </div>
     </div>
+    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>

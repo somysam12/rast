@@ -150,5 +150,6 @@ if ($_POST) {
             </div>
         </div>
     </div>
+    <script src="assets/js/scroll-restore.js"></script>
 <script src="assets/js/menu-logic.js"></script></body>
 </html>

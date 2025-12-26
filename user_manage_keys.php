@@ -283,5 +283,6 @@ try {
     </script>
     <script src="assets/js/dark-mode.js"></script>
     <script src="assets/js/menu-logic.js"></script>
+    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>

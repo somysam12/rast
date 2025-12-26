@@ -984,5 +984,6 @@ try {
             });
         <?php endif; ?>
     </script>
+    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>

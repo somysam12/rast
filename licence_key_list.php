@@ -1027,5 +1027,6 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         });
     </script>
+    <script src="assets/js/scroll-restore.js"></script>
 <script src="assets/js/menu-logic.js"></script></body>
 </html>

@@ -749,5 +749,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/scroll-restore.js"></script>
 <script src="assets/js/menu-logic.js"></script></body>
 </html>

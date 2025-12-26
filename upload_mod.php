@@ -609,5 +609,6 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
         return hours + 'h ' + minutes + 'm';
     }
     </script>
+    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>
