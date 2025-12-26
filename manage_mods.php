@@ -38,6 +38,8 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Manage Mods - Multi Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -537,7 +539,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 </a>
                                                 <a href="?delete=<?php echo $mod['id']; ?>" 
                                                    class="btn btn-danger"
-                                                   onclick="return confirm('Are you sure you want to delete this mod? This action cannot be undone.')"
+                                                   onclick="confirmDeleteMod(this); return false; this mod? This action cannot be undone.')"
                                                    title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
@@ -615,4 +617,72 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
     <script src="assets/js/scroll-restore.js"></script>
 <script src="assets/js/menu-logic.js"></script></body>
+    <script>
+        function confirmDeleteMod(element) {
+            const href = element.getAttribute('href');
+            Swal.fire({
+                title: 'Delete Mod?',
+                html: '<p style="font-size: 1rem; color: #666;">This mod and all associated license keys will be permanently deleted.</p>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'swal-delete-popup',
+                    title: 'swal-delete-title',
+                    confirmButton: 'swal-delete-confirm',
+                    cancelButton: 'swal-delete-cancel'
+                },
+                didOpen: (modal) => {
+                    modal.style.animation = 'slideInDelete 0.4s ease-out';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = href;
+                }
+            });
+        }
+    </script>
+    <style>
+        @keyframes slideInDelete {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .swal-delete-popup {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        .swal-delete-title {
+            font-size: 1.5rem !important;
+            color: #1e293b !important;
+            font-weight: 700 !important;
+        }
+        .swal-delete-confirm, .swal-delete-cancel {
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            transition: all 0.2s ease !important;
+        }
+        .swal-delete-confirm:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+        .swal-delete-cancel {
+            background-color: #e5e7eb !important;
+            color: #374151 !important;
+        }
+        .swal-delete-cancel:hover {
+            background-color: #d1d5db !important;
+            transform: translateY(-2px) !important;
+        }
+    </style>
 </html>

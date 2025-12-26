@@ -7,13 +7,11 @@ require_once 'includes/functions.php';
 
 requireAdmin();
 
-// Debug: Check if we reach this point
 if (!isset($_SESSION)) {
     session_start();
 }
 
 if (!isset($_SESSION['user_id'])) {
-    // If not logged in, redirect instead of showing white screen
     header('Location: login.php');
     exit();
 }
@@ -23,6 +21,25 @@ try {
 } catch (Exception $e) {
     $error = 'Database connection failed: ' . $e->getMessage();
     $pdo = null;
+}
+
+// Handle bulk delete for license keys
+if ($_POST && isset($_POST['delete_keys'])) {
+    $keyIds = isset($_POST['key_ids']) ? array_filter(array_map('intval', $_POST['key_ids'])) : [];
+    
+    if (!empty($keyIds)) {
+        try {
+            $placeholders = implode(',', array_fill(0, count($keyIds), '?'));
+            $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id IN ($placeholders)");
+            if ($stmt->execute($keyIds)) {
+                $success = 'Successfully deleted ' . count($keyIds) . ' license key(s)!';
+            } else {
+                $error = 'Failed to delete selected license keys';
+            }
+        } catch (Exception $e) {
+            $error = 'Error: ' . $e->getMessage();
+        }
+    }
 }
 
 // Get filter parameters
@@ -67,6 +84,26 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+    $params[] = $filters['status'];
+}
+
+if (!empty($filters['search'])) {
+    $where[] = "(lk.license_key LIKE ? OR m.name LIKE ?)";
+    $searchTerm = '%' . $filters['search'] . '%';
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+}
+
+$sql = "SELECT lk.*, m.name as mod_name 
+        FROM license_keys lk 
+        LEFT JOIN mods m ON lk.mod_id = m.id 
+        WHERE " . implode(' AND ', $where) . " 
+        ORDER BY lk.created_at DESC";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,6 +112,8 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>License Key List - Multi Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -653,6 +692,11 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 
                 <!-- License Keys Table -->
+                <div style="margin-bottom: 1rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button type="button" id="bulkDeleteBtn" class="btn btn-danger" onclick="confirmBulkDelete()" style="display: none;">
+                        <i class="fas fa-trash me-2"></i><span id="bulkBtnText">Delete Selected</span>
+                    </button>
+                </div>
                 <div class="table-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-table me-2" style="color: var(--purple);"></i>License Key Overview</h5>
@@ -665,6 +709,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <table class="table table-hover">
                             <thead>
                                 <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
                                     <th><i class="fas fa-hashtag me-2"></i>ID</th>
                                     <th><i class="fas fa-tag me-2"></i>Mod Name</th>
                                     <th><i class="fas fa-key me-2"></i>License Key</th>
@@ -713,8 +758,8 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                     title="Copy Key">
                                                 <i class="fas fa-copy"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-secondary" 
-                                                    onclick="deleteKey(<?php echo $key['id']; ?>)" 
+                                            <button class="btn btn-sm btn-outline-danger" value="<?php echo $key['id']; ?>" 
+                                                    onclick="deleteKey(this.value)" 
                                                     title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -1029,4 +1074,190 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
     <script src="assets/js/scroll-restore.js"></script>
 <script src="assets/js/menu-logic.js"></script></body>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="bulkDeleteForm" method="POST" style="display: none;">
+        <input type="hidden" name="delete_keys" value="1">
+        <div id="keyIdsContainer"></div>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Multi-select delete functionality
+        let selectedKeys = [];
+        
+        function toggleSelectAll(checkbox) {
+            document.querySelectorAll('.key-checkbox').forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+            updateBulkDelete();
+        }
+        
+        function updateBulkDelete() {
+            selectedKeys = Array.from(document.querySelectorAll('.key-checkbox:checked')).map(cb => cb.value);
+            const bulkBtn = document.getElementById('bulkDeleteBtn');
+            if (bulkBtn) {
+                if (selectedKeys.length > 0) {
+                    bulkBtn.style.display = 'inline-block';
+                    bulkBtn.textContent = `🗑️ Delete Selected (${selectedKeys.length})`;
+                } else {
+                    bulkBtn.style.display = 'none';
+                }
+            }
+        }
+        
+        function confirmBulkDelete() {
+            if (selectedKeys.length === 0) {
+                Swal.fire('No Selection', 'Please select at least one key', 'info');
+                return;
+            }
+            
+            Swal.fire({
+                title: `Delete ${selectedKeys.length} Key(s)?`,
+                html: `<p style="font-size: 0.95rem; color: #666;">You are about to delete ${selectedKeys.length} license key(s). This action cannot be undone.</p>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete All',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'swal-bulk-delete',
+                    title: 'swal-bulk-title',
+                    confirmButton: 'swal-bulk-confirm',
+                    cancelButton: 'swal-bulk-cancel'
+                },
+                didOpen: (modal) => {
+                    modal.style.animation = 'slideInBulk 0.4s ease-out';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Populate form with selected IDs
+                    const container = document.getElementById('keyIdsContainer');
+                    container.innerHTML = '';
+                    selectedKeys.forEach(id => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'key_ids[]';
+                        input.value = id;
+                        container.appendChild(input);
+                    });
+                    document.getElementById('bulkDeleteForm').submit();
+                }
+            });
+        }
+        
+        function deleteKey(keyId) {
+            Swal.fire({
+                title: 'Delete License Key?',
+                html: '<p style="font-size: 0.95rem; color: #666;">This license key will be permanently deleted. This action cannot be undone.</p>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'swal-single-delete',
+                    title: 'swal-single-title',
+                    confirmButton: 'swal-single-confirm',
+                    cancelButton: 'swal-single-cancel'
+                },
+                didOpen: (modal) => {
+                    modal.style.animation = 'slideInDelete 0.3s ease-out';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('keyIdsContainer').innerHTML = '<input type="hidden" name="key_ids[]" value="' + keyId + '">';
+                    document.getElementById('bulkDeleteForm').submit();
+                }
+            });
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                    }
+                });
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Copied to clipboard!'
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateBulkDelete);
+    </script>
+    <style>
+        @keyframes slideInDelete {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInBulk {
+            from { opacity: 0; transform: translateY(-25px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .swal-single-delete, .swal-bulk-delete {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        
+        .swal-single-title, .swal-bulk-title {
+            font-size: 1.3rem !important;
+            color: #1e293b !important;
+            font-weight: 700 !important;
+        }
+        
+        .swal-single-confirm, .swal-bulk-confirm,
+        .swal-single-cancel, .swal-bulk-cancel {
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .swal-single-confirm:hover, .swal-bulk-confirm:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        .swal-single-cancel, .swal-bulk-cancel {
+            background-color: #e5e7eb !important;
+            color: #374151 !important;
+        }
+        
+        .swal-single-cancel:hover, .swal-bulk-cancel:hover {
+            background-color: #d1d5db !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        #bulkDeleteBtn {
+            animation: slideInBtn 0.3s ease-out;
+        }
+        
+        @keyframes slideInBtn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive { overflow-x: auto; }
+            .key-checkbox { width: 18px; height: 18px; cursor: pointer; }
+            th, td { padding: 8px 4px !important; font-size: 0.85rem; }
+            .btn-sm { padding: 4px 6px !important; font-size: 0.75rem !important; }
+        }
+    </style>
 </html>
