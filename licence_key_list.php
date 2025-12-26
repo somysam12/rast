@@ -793,12 +793,13 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     confirmButton: 'swal-delete-confirm',
                     cancelButton: 'swal-delete-cancel'
                 },
-                allowOutsideClick: false,
-                allowEscapeKey: false
+                allowOutsideClick: true,
+                allowEscapeKey: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     performDelete(currentSelected);
                 }
+                // Dialog closes automatically for any other action (cancel, escape, outside click)
             });
         }
         
@@ -823,12 +824,13 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     confirmButton: 'swal-delete-confirm',
                     cancelButton: 'swal-delete-cancel'
                 },
-                allowOutsideClick: false,
-                allowEscapeKey: false
+                allowOutsideClick: true,
+                allowEscapeKey: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     performDelete([keyId]);
                 }
+                // Dialog closes automatically for any other action (cancel, escape, outside click)
             });
         }
         
@@ -847,8 +849,8 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     popup: 'swal-delete-popup',
                     htmlContainer: 'swal-html-container'
                 },
-                allowOutsideClick: false,
-                allowEscapeKey: false,
+                allowOutsideClick: true,
+                allowEscapeKey: true,
                 didOpen: () => {
                     // Build URL params for each key
                     const params = new URLSearchParams();
@@ -913,6 +915,11 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             customClass: {
                                 popup: 'swal-delete-popup',
                                 confirmButton: 'swal-delete-confirm'
+                            },
+                            didOpen: () => {
+                                setTimeout(() => {
+                                    Swal.close();
+                                }, 2000);
                             }
                         });
                     });
