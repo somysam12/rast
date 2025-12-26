@@ -589,9 +589,6 @@ try {
                     <a class="nav-link" href="admin_block_reset_requests.php">
                         <i class="fas fa-shield-alt"></i>Block & Reset Requests
                     </a>
-                    <a class="nav-link" href="reset_device.php">
-                        <i class="fas fa-sign-out-alt"></i>Force Logout
-                    </a>
                     <a class="nav-link" href="settings.php">
                         <i class="fas fa-cog"></i>Settings
                     </a>
