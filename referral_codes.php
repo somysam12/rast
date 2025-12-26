@@ -854,6 +854,59 @@ try {
             background-color: #d1d5db !important;
             transform: translateY(-2px) !important;
         }
+        
+        /* Auto-copy code animations */
+        @keyframes slideInTitle {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInCode {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInCheck {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes popupGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(139, 92, 246, 0.2);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+            }
+        }
+        
+        /* Pulse effect for code display */
+        @media (hover: hover) {
+            .swal-popup {
+                animation: none;
+            }
+        }
 
         // Show success animation if code was generated
         <?php if (isset($success) && strpos($success, 'Referral code generated successfully') !== false): 
@@ -862,21 +915,70 @@ try {
             document.addEventListener('DOMContentLoaded', function() {
                 const code = '<?php echo htmlspecialchars($generatedCode); ?>';
                 
-                // Auto copy to clipboard
+                // Auto copy to clipboard with animation
                 navigator.clipboard.writeText(code).then(() => {
                     Swal.fire({
-                        title: 'Generated!',
-                        html: `Referral Code: <b style="color:#8b5cf6; font-size:1.5rem; letter-spacing:2px;">${code}</b><br><br>Code has been auto-copied to clipboard.`,
+                        title: '<span style="animation: slideInTitle 0.6s ease-out;">🎉 Code Generated!</span>',
+                        html: `
+                            <div style="padding: 20px 0;">
+                                <div style="
+                                    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+                                    padding: 20px 30px;
+                                    border-radius: 12px;
+                                    margin: 15px 0;
+                                    animation: slideInCode 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+                                    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+                                ">
+                                    <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 8px;">Your Referral Code</div>
+                                    <div style="
+                                        color: white;
+                                        font-size: 1.8rem;
+                                        font-weight: 700;
+                                        letter-spacing: 3px;
+                                        font-family: 'Courier New', monospace;
+                                        text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                                    ">${code}</div>
+                                </div>
+                                <div style="
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 8px;
+                                    color: #10b981;
+                                    font-weight: 600;
+                                    margin-top: 15px;
+                                    animation: fadeInCheck 0.8s ease-out 0.4s both;
+                                ">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Copied to clipboard!</span>
+                                </div>
+                            </div>
+                        `,
+                        icon: false,
+                        confirmButtonColor: '#8b5cf6',
+                        confirmButtonText: '✓ Got it!',
+                        timer: 5000,
+                        timerProgressBar: true,
+                        didOpen: (modal) => {
+                            // Add glow effect
+                            modal.style.animation = 'popupGlow 0.6s ease-out';
+                        },
+                        showClass: {
+                            popup: 'animate__animated animate__zoomIn'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__zoomOut'
+                        }
+                    });
+                }).catch(() => {
+                    // Fallback if copy fails
+                    Swal.fire({
+                        title: 'Code Generated!',
+                        html: `Referral Code: <b style="color:#8b5cf6; font-size:1.5rem; letter-spacing:2px;">${code}</b><br><br><small>Please copy manually</small>`,
                         icon: 'success',
                         confirmButtonColor: '#8b5cf6',
                         timer: 5000,
-                        timerProgressBar: true,
-                        showClass: {
-                            popup: 'animate__animated animate__fadeInDown'
-                        },
-                        hideClass: {
-                            popup: 'animate__animated animate__fadeOutUp'
-                        }
+                        timerProgressBar: true
                     });
                 });
             });
