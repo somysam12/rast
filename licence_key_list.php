@@ -798,6 +798,12 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }).then((result) => {
                 if (result.isConfirmed) {
                     performDelete(currentSelected);
+                } else {
+                    // Ensure backdrop is removed on dismiss
+                    const backdrop = document.querySelector('.swal2-backdrop-show');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
                 }
                 // Dialog closes automatically for any other action (cancel, escape, outside click)
             });
@@ -829,6 +835,12 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }).then((result) => {
                 if (result.isConfirmed) {
                     performDelete([keyId]);
+                } else {
+                    // Ensure backdrop is removed on dismiss
+                    const backdrop = document.querySelector('.swal2-backdrop-show');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
                 }
                 // Dialog closes automatically for any other action (cancel, escape, outside click)
             });

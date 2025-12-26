@@ -277,6 +277,12 @@ if ($confirm == 1 && $_POST) {
                             }, 500);
                         }
                     });
+                } else {
+                    // Ensure backdrop is removed on dismiss
+                    const backdrop = document.querySelector('.swal2-backdrop-show');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
                 }
             });
         });
