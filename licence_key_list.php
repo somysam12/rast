@@ -815,26 +815,53 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const container = document.getElementById('keyIdsContainer');
-                    container.innerHTML = '';
-                    
-                    // Create hidden inputs for each selected key
-                    selectedKeys.forEach(id => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'key_ids[]';
-                        input.value = id;
-                        container.appendChild(input);
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Deleting...',
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <div style="width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top: 3px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <span>Deleting ${selectedKeys.length} key(s)...</span>
+                        </div>`,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            // Submit form with proper FormData
+                            const formData = new FormData();
+                            formData.append('delete_keys', '1');
+                            
+                            // Add each selected key ID to FormData
+                            selectedKeys.forEach(id => {
+                                formData.append('key_ids[]', id);
+                            });
+                            
+                            // Use fetch to submit with proper array handling
+                            fetch(window.location.href, {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    window.location.reload();
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        html: 'Failed to delete keys. Please try again.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#ef4444'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Delete error:', error);
+                                Swal.fire({
+                                    title: 'Error',
+                                    html: 'An error occurred. Please try again.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                            });
+                        }
                     });
-                    
-                    // Also ensure delete_keys is set
-                    const deleteKeyInput = document.querySelector('input[name="delete_keys"]');
-                    if (deleteKeyInput) {
-                        deleteKeyInput.value = '1';
-                    }
-                    
-                    // Submit the form
-                    document.getElementById('bulkDeleteForm').submit();
                 }
             });
         }
