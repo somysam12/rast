@@ -553,6 +553,9 @@ try {
                     <a class="nav-link active" href="admin_dashboard.php">
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </a>
+                    <a class="nav-link" href="stock_alerts.php">
+                        <i class="fas fa-bell"></i>Stock Alerts
+                    </a>
                     <a class="nav-link" href="add_mod.php">
                         <i class="fas fa-plus"></i>Add Mod Name
                     </a>

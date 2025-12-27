@@ -678,6 +678,7 @@ try {
                                 <div class="col-md-6">
                                     <span class="price-range">
                                         Price Range: <?php echo formatCurrency($mod['min_price']); ?> - <?php echo formatCurrency($mod['max_price']); ?>
+                                        <button class="btn btn-sm btn-warning ms-2" onclick="sendStockAlert(<?php echo $mod['id']; ?>, '<?php echo htmlspecialchars($mod['mod_name']); ?>')"><i class="fas fa-bell"></i> Send Alert</button>
                                     </span>
                                 </div>
                             </div>
@@ -1114,3 +1115,17 @@ try {
     <script src="assets/js/scroll-restore.js"></script>
 <script src="assets/js/menu-logic.js"></script></body>
 </html>
+<script>
+function sendStockAlert(modId, modName) {
+    if (confirm('Send alert to admin to restock ' + modName + '?')) {
+        fetch('api/send_stock_alert.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'mod_id=' + modId
+        })
+        .then(r => r.json())
+        .then(d => alert(d.message))
+        .catch(e => alert('Error: ' + e));
+    }
+}
+</script>
