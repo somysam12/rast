@@ -412,9 +412,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-key"></i>License Key List
                     </a>
                     <a class="nav-link" href="available_keys.php">
-                    <a class="nav-link" href="delete_mod.php">
-                        <i class="fas fa-sign-out-alt"></i>Force Logout
-                    </a>
                         <i class="fas fa-key"></i>Available Keys
                     </a>
                     <a class="nav-link" href="manage_users.php">

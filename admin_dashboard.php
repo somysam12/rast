@@ -565,7 +565,7 @@ try {
                     <a class="nav-link" href="mod_list.php">
                         <i class="fas fa-list"></i>Mod APK List
                     </a>
-                    <a class="nav-link" href="delete_mod.php">
+                    <a class="nav-link" href="add_license.php">
                         <i class="fas fa-key"></i>Add License Key
                     </a>
                     <a class="nav-link" href="licence_key_list.php">
@@ -574,7 +574,7 @@ try {
                     <a class="nav-link" href="available_keys.php">
                         <i class="fas fa-key"></i>Available Keys
                     </a>
-                    <a class="nav-link" href="delete_key.php">
+                    <a class="nav-link" href="manage_users.php">
                         <i class="fas fa-users"></i>Manage Users
                     </a>
                     <a class="nav-link" href="edit_user.php">

@@ -521,8 +521,8 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <a href="referral_codes.php" class="nav-link">
                 <i class="fas fa-link"></i>Referral Code
             </a>
-            <a href="mod_list.php" class="nav-link">
-                <i class="fas fa-sign-out-alt"></i>Force Logout
+            <a href="settings.php" class="nav-link">
+                <i class="fas fa-cog"></i>Settings
             </a>
             <a href="logout.php" class="nav-link" style="color: #ef4444; margin-top: 2rem;">
                 <i class="fas fa-sign-out-alt"></i>Logout
