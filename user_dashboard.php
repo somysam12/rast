@@ -87,22 +87,119 @@ function formatDate($date) {
 </head>
 <body>
     <div class="main-layout">
+        <aside class="sidebar">
+            <div class="p-4 border-bottom border-light mb-4">
+                <h4 class="text-gradient mb-0"><i class="fas fa-bolt me-2"></i>SilentPanel</h4>
+            </div>
+            <nav class="px-3">
+                <a href="user_dashboard.php" class="nav-link active py-3 px-4 mb-2 d-block"><i class="fas fa-home me-3"></i>Dashboard</a>
+                <a href="user_generate.php" class="nav-link py-3 px-4 mb-2 d-block"><i class="fas fa-key me-3"></i>Generate Key</a>
+                <a href="user_balance.php" class="nav-link py-3 px-4 mb-2 d-block"><i class="fas fa-wallet me-3"></i>Balance</a>
+                <a href="user_notifications.php" class="nav-link py-3 px-4 mb-2 d-block"><i class="fas fa-bell me-3"></i>Alerts</a>
+                <a href="user_settings.php" class="nav-link py-3 px-4 mb-2 d-block"><i class="fas fa-cog me-3"></i>Settings</a>
+                <a href="logout.php" class="nav-link py-3 px-4 mb-2 d-block text-danger"><i class="fas fa-sign-out-alt me-3"></i>Logout</a>
+            </nav>
+        </aside>
+        
         <main class="content-wrapper">
-            <div class="glass-card mb-4 animate-fade">
-                <h2 class="text-gradient">Welcome, <?= htmlspecialchars($user['username']) ?></h2>
-                <div class="stats-grid mt-4">
-                    <div class="glass-card">
-                        <span class="text-dim small text-uppercase">Balance</span>
-                        <h3 class="mb-0"><?= formatCurrency($user['balance']) ?></h3>
+            <header class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h2 class="text-gradient mb-1">Welcome back, <?= htmlspecialchars($user['username']) ?></h2>
+                    <p class="text-dim mb-0">Here's what's happening with your account</p>
+                </div>
+                <div class="glass-card py-2 px-4 d-flex align-items-center gap-3">
+                    <div class="text-end">
+                        <p class="mb-0 fw-bold small"><?= htmlspecialchars($user['username']) ?></p>
+                        <p class="mb-0 text-dim extra-small"><?= formatCurrency($user['balance']) ?></p>
                     </div>
-                    <div class="glass-card">
-                        <span class="text-dim small text-uppercase">Total Spent</span>
-                        <h3 class="mb-0"><?= formatCurrency($stats['total_spent']) ?></h3>
+                    <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; border-radius: 50%;">
+                        <?= strtoupper(substr($user['username'], 0, 1)) ?>
                     </div>
+                </div>
+            </header>
+
+            <div class="stats-grid mb-5">
+                <div class="glass-card animate-fade">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="stats-icon p-3 bg-primary bg-opacity-10 rounded-circle text-primary">
+                            <i class="fas fa-wallet fa-lg"></i>
+                        </div>
+                        <span class="text-dim small text-uppercase fw-bold">Current Balance</span>
+                    </div>
+                    <h3 class="mb-0"><?= formatCurrency($user['balance']) ?></h3>
+                </div>
+                <div class="glass-card animate-fade" style="animation-delay: 0.1s">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="stats-icon p-3 bg-secondary bg-opacity-10 rounded-circle text-secondary">
+                            <i class="fas fa-shopping-cart fa-lg"></i>
+                        </div>
+                        <span class="text-dim small text-uppercase fw-bold">Total Spent</span>
+                    </div>
+                    <h3 class="mb-0"><?= formatCurrency($stats['total_spent'] ?? 0) ?></h3>
+                </div>
+                <div class="glass-card animate-fade" style="animation-delay: 0.2s">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="stats-icon p-3 bg-accent bg-opacity-10 rounded-circle text-accent">
+                            <i class="fas fa-key fa-lg"></i>
+                        </div>
+                        <span class="text-dim small text-uppercase fw-bold">Active Keys</span>
+                    </div>
+                    <h3 class="mb-0"><?= $stats['total_purchases'] ?? 0 ?></h3>
+                </div>
+            </div>
+
+            <div class="glass-card animate-fade" style="animation-delay: 0.3s">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">Recent Transactions</h4>
+                    <a href="user_transactions.php" class="btn-custom py-2 px-3 small">View All</a>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($recentTransactions)): ?>
+                                <?php foreach ($recentTransactions as $tx): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($tx['description']) ?></td>
+                                        <td class="<?= $tx['type'] == 'credit' ? 'text-success' : 'text-danger' ?>">
+                                            <?= ($tx['type'] == 'credit' ? '+' : '-') . formatCurrency($tx['amount']) ?>
+                                        </td>
+                                        <td><span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill small">Completed</span></td>
+                                        <td class="text-dim"><?= formatDate($tx['created_at']) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-dim">No recent transactions found</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
     </div>
+    
+    <style>
+        .nav-link { 
+            color: var(--text-dim); 
+            text-decoration: none; 
+            border-radius: 12px; 
+            transition: all 0.3s var(--transition);
+            font-weight: 500;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+        .nav-link.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); }
+        .extra-small { font-size: 0.7rem; }
+        .uppercase { text-transform: uppercase; }
+    </style>
 </body>
 </html><?php exit(); ?>
         
