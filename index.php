@@ -292,6 +292,7 @@ if ($isLoggedIn) {
         }
     </style>
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     

@@ -66,6 +66,7 @@ if ($confirm == 1 && $_POST) {
         .mod-info p { color: #666; margin: 5px 0; }
         .btn-group-delete { gap: 10px; }
     </style>
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="delete-container">

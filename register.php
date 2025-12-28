@@ -392,6 +392,34 @@ if ($_POST) {
             }
         }
 
+        .password-toggle-wrapper {
+            position: relative;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            z-index: 10;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-toggle-btn:hover {
+            color: var(--primary);
+        }
+
         @media (max-width: 480px) {
             .glass-card { 
                 padding: 30px 20px; 
@@ -446,15 +474,21 @@ if ($_POST) {
 
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group password-toggle-wrapper">
                             <i class="fas fa-lock field-icon"></i>
                             <input type="password" name="password" class="input-field" placeholder="Password" required>
+                            <button type="button" class="password-toggle-btn">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group password-toggle-wrapper">
                             <i class="fas fa-shield field-icon"></i>
                             <input type="password" name="confirm_password" class="input-field" placeholder="Confirm" required>
+                            <button type="button" class="password-toggle-btn">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -473,5 +507,6 @@ if ($_POST) {
             </div>
         </div>
     </div>
+    <script src="assets/js/password-toggle.js"></script>
 </body>
 </html>

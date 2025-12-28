@@ -165,6 +165,7 @@ if ($confirm == 1 && $_POST) {
             opacity: 0 !important;
         }
     </style>
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="delete-container">

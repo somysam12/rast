@@ -526,6 +526,7 @@ if ($_POST) {
             display: none;
         }
     </style>
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle Button -->

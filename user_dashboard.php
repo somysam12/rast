@@ -755,6 +755,7 @@ function formatDate($date) {
     </style>
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Modern Header -->

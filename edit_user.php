@@ -324,6 +324,7 @@ try {
             margin: 0;
         }
     </style>
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div style="display: flex; min-height: 100vh;">

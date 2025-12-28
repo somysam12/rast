@@ -466,6 +466,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
     </style>
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="mobile-header">

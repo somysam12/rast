@@ -518,6 +518,7 @@ try {
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
     <script src="assets/js/menu-logic.js"></script>
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle -->

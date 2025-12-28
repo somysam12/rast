@@ -417,6 +417,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/dark-mode.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>

@@ -542,6 +542,7 @@ try {
     </style>
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
     <script src="assets/js/menu-logic.js"></script>
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>

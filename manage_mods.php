@@ -359,6 +359,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     </style>
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle -->

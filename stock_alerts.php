@@ -115,6 +115,7 @@ $pendingCount = $stmt->fetchColumn();
             color: #15803d;
         }
     </style>
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">
