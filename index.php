@@ -22,14 +22,14 @@ if ($isLoggedIn) {
     <link href="assets/css/main.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
+            --bg-color: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.8);
             --purple: #8b5cf6;
             --purple-light: #a78bfa;
             --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-light: #e2e8f0;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.15);
             --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -230,7 +230,7 @@ if ($isLoggedIn) {
         
         [data-theme="dark"] {
             --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            --card-bg: #f8fafc;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --border-light: #334155;
@@ -336,7 +336,7 @@ if ($isLoggedIn) {
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="hero-content">
-                        <h1 class="display-3 fw-bold mb-4 fade-in" style="background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 1px; text-shadow: 0 0 30px rgba(251, 191, 36, 0.3); line-height: 1.2;">
+                        <h1 class="display-3 fw-bold mb-4 fade-in" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, #e0e7ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 1px; text-shadow: 0 0 30px rgba(251, 191, 36, 0.3); line-height: 1.2;">
                             Welcome To <span class="d-block" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.8rem; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 40px rgba(251, 191, 36, 0.5);">SilentMultiPanel</span>
                         </h1>
                         <p class="lead mb-5 fade-in">

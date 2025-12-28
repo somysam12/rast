@@ -259,7 +259,7 @@ try {
             transition: 0s;
         }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
+        :root { --bg: #0a0e27; --sidebar-bg: rgba(15, 23, 42, 0.8); --purple: #8b5cf6; --text: #f8fafc; --muted: #94a3b8; --border: rgba(148, 163, 184, 0.15); }
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
         .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; width: 280px; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; }
@@ -406,7 +406,7 @@ try {
                     <form method="POST" id="requestForm">
                         <input type="hidden" name="license_key" id="verifiedLicenseKey">
                         
-                        <div id="selectedKeyDisplay" class="key-display shadow-sm border-0" style="display: none; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0 !important;">
+                        <div id="selectedKeyDisplay" class="key-display shadow-sm border-0" style="display: none; background: linear-gradient(145deg, rgba(15, 23, 42, 0.8), #0a0e27); border: 1px solid rgba(148, 163, 184, 0.15) !important;">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <div class="badge bg-primary mb-2">Selected License</div>
@@ -448,7 +448,7 @@ try {
                             </div>
                             <div class="form-group mt-3">
                                 <label class="form-label fw-bold">Reason for Request *</label>
-                                <textarea class="form-control" name="reason" rows="3" placeholder="Please explain why you want to perform this action..." required style="background: #f8fafc;"></textarea>
+                                <textarea class="form-control" name="reason" rows="3" placeholder="Please explain why you want to perform this action..." required style="background: #0a0e27;"></textarea>
                             </div>
                             <button type="submit" name="submit_request" class="btn btn-primary w-100 mt-4 py-3 shadow-sm" style="font-size: 1.1rem; font-weight: 600;">
                                 <i class="fas fa-paper-plane me-2"></i>Send Request to Admin
@@ -615,8 +615,8 @@ try {
                         cancelButtonColor: '#ef4444',
                         confirmButtonText: 'Yes, cancel it!',
                         cancelButtonText: 'No, keep it',
-                        background: '#ffffff',
-                        color: '#1e293b',
+                        background: 'rgba(15, 23, 42, 0.8)',
+                        color: '#f8fafc',
                         customClass: {
                             popup: 'rounded-4 shadow-lg border-0',
                             confirmButton: 'px-4 py-2 rounded-3 fw-bold',

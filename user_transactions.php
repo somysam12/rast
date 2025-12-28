@@ -47,14 +47,14 @@ function formatDate($date) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --bg-color: #f8fafc;
-            --sidebar-bg: #ffffff;
+            --bg-color: #0a0e27;
+            --sidebar-bg: rgba(15, 23, 42, 0.8);
             --purple: #8b5cf6;
             --purple-hover: #7c3aed;
-            --text-dark: #1e293b;
-            --text-light: #64748b;
-            --border-light: #e2e8f0;
-            --white: #ffffff;
+            --text-dark: #f8fafc;
+            --text-light: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.15);
+            --white: rgba(15, 23, 42, 0.8);
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
@@ -65,7 +65,7 @@ function formatDate($date) {
             --bg-primary: #1a202c;
             --bg-secondary: #2d3748;
             --text-primary: #f7fafc;
-            --text-secondary: #e2e8f0;
+            --text-secondary: rgba(148, 163, 184, 0.15);
             --text-muted: #a0aec0;
             --border-color: #4a5568;
         }
@@ -217,7 +217,7 @@ function formatDate($date) {
         }
         
         .table tbody tr:hover {
-            background-color: #f8fafc;
+            background-color: #0a0e27;
         }
         
         .table tbody td {

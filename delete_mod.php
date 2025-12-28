@@ -62,7 +62,7 @@ if ($confirm == 1 && $_POST) {
         .delete-container { max-width: 500px; margin: 50px auto; }
         .delete-card { background: white; border-radius: 16px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         .warning-icon { font-size: 64px; color: #ff6b6b; text-align: center; margin-bottom: 20px; }
-        .mod-info { background: #fff5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #ff6b6b; margin: 20px 0; }
+        .mod-info { background: rgba(15, 23, 42, 0.8)5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #ff6b6b; margin: 20px 0; }
         .mod-info h5 { color: #991b1b; margin-bottom: 10px; }
         .mod-info p { color: #666; margin: 5px 0; }
         .btn-group-delete { gap: 10px; }

@@ -67,7 +67,7 @@ if ($confirm == 1 && $_POST) {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
-        .key-info { background: #fff5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #ff6b6b; margin: 20px 0; }
+        .key-info { background: rgba(15, 23, 42, 0.8)5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #ff6b6b; margin: 20px 0; }
         .key-info h5 { color: #991b1b; margin-bottom: 10px; }
         .key-info p { color: #666; margin: 5px 0; font-family: 'Courier New', monospace; font-weight: bold; }
         .btn-group-delete { gap: 10px; }
@@ -78,7 +78,7 @@ if ($confirm == 1 && $_POST) {
         /* Custom SweetAlert2 Styling */
         .swal-delete-popup {
             border-radius: 16px !important;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%) !important;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, #f8f9ff 100%) !important;
             border: 1px solid rgba(102, 126, 234, 0.15) !important;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
             animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
@@ -130,7 +130,7 @@ if ($confirm == 1 && $_POST) {
         }
         
         .swal-delete-cancel {
-            background: linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%) !important;
+            background: linear-gradient(135deg, rgba(148, 163, 184, 0.15) 0%, #d0d0d0 100%) !important;
             border: none !important;
             border-radius: 10px !important;
             padding: 12px 32px !important;
@@ -243,7 +243,7 @@ if ($confirm == 1 && $_POST) {
                     <p style="color: #333; font-size: 1rem; margin-bottom: 1rem;">
                         <strong>This action cannot be undone!</strong>
                     </p>
-                    <div style="background: #fff5f5; padding: 12px; border-radius: 8px; border-left: 4px solid #ff6b6b; margin-bottom: 1rem;">
+                    <div style="background: rgba(15, 23, 42, 0.8)5f5; padding: 12px; border-radius: 8px; border-left: 4px solid #ff6b6b; margin-bottom: 1rem;">
                         <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">
                             <strong>License Key:</strong><br>
                             <code style="background: #f0f0f0; padding: 6px 10px; border-radius: 4px; display: inline-block; margin-top: 5px; font-weight: bold; color: #333;">` + keyValue + `</code>
@@ -257,7 +257,7 @@ if ($confirm == 1 && $_POST) {
                 icon: undefined,
                 showCancelButton: true,
                 confirmButtonColor: '#ff6b6b',
-                cancelButtonColor: '#6b7280',
+                cancelButtonColor: '#94a3b8',
                 confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, Delete Permanently',
                 cancelButtonText: '<i class="fas fa-ban me-2"></i>Cancel',
                 customClass: {

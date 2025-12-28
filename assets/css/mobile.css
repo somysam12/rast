@@ -1,9 +1,9 @@
 :root {
-    --bg: #f9fafb;
-    --card: #ffffff;
-    --text: #374151;
+    --bg: #0a0e27;
+    --card: rgba(15, 23, 42, 0.8);
+    --text: #f8fafc;
     --muted: #6b7280;
-    --line: #e5e7eb;
+    --line: rgba(148, 163, 184, 0.15);
     --accent: #7c3aed;
     --accent-600: #6d28d9;
     --accent-100: #f3e8ff;
@@ -18,7 +18,7 @@
 
 [data-theme="dark"] {
     --bg: #0f172a;
-    --card: #1e293b;
+    --card: #f8fafc;
     --text: #f1f5f9;
     --muted: #94a3b8;
     --line: #334155;

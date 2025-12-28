@@ -97,11 +97,11 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f9fafb;
-            --card: #ffffff;
-            --text: #374151;
-            --muted: #6b7280;
-            --line: #e5e7eb;
+            --bg: #0a0e27;
+            --card: rgba(15, 23, 42, 0.8);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --line: rgba(148, 163, 184, 0.15);
             --purple: #8b5cf6;
             --purple-600: #7c3aed;
             --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
@@ -109,7 +109,7 @@ try {
         
         [data-theme="dark"] {
             --bg: #0f172a;
-            --card: #1e293b;
+            --card: #f8fafc;
             --text: #f1f5f9;
             --muted: #94a3b8;
             --line: #334155;

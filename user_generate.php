@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
                             showConfirmButton: true,
                             confirmButtonText: 'Great!',
                             confirmButtonColor: '#8b5cf6',
-                            background: '#ffffff',
+                            background: 'rgba(15, 23, 42, 0.8)',
                             iconColor: '#8b5cf6',
                             customClass: {
                                 title: 'text-purple',
@@ -229,7 +229,7 @@ try {
         }
         .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
+        :root { --bg: #0a0e27; --sidebar-bg: rgba(15, 23, 42, 0.8); --purple: #8b5cf6; --text: #f8fafc; --muted: #94a3b8; --border: rgba(148, 163, 184, 0.15); }
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
         
@@ -251,7 +251,7 @@ try {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #1e293b;
+            background: #f8fafc;
             color: white;
             padding: 16px 24px;
             border-radius: 12px;
@@ -460,7 +460,7 @@ try {
                                     <?php foreach ($purchasedKeys as $key): ?>
                                     <tr style="border-bottom: 1px solid var(--border);">
                                         <td><?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?></td>
-                                        <td><code style="background: #f8fafc; padding: 0.5rem; border-radius: 6px;"><?php echo htmlspecialchars($key['license_key']); ?></code></td>
+                                        <td><code style="background: #0a0e27; padding: 0.5rem; border-radius: 6px;"><?php echo htmlspecialchars($key['license_key']); ?></code></td>
                                         <td><span class="badge bg-primary"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span></td>
                                         <td class="text-muted-date"><?php echo formatDate($key['sold_at']); ?></td>
                                         <td><button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')"><i class="fas fa-copy"></i></button></td>

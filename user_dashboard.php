@@ -88,11 +88,11 @@ function formatDate($date) {
     <style>
         /* Modern Dashboard Design */
         :root {
-            --bg: #f9fafb;
-            --card: #ffffff;
-            --text: #374151;
-            --muted: #6b7280;
-            --line: #e5e7eb;
+            --bg: #0a0e27;
+            --card: rgba(15, 23, 42, 0.8);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --line: rgba(148, 163, 184, 0.15);
             --accent: #7c3aed;
             --accent-600: #6d28d9;
             --accent-100: #f3e8ff;
@@ -107,7 +107,7 @@ function formatDate($date) {
         
         [data-theme="dark"] {
             --bg: #0f172a;
-            --card: #1e293b;
+            --card: #f8fafc;
             --text: #f1f5f9;
             --muted: #94a3b8;
             --line: #334155;
@@ -126,8 +126,8 @@ function formatDate($date) {
         
         /* Modern Header */
         .modern-header {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
             padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
@@ -242,9 +242,9 @@ function formatDate($date) {
         
         /* Sidebar */
         .sidebar {
-            background: #ffffff;
-            color: #374151;
-            border-right: 1px solid #e5e7eb;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            border-right: 1px solid rgba(148, 163, 184, 0.15);
             position: fixed;
             width: 280px;
             left: 0;
@@ -264,7 +264,7 @@ function formatDate($date) {
         }
         
         .sidebar .nav-link {
-            color: #6b7280;
+            color: #94a3b8;
             padding: 12px 20px;
             margin: 8px 16px;
             transition: all 0.3s ease;
@@ -281,14 +281,14 @@ function formatDate($date) {
         
         .sidebar .nav-link:hover {
             background: #f3f4f6;
-            color: #374151;
-            border-color: #e5e7eb;
+            color: #f8fafc;
+            border-color: rgba(148, 163, 184, 0.15);
             transform: translateX(5px);
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         .sidebar .nav-link i {
-            color: #6b7280;
+            color: #94a3b8;
             width: 20px;
             margin-right: 12px;
             font-size: 1.1em;
@@ -314,14 +314,14 @@ function formatDate($date) {
             margin-top: auto;
             padding: 20px;
             text-align: center;
-            border-top: 1px solid #e5e7eb;
-            background: #f9fafb;
+            border-top: 1px solid rgba(148, 163, 184, 0.15);
+            background: #0a0e27;
         }
 
         .signature-text {
             font-size: 0.85rem;
             font-weight: 600;
-            color: #6b7280;
+            color: #94a3b8;
             margin: 0;
             font-family: 'Inter', sans-serif;
         }
@@ -691,9 +691,9 @@ function formatDate($date) {
                 left: 0;
                 right: 0;
                 transform: translateX(-100%);
-                background: #ffffff;
+                background: rgba(15, 23, 42, 0.8);
                 border-right: none;
-                border-bottom: 1px solid #e5e7eb;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.15);
                 z-index: 1002;
                 pointer-events: none;
             }
@@ -806,8 +806,8 @@ function formatDate($date) {
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="p-3">
-                    <h4 style="color: #374151; font-weight: 700; margin-bottom: 0;">
-                        <i class="fas fa-user" style="color: #6b7280; margin-right: 8px;"></i>User Panel
+                    <h4 style="color: #f8fafc; font-weight: 700; margin-bottom: 0;">
+                        <i class="fas fa-user" style="color: #94a3b8; margin-right: 8px;"></i>User Panel
                     </h4>
                 </div>
                 <nav class="nav flex-column">

@@ -189,12 +189,12 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
+            --bg-color: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.8);
             --purple: #8b5cf6;
             --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --border-light: #e2e8f0;
+            --text-primary: #f8fafc;
+            --border-light: rgba(148, 163, 184, 0.15);
         }
         
         body {
@@ -275,7 +275,7 @@ try {
         }
         
         .btn-secondary:hover {
-            background-color: #e5e7eb;
+            background-color: rgba(148, 163, 184, 0.15);
             border-color: #d1d5db;
         }
         
@@ -399,8 +399,8 @@ try {
                                 <div class="form-group">
                                     <label class="form-label" style="color: white;">Action</label>
                                     <select name="balance_type" class="form-control" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white;">
-                                        <option value="add" style="background: #1e293b;">Add Balance</option>
-                                        <option value="deduct" style="background: #1e293b;">Deduct Balance</option>
+                                        <option value="add" style="background: #f8fafc;">Add Balance</option>
+                                        <option value="deduct" style="background: #f8fafc;">Deduct Balance</option>
                                     </select>
                                 </div>
                                 <div class="form-group">

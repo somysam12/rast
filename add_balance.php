@@ -78,7 +78,7 @@ if ($_POST) {
 <body>
     <div class="container-fluid" style="display: flex; min-height: 100vh;">
         <!-- Sidebar -->
-        <div class="sidebar" style="background: #fff; border-right: 1px solid #e0e0e0; width: 280px; padding: 20px;">
+        <div class="sidebar" style="background: rgba(15, 23, 42, 0.8); border-right: 1px solid rgba(148, 163, 184, 0.15); width: 280px; padding: 20px;">
             <div style="margin-bottom: 30px;">
                 <h5><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
             </div>
@@ -106,26 +106,26 @@ if ($_POST) {
 
             <!-- Stats Cards -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Users</div>
                     <h3><?php echo (int)($userStats['total_users'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Balance</div>
                     <h3><?php echo formatCurrency($userStats['total_balance'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Active Wallets</div>
                     <h3><?php echo (int)($userStats['users_with_balance'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Avg Balance</div>
                     <h3><?php echo formatCurrency($userStats['avg_balance'] ?? 0); ?></h3>
                 </div>
             </div>
 
             <!-- Add Balance Form -->
-            <div style="background: white; padding: 30px; border-radius: 12px; border: 1px solid #e0e0e0; max-width: 500px;">
+            <div style="background: white; padding: 30px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15); max-width: 500px;">
                 <h4 style="margin-bottom: 20px;">Add Balance</h4>
                 <form method="POST">
                     <div style="margin-bottom: 20px;">

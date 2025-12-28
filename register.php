@@ -90,7 +90,7 @@ if ($_POST) {
             --accent: #ec4899;
             --bg: #0a0e27;
             --card-bg: rgba(15, 23, 42, 0.7);
-            --text-main: #f8fafc;
+            --text-main: #0a0e27;
             --text-dim: #94a3b8;
             --border-light: rgba(148, 163, 184, 0.1);
             --border-glow: rgba(139, 92, 246, 0.2);
@@ -224,7 +224,7 @@ if ($_POST) {
             font-size: 28px; 
             font-weight: 900; 
             letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #f8fafc, var(--primary));
+            background: linear-gradient(135deg, #0a0e27, var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;

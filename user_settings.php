@@ -110,14 +110,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --bg-color: #f8fafc;
-            --sidebar-bg: #ffffff;
+            --bg-color: #0a0e27;
+            --sidebar-bg: rgba(15, 23, 42, 0.8);
             --purple: #8b5cf6;
             --purple-hover: #7c3aed;
-            --text-dark: #1e293b;
-            --text-light: #64748b;
-            --border-light: #e2e8f0;
-            --white: #ffffff;
+            --text-dark: #f8fafc;
+            --text-light: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.15);
+            --white: rgba(15, 23, 42, 0.8);
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
@@ -292,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         }
         
         .form-control[readonly] {
-            background-color: #f8fafc;
+            background-color: #0a0e27;
             color: var(--text-light);
         }
         
@@ -340,7 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         }
         
         .referral-info {
-            background-color: #f8fafc;
+            background-color: #0a0e27;
             border: 1px solid var(--border-light);
             border-radius: 8px;
             padding: 1rem;

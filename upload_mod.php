@@ -81,15 +81,15 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
         :root {
             --purple: #8b5cf6;
             --dark: #0f172a;
-            --light: #f8fafc;
+            --light: #0a0e27;
         }
         body { background: var(--light); font-family: 'Inter', sans-serif; }
-        .sidebar { background: white; border-right: 1px solid #e2e8f0; min-height: 100vh; position: fixed; width: 280px; padding: 2rem 0; }
-        .sidebar .nav-link { color: #64748b; padding: 12px 20px; margin: 4px 16px; border-radius: 8px; }
+        .sidebar { background: white; border-right: 1px solid rgba(148, 163, 184, 0.15); min-height: 100vh; position: fixed; width: 280px; padding: 2rem 0; }
+        .sidebar .nav-link { color: #94a3b8; padding: 12px 20px; margin: 4px 16px; border-radius: 8px; }
         .sidebar .nav-link.active { background: var(--purple); color: white; }
         .sidebar .nav-link:hover { background: var(--purple); color: white; }
         .main { margin-left: 280px; padding: 2rem; }
-        .card { border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card { border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .header { background: linear-gradient(135deg, var(--purple) 0%, #7c3aed 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }
         .file-upload { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; }
         .file-upload:hover { border-color: var(--purple); }
@@ -206,7 +206,7 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                 .progress-label {
                                     font-size: 0.9rem;
                                     font-weight: 600;
-                                    color: #1e293b;
+                                    color: #f8fafc;
                                     display: flex;
                                     align-items: center;
                                     gap: 0.5rem;
@@ -271,10 +271,10 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                 }
                                 
                                 .stat-card {
-                                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                                    background: linear-gradient(135deg, #0a0e27 0%, #f1f5f9 100%);
                                     padding: 1rem;
                                     border-radius: 12px;
-                                    border: 1px solid #e2e8f0;
+                                    border: 1px solid rgba(148, 163, 184, 0.15);
                                     text-align: center;
                                     transition: all 0.3s ease;
                                     animation: float 3s ease-in-out infinite;
@@ -301,7 +301,7 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                 .stat-value {
                                     font-size: 1.3rem;
                                     font-weight: 700;
-                                    color: #1e293b;
+                                    color: #f8fafc;
                                 }
                                 
                                 .stat-icon {
@@ -320,7 +320,7 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                 
                                 .status-text {
                                     font-size: 0.9rem;
-                                    color: #64748b;
+                                    color: #94a3b8;
                                     margin-top: 1rem;
                                     font-weight: 500;
                                     letter-spacing: 0.3px;

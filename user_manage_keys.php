@@ -99,7 +99,7 @@ try {
             margin-bottom: 1.5rem;
         }
         .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
-        :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
+        :root { --bg: #0a0e27; --sidebar-bg: rgba(15, 23, 42, 0.8); --purple: #8b5cf6; --text: #f8fafc; --muted: #94a3b8; --border: rgba(148, 163, 184, 0.15); }
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
         .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; width: 280px; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; }
@@ -117,7 +117,7 @@ try {
         .table { border-radius: 12px; }
         .table thead th { background: var(--purple); color: white; border: none; padding: 1rem; }
         .table tbody td { padding: 1rem; border-bottom: 1px solid var(--border); }
-        .license-key { font-family: 'Courier New', monospace; font-size: 0.9em; background: #f8fafc; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); word-break: break-all; }
+        .license-key { font-family: 'Courier New', monospace; font-size: 0.9em; background: #0a0e27; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); word-break: break-all; }
         .btn-primary { background: var(--purple); border: none; border-radius: 8px; padding: 0.5rem 1rem; color: white; }
         .btn-primary:hover { background: #7c3aed; color: white; }
         .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
@@ -266,7 +266,7 @@ try {
                     text: 'License key copied to clipboard!',
                     showConfirmButton: false,
                     timer: 1500,
-                    background: '#ffffff',
+                    background: 'rgba(15, 23, 42, 0.8)',
                     iconColor: '#8b5cf6',
                     customClass: {
                         title: 'text-purple',
