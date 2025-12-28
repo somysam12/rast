@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 
 require_once 'config/database.php';
 
+// Redirect if already logged in
 session_start();
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] === 'admin') {
@@ -26,9 +27,9 @@ if ($_POST) {
     $referralCode = trim($_POST['referral_code'] ?? '');
     
     if (empty($username) || empty($email) || empty($password) || empty($confirmPassword) || empty($referralCode)) {
-        $error = 'Please fill in all required fields';
+        $error = 'Please fill in all required fields including Referral Code';
     } elseif (strlen($password) < 8) {
-        $error = 'Password must be at least 8 characters long';
+        $error = 'Password must be at least 8 digits long';
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -37,44 +38,49 @@ if ($_POST) {
         try {
             $pdo = getDBConnection();
             
+            // Check if username or email already exists
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
             $stmt->execute([$username, $email]);
             
             if ($stmt->fetchColumn() > 0) {
                 $error = 'Username or email already exists';
             } else {
+                // Check if referral code is provided and valid
                 $referredBy = null;
                 $referralType = null;
-                $bonusAmount = 50.00;
+                $bonusAmount = 50.00; // Default bonus amount for user referrals
                 
-                $stmt = $pdo->prepare("SELECT created_by, status, expires_at, bonus_amount, usage_limit, usage_count FROM referral_codes WHERE code = ?");
-                $stmt->execute([$referralCode]);
-                $refData = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-                if ($refData) {
-                    if ($refData['status'] !== 'active') {
-                        $error = 'This referral code has already been used or is inactive';
-                    } elseif ($refData['expires_at'] !== null && strtotime($refData['expires_at']) < time()) {
-                        $error = 'This referral code has expired';
-                    } elseif (!empty($refData['usage_limit']) && !empty($refData['usage_count']) && $refData['usage_count'] >= $refData['usage_limit']) {
-                        $error = 'This referral code usage limit has been reached';
-                    } else {
-                        $referredBy = $refData['created_by'];
-                        $referralType = 'admin';
-                        $bonusAmount = $refData['bonus_amount'] ?? 50.00;
-                    }
-                } else {
-                    $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user' LIMIT 1");
+                    // First check admin-generated referral codes
+                    $stmt = $pdo->prepare("SELECT created_by, status, expires_at, bonus_amount, usage_limit, usage_count FROM referral_codes WHERE code = ?");
                     $stmt->execute([$referralCode]);
-                    $referredBy = $stmt->fetchColumn();
-                    if ($referredBy) {
-                        $referralType = 'user';
-                    } else {
-                        $error = 'Invalid referral code';
+                    $refData = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                        if ($refData) {
+                            if ($refData['status'] !== 'active') {
+                                $error = 'This referral code has already been used or is inactive';
+                            } elseif ($refData['expires_at'] !== null && strtotime($refData['expires_at']) < time()) {
+                                $error = 'This referral code has expired';
+                            } elseif (!empty($refData['usage_limit']) && !empty($refData['usage_count']) && $refData['usage_count'] >= $refData['usage_limit']) {
+                                $error = 'This referral code usage limit has been reached';
+                            } else {
+                                $referredBy = $refData['created_by'];
+                                $referralType = 'admin';
+                                $bonusAmount = $refData['bonus_amount'] ?? 50.00;
+                            }
+                        } else {
+                        // Check user-generated referral codes
+                        $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role = 'user' LIMIT 1");
+                        $stmt->execute([$referralCode]);
+                        $referredBy = $stmt->fetchColumn();
+                        if ($referredBy) {
+                            $referralType = 'user';
+                        } else {
+                            $error = 'Wrong referral code! Please enter a valid code.';
+                        }
                     }
-                }
                 
                 if (!$error) {
+                    // Generate unique referral code for new user
                     $userReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
                     
                     $pdo->beginTransaction();
@@ -85,12 +91,15 @@ if ($_POST) {
                     
                     $userId = $pdo->lastInsertId();
                     
+                    // Set default force logout limit to 1 for new users
                     $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, 1)");
                     $stmt->execute([$userId, 1]);
                     
+                    // Handle referral bonuses only if referral code was used
                     if ($referredBy) {
                         $bonusToGive = $bonusAmount ?? 50.00;
                         
+                        // Update usage count and deactivate if limit reached
                         if ($referralType === 'admin') {
                             $stmt = $pdo->prepare("UPDATE referral_codes SET usage_count = usage_count + 1 WHERE code = ?");
                             $stmt->execute([$referralCode]);
@@ -98,33 +107,42 @@ if ($_POST) {
                             $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE code = ? AND usage_count >= usage_limit");
                             $stmt->execute([$referralCode]);
                         } else if ($referralType === 'user') {
+                            // For user codes, generate new code for referrer
                             $newUserReferralCode = strtoupper(substr(md5(uniqid()), 0, 8));
                             $stmt = $pdo->prepare("UPDATE users SET referral_code = ? WHERE id = ?");
                             $stmt->execute([$newUserReferralCode, $referredBy]);
                         }
                         
+                        // Give bonus to NEW USER
                         $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
                         $stmt->execute([$bonusToGive, $userId]);
                         
+                        // Record referral transaction for NEW USER
                         try {
                             $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', ?, 'Referral signup bonus', CURRENT_TIMESTAMP)");
                             $stmt->execute([$userId, $bonusToGive]);
-                        } catch (Exception $e) {}
+                        } catch (Exception $e) {
+                            // Ignore transaction errors
+                        }
                         
+                        // Also give bonus to referrer if they earned a reward
                         if ($referralType === 'admin') {
-                            $referrerBonus = $bonusToGive * 0.5;
+                            $referrerBonus = $bonusToGive * 0.5; // 50% of what new user gets
                             $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
                             $stmt->execute([$referrerBonus, $referredBy]);
                             
+                            // Record referrer bonus transaction
                             try {
                                 $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, 'balance_add', ?, 'Referral reward for user signup', CURRENT_TIMESTAMP)");
                                 $stmt->execute([$referredBy, $referrerBonus]);
-                            } catch (Exception $e) {}
+                            } catch (Exception $e) {
+                                // Ignore transaction errors
+                            }
                         }
                     }
                     
                     $pdo->commit();
-                    $success = 'Account created! Redirecting to login...';
+                    $success = 'Registration successful! You can now login.';
                     header('refresh:2;url=login.php');
                 }
             }
@@ -142,514 +160,389 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - SilentMultiPanel</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Register - SilentMultiPanel Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            font-family: 'Poppins', sans-serif;
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --purple: #8b5cf6;
+            --purple-light: #a78bfa;
+            --purple-dark: #7c3aed;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         body {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 25%, #4facfe 50%, #00f2fe 75%, #43e97b 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-color: var(--bg-color);
             min-height: 100vh;
-            position: relative;
-            overflow: hidden;
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            padding: 2rem 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            width: 700px;
-            height: 700px;
-            background: radial-gradient(circle, rgba(245, 87, 108, 0.3) 0%, transparent 70%);
-            border-radius: 50%;
-            top: -350px;
-            right: -350px;
-            animation: float1 20s ease-in-out infinite;
-            z-index: 0;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(79, 172, 254, 0.3) 0%, transparent 70%);
-            border-radius: 50%;
-            bottom: -300px;
-            left: -300px;
-            animation: float2 25s ease-in-out infinite;
-            z-index: 0;
-        }
-
-        @keyframes float1 {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-100px, 100px); }
-        }
-
-        @keyframes float2 {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(100px, -100px); }
-        }
-
-        .register-container {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 560px;
-        }
-
+        
         .register-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 30px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 100px rgba(245, 87, 108, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            padding: 0;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow-large);
+            border: 1px solid var(--border-light);
             overflow: hidden;
-            animation: slideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.3s ease;
         }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        
+        .register-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-
+        
         .register-header {
-            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-            padding: 50px 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .register-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        .plus-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-            animation: plus-bounce 2s ease-in-out infinite;
-            display: inline-block;
-            position: relative;
-            z-index: 1;
-        }
-
-        @keyframes plus-bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
-        .register-header h1 {
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
             color: white;
-            font-size: 32px;
-            font-weight: 700;
-            margin: 0;
-            letter-spacing: -1px;
-            position: relative;
-            z-index: 1;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border-top: 4px solid var(--purple-light);
         }
-
+        
+        .register-header h3 {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
         .register-header p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 14px;
-            margin: 10px 0 0 0;
-            position: relative;
-            z-index: 1;
-            font-weight: 500;
+            opacity: 0.9;
+            font-size: 0.9rem;
+            margin-bottom: 0;
         }
-
+        
         .register-body {
-            padding: 45px 40px;
+            padding: 2.5rem 2rem;
+            background: var(--card-bg);
         }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .form-row.full {
-            grid-template-columns: 1fr;
-        }
-
-        .form-group {
-            animation: formSlide 0.6s ease-out;
-            animation-fill-mode: both;
-        }
-
-        .form-group:nth-child(1) { animation-delay: 0.1s; }
-        .form-group:nth-child(2) { animation-delay: 0.2s; }
-        .form-group:nth-child(3) { animation-delay: 0.3s; }
-        .form-group:nth-child(4) { animation-delay: 0.4s; }
-        .form-group:nth-child(5) { animation-delay: 0.5s; }
-
-        @keyframes formSlide {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .form-label {
-            display: block;
-            color: #2d3748;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-label i {
-            color: #f5576c;
-            font-size: 14px;
-            width: 20px;
-            text-align: center;
-        }
-
+        
         .form-control {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid #e8ecf1;
-            border-radius: 15px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            color: #2d3748;
+            border-radius: 8px;
+            border: 2px solid var(--border-light);
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+            background: var(--card-bg);
+            font-size: 0.95rem;
+            color: var(--text-primary);
         }
-
-        .form-control::placeholder {
-            color: #a0aec0;
-        }
-
+        
         .form-control:focus {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+            background: var(--card-bg);
             outline: none;
-            border-color: #f5576c;
-            box-shadow: 0 0 0 4px rgba(245, 87, 108, 0.1), 0 10px 30px rgba(245, 87, 108, 0.2);
-            transform: translateY(-2px);
         }
-
+        
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
         .btn-register {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
             border: none;
-            border-radius: 15px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.3);
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            color: white;
+            box-shadow: var(--shadow-medium);
         }
-
+        
         .btn-register:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.4);
-        }
-
-        .btn-register:active {
+            background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 100%);
+            box-shadow: var(--shadow-large);
             transform: translateY(-1px);
+            color: white;
         }
-
-        .alert {
-            padding: 14px 16px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 13px;
-            animation: alertSlide 0.4s ease-out;
-            border: 1px solid #fc8181;
-            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
-            color: #c53030;
+        
+        .btn-register:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-medium);
         }
-
-        .alert.success {
-            border: 1px solid #9ae6b4;
-            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
-            color: #22543d;
-        }
-
-        @keyframes alertSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .alert i {
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        .footer-text {
-            text-align: center;
-            font-size: 13px;
-            color: #718096;
-        }
-
-        .footer-link {
-            color: #f5576c;
+        
+        .login-link {
+            color: var(--purple);
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            transition: all 0.2s ease;
         }
-
-        .footer-link:hover {
-            color: #f093fb;
-            gap: 12px;
+        
+        .login-link:hover {
+            color: var(--purple-dark);
+            text-decoration: underline;
         }
-
-        .referral-hint {
-            font-size: 12px;
-            color: #a0aec0;
-            margin-top: 8px;
-            padding: 10px 12px;
-            background: rgba(245, 87, 108, 0.05);
-            border-radius: 10px;
-            border-left: 3px solid #f5576c;
+        
+        .alert {
+            border-radius: 8px;
+            border: none;
+            padding: 12px 16px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
         }
-
-        .theme-toggle {
+        
+        .alert-danger {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+        
+        .alert-success {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+        }
+        
+        .referral-info {
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 0.5rem;
+            border: 1px solid var(--border-light);
+        }
+        
+        .referral-info small {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
             position: fixed;
-            top: 25px;
-            right: 25px;
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 15px;
-            cursor: pointer;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            color: #f5576c;
-            transition: all 0.3s ease;
-            z-index: 100;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-medium);
         }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.2);
+        
+            color: var(--purple);
+            box-shadow: var(--shadow-large);
+            transform: translateY(-1px);
         }
-
+        
+        /* Dark theme styles */
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-light: #334155;
+        }
+        
+        [data-theme="dark"] .register-card {
+            border-color: var(--border-light);
+        }
+        
+        [data-theme="dark"] .form-control {
+            background: var(--card-bg);
+            border-color: var(--border-light);
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        [data-theme="dark"] .referral-info {
+            background-color: #334155;
+            border-color: var(--border-light);
+        }
+        
+        [data-theme="dark"] .alert-danger {
+            background-color: #450a0a;
+            border-color: #7f1d1d;
+            color: #fca5a5;
+        }
+        
+        [data-theme="dark"] .alert-success {
+            background-color: #052e16;
+            border-color: #166534;
+            color: #86efac;
+        }
+        
         @media (max-width: 768px) {
-            .register-card {
-                border-radius: 20px;
-                margin: 0;
+            body {
+                padding: 1rem;
             }
-
+            
             .register-header {
-                padding: 40px 30px;
+                padding: 2rem 1.5rem;
             }
-
+            
             .register-body {
-                padding: 30px;
+                padding: 2rem 1.5rem;
             }
-
-            .register-header h1 {
-                font-size: 26px;
+            
+            .form-control {
+                padding: 10px 14px;
+                font-size: 16px;
             }
-
-            .plus-icon {
-                font-size: 50px;
-                margin-bottom: 15px;
+            
+            .btn-register {
+                padding: 12px 20px;
             }
-
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 15px;
+            
+                top: 16px;
+                right: 16px;
+                width: 40px;
+                height: 40px;
             }
-
-            .theme-toggle {
-                width: 45px;
-                height: 45px;
-                font-size: 18px;
-                top: 15px;
-                right: 15px;
+            
+            .col-md-6 {
+                margin-bottom: 0;
             }
         }
     </style>
+    <link href="assets/css/dark-mode-button.css" rel="stylesheet">
+    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
 </head>
 <body>
-    <button class="theme-toggle" id="themeToggle" title="Toggle theme">
-        <i class="fas fa-moon"></i>
+        <i class="fas fa-moon" id="darkModeIcon"></i>
     </button>
-
-    <div class="register-container">
-        <div class="register-card">
-            <div class="register-header">
-                <div class="plus-icon">✨</div>
-                <h1>Create Account</h1>
-                <p>Join SilentMultiPanel Today</p>
-            </div>
-            <div class="register-body">
-                <?php if ($error): ?>
-                    <div class="alert">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <?php echo htmlspecialchars($error); ?>
+    
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="register-card">
+                    <div class="register-header">
+                        <i class="fas fa-user-plus fa-3x mb-3"></i>
+                        <h3>Create Account</h3>
+                        <p class="mb-0">Join SilentMultiPanel today</p>
                     </div>
-                <?php endif; ?>
-
-                <?php if ($success): ?>
-                    <div class="alert success">
-                        <i class="fas fa-check-circle"></i>
-                        <?php echo htmlspecialchars($success); ?>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST" id="registerForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-user"></i>Username
-                            </label>
-                            <input type="text" name="username" class="form-control" 
-                                   value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>"
-                                   placeholder="Choose a username" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-envelope"></i>Email
-                            </label>
-                            <input type="email" name="email" class="form-control" 
-                                   value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
-                                   placeholder="Enter your email" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-lock"></i>Password
-                            </label>
-                            <input type="password" name="password" class="form-control" 
-                                   placeholder="Min 8 characters" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-lock"></i>Confirm Password
-                            </label>
-                            <input type="password" name="confirm_password" class="form-control" 
-                                   placeholder="Confirm password" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-gift"></i>Referral Code
-                            </label>
-                            <input type="text" name="referral_code" class="form-control" 
-                                   value="<?php echo htmlspecialchars($_POST['referral_code'] ?? ''); ?>"
-                                   placeholder="Enter referral code" required>
-                            <div class="referral-hint">
-                                <i class="fas fa-info-circle"></i> Referral code is required to create account
+                    <div class="register-body">
+                        <?php if ($error): ?>
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <?php echo htmlspecialchars($error); ?>
                             </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($success): ?>
+                            <div class="alert alert-success" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <?php echo htmlspecialchars($success); ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <form method="POST">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">
+                                            <i class="fas fa-user me-2"></i>Username *
+                                        </label>
+                                        <input type="text" class="form-control" id="username" name="username" 
+                                               value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">
+                                            <i class="fas fa-envelope me-2"></i>Email *
+                                        </label>
+                                        <input type="email" class="form-control" id="email" name="email" 
+                                               value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">
+                                            <i class="fas fa-lock me-2"></i>Password *
+                                        </label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="confirm_password" class="form-label">
+                                            <i class="fas fa-lock me-2"></i>Confirm Password *
+                                        </label>
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="referral_code" class="form-label">
+                                    <i class="fas fa-gift me-2"></i>Referral Code *
+                                </label>
+                                <input type="text" class="form-control" id="referral_code" name="referral_code" 
+                                       value="<?php echo htmlspecialchars($_POST['referral_code'] ?? ''); ?>" 
+                                       placeholder="Enter referral code" required>
+                                <div class="referral-info">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Referral code is mandatory. Please enter a valid code to proceed.
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-register w-100">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0">Already have an account? 
+                                <a href="login.php" class="login-link">Login here</a>
+                            </p>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn-register">
-                        <i class="fas fa-user-plus"></i>Create Account
-                    </button>
-                </form>
-
-                <div class="footer-text">
-                    Already have an account? 
-                    <a href="login.php" class="footer-link">
-                        Sign in
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
                 </div>
             </div>
         </div>
     </div>
-
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = this.querySelector('.btn-register');
-            const original = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Creating account...';
-            this.submit();
-        });
-
-        document.getElementById('themeToggle').addEventListener('click', function() {
-            document.body.style.filter = document.body.style.filter === 'invert(1)' ? 'invert(0)' : 'invert(1)';
-        });
+            const body = document.body;
+            const icon = document.getElementById('darkModeIcon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('darkModeIcon').className = 'fas fa-sun';
+        }
     </script>
 </body>
 </html>
