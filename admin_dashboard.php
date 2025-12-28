@@ -323,7 +323,7 @@ try {
             font-size: 2.5rem;
             font-weight: 900;
             letter-spacing: -0.03em;
-            color: var(--text-main);
+            color: var(--secondary);
             margin-bottom: 0.5rem;
         }
 
@@ -332,14 +332,15 @@ try {
         }
 
         .page-header p {
-            color: var(--text-dim);
+            color: var(--primary);
             font-size: 1rem;
             margin-bottom: 0;
+            font-weight: 500;
         }
 
         .page-header p strong {
-            color: var(--primary);
-            font-weight: 600;
+            color: var(--secondary);
+            font-weight: 700;
         }
 
         .stats-container {
@@ -416,7 +417,7 @@ try {
         }
 
         .stats-card h3 {
-            color: var(--text-main);
+            color: var(--secondary);
             font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
@@ -486,7 +487,7 @@ try {
         }
 
         .table-card h5 {
-            color: var(--text-main);
+            color: var(--secondary);
             margin-bottom: 1.5rem;
             font-weight: 700;
             font-size: 1.2rem;
@@ -532,6 +533,7 @@ try {
             border: none;
             color: var(--text-main);
             border-bottom: 1px solid var(--border-light);
+            font-weight: 500;
         }
 
         .table tbody tr:last-child td {
@@ -571,8 +573,8 @@ try {
         }
 
         .user-card h6 {
-            color: var(--text-main);
-            font-weight: 600;
+            color: var(--secondary);
+            font-weight: 700;
             margin-bottom: 0.25rem;
         }
 
@@ -812,15 +814,17 @@ try {
 
             .page-header {
                 margin-bottom: 1.5rem;
+                padding: 1.5rem 1rem;
+                border-radius: 16px;
             }
 
             .page-header h1 {
-                font-size: 1.6rem;
+                font-size: 1.4rem;
                 margin-bottom: 0.3rem;
             }
 
             .page-header p {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
 
             .stats-container {
@@ -993,15 +997,17 @@ try {
 
             .page-header {
                 margin-bottom: 1rem;
+                padding: 1rem 0.75rem;
+                border-radius: 12px;
             }
 
             .page-header h1 {
-                font-size: 1.3rem;
+                font-size: 1.2rem;
                 margin-bottom: 0.25rem;
             }
 
             .page-header h1 i {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
                 margin-right: 0.3rem;
             }
 
@@ -1391,17 +1397,17 @@ try {
                                     <?php foreach ($recentMods as $mod): ?>
                                     <tr>
                                         <td>
-                                            <div class="d-flex align-items-center">
-                                                <div style="width: 35px; height: 35px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; font-size: 0.9rem;">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div style="width: 35px; height: 35px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;">
                                                     <i class="fas fa-mobile-alt text-white"></i>
                                                 </div>
-                                                <div>
-                                                    <div style="font-weight: 600; color: var(--text-main);"><?php echo htmlspecialchars($mod['name']); ?></div>
-                                                    <small style="color: var(--primary); font-weight: 500; display: none;" class="d-sm-none"><?php echo formatDate($mod['created_at']); ?></small>
+                                                <div style="min-width: 0;">
+                                                    <div style="font-weight: 600; color: var(--secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($mod['name']); ?></div>
+                                                    <small style="color: var(--primary); font-weight: 500;"><?php echo formatDate($mod['created_at']); ?></small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="d-none d-sm-table-cell" style="color: var(--primary); font-weight: 500;"><?php echo formatDate($mod['created_at']); ?></td>
+                                        <td class="d-none d-sm-table-cell" style="color: var(--secondary); font-weight: 500;"><?php echo formatDate($mod['created_at']); ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -1434,17 +1440,17 @@ try {
                                     <?php foreach ($recentUsers as $user): ?>
                                     <tr>
                                         <td>
-                                            <div class="d-flex align-items-center">
-                                                <div style="width: 35px; height: 35px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem; color: white; font-weight: bold; font-size: 0.8rem;">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div style="width: 35px; height: 35px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem; flex-shrink: 0;">
                                                     <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
                                                 </div>
-                                                <div>
-                                                    <div style="font-weight: 600;"><?php echo htmlspecialchars($user['username']); ?></div>
-                                                    <small style="color: var(--text-dim); display: none;" class="d-sm-none"><?php echo formatDate($user['created_at']); ?></small>
+                                                <div style="min-width: 0;">
+                                                    <div style="font-weight: 600; color: var(--secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($user['username']); ?></div>
+                                                    <small style="color: var(--primary); font-weight: 500;"><?php echo formatDate($user['created_at']); ?></small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="d-none d-sm-table-cell"><?php echo formatDate($user['created_at']); ?></td>
+                                        <td class="d-none d-sm-table-cell" style="color: var(--secondary); font-weight: 500;"><?php echo formatDate($user['created_at']); ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
