@@ -756,9 +756,12 @@ function formatDate($date) {
 <body>
     <!-- Modern Header -->
     <div class="modern-header">
-        <button class="hamburger-menu" onclick="toggleSidebar(event)" title="Toggle Menu">
-            <i class="fas fa-bars"></i>
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <button class="hamburger-menu" onclick="toggleSidebar(event)" title="Toggle Menu" style="background: none; border: none; color: #7c3aed; font-size: 1.2rem; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h4 class="m-0 fw-bold d-none d-sm-block" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif;">SilentMultiPanel</h4>
+        </div>
         
         <div class="user-section">
             <div class="user-avatar-header" onclick="toggleUserDropdown(event)" title="User Menu">
@@ -801,8 +804,8 @@ function formatDate($date) {
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="p-3">
-                    <h4 style="color: #374151; font-weight: 700; margin-bottom: 0;">
-                        <i class="fas fa-user" style="color: #6b7280; margin-right: 8px;"></i>User Panel
+                    <h4 style="background: linear-gradient(135deg, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; margin-bottom: 0;">
+                        <i class="fas fa-user" style="color: #8b5cf6; margin-right: 8px;"></i>User Panel
                     </h4>
                 </div>
                 <nav class="nav flex-column">
@@ -857,7 +860,7 @@ function formatDate($date) {
                 <div class="page-header fade-in">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-2" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem;"><i class="fas fa-crown me-2" style="color: #7c3aed; -webkit-text-fill-color: #7c3aed;"></i>SilentMultiPanel</h2>
+                            <h2 class="mb-2" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><i class="fas fa-crown me-2" style="color: #7c3aed; -webkit-text-fill-color: #7c3aed;"></i>SilentMultiPanel</h2>
                             <p class="text-muted mb-0">Welcome, <strong><?php echo htmlspecialchars($user['username']); ?></strong>!</p>
                         </div>
                         <div class="d-flex align-items-center">
