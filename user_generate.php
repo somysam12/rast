@@ -609,19 +609,21 @@ try {
                 modSections.forEach(section => {
                     const modName = section.getAttribute('data-mod-name').toLowerCase();
                     if (query === '' || modName.includes(query)) {
-                        section.style.display = 'block';
+                        section.style.setProperty('display', 'block', 'important');
                         visibleCount++;
                     } else {
-                        section.style.display = 'none';
+                        section.style.setProperty('display', 'none', 'important');
                     }
                 });
 
                 if (visibleCount === 0 && query !== '') {
-                    noResults.style.display = 'block';
+                    noResults.style.setProperty('display', 'block', 'important');
                     resultsContainer.classList.remove('show');
                 } else {
-                    noResults.style.display = 'none';
-                    resultsContainer.classList.add('show');
+                    noResults.style.setProperty('display', 'none', 'important');
+                    if (visibleCount > 0 || query === '') {
+                        resultsContainer.classList.add('show');
+                    }
                 }
             });
         }
