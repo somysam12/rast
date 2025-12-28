@@ -1,3 +1,4 @@
+<?php require_once "includes/optimization.php"; ?>
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -116,20 +117,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
                 document.addEventListener('DOMContentLoaded', function() {
                     const keys = `" . $keysString . "`;
                     navigator.clipboard.writeText(keys).then(() => {
+                        // Success animation
+                        const container = document.querySelector('.main-content');
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti-burst';
+                        document.body.appendChild(confetti);
+                        
                         Swal.fire({
+                            title: 'Success!',
+                            text: 'Key(s) purchased and copied to clipboard!',
                             icon: 'success',
-                            title: 'Purchased & Copied!',
-                            text: '$keysSold license key(s) generated and copied to clipboard!',
-                            showConfirmButton: true,
-                            confirmButtonText: 'Great!',
-                            confirmButtonColor: '#8b5cf6',
-                            background: '#ffffff',
-                            iconColor: '#8b5cf6',
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            color: '#fff',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            backdrop: `rgba(0,0,123,0.1)`,
                             customClass: {
-                                title: 'text-purple',
-                                popup: 'rounded-12'
+                                popup: 'cyber-swal'
                             }
                         });
+                        
+                        setTimeout(() => confetti.remove(), 3000);
                     });
                 });
             </script>";
@@ -206,362 +215,204 @@ try {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate - Mod APK Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Generate Key - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/cyber-ui.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .back-btn-anim { 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            width: 40px; 
-            height: 40px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            color: var(--purple);
-            background: white;
-            text-decoration: none;
-            margin-bottom: 1.5rem;
-        }
-        .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
-        * { font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); }
-        
-        /* Table and Date Visibility Fix */
-        .table tbody td {
-            color: var(--text) !important;
-            vertical-align: middle;
-        }
-        .text-muted-date {
-            color: #475569 !important; /* Darker slate color for better visibility */
-            font-weight: 500;
-        }
-        [data-theme="dark"] .text-muted-date {
-            color: #94a3b8 !important; /* Lighter slate for dark mode */
+        body { padding-top: 60px; }
+        .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; transition: transform 0.3s ease; }
+        .main-content { margin-left: 260px; padding: 2rem; transition: margin-left 0.3s ease; }
+        .header { height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; background: rgba(5,7,10,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-260px); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
         }
         
-        /* Custom Stylish Toast */
-        #customToast {
+        .cyber-swal {
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #8b5cf6, #06b6d4) 1;
+            border-radius: 20px !important;
+        }
+        
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .confetti-piece {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #1e293b;
+            width: 10px;
+            height: 10px;
+            background: #8b5cf6;
+            top: -10px;
+            z-index: 9999;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        .filter-select {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1.5px solid rgba(148, 163, 184, 0.1);
             color: white;
-            padding: 16px 24px;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            z-index: 99999; /* Higher z-index */
-            transform: translateX(120%);
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border-left: 4px solid #8b5cf6;
-            max-width: 350px;
-        }
-        #customToast.show { transform: translateX(0); }
-        #customToast i { font-size: 1.5rem; color: #8b5cf6; }
-        #customToast .toast-content { flex: 1; }
-        #customToast .toast-title { font-weight: 700; margin-bottom: 2px; }
-        #customToast .toast-msg { font-size: 0.85rem; opacity: 0.9; }
-        
-        .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; width: 280px; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; }
-        .sidebar .nav-link { color: var(--muted); padding: 12px 20px; margin: 4px 16px; border-radius: 8px; }
-        .sidebar .nav-link:hover { background: #f3f4f6; color: var(--text); }
-        .sidebar .nav-link.active { background: var(--purple); color: white; }
-        .sidebar .nav-link i { width: 20px; margin-right: 12px; }
-        .main-content { margin-left: 280px; padding: 2rem; }
-        .page-header { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; }
-        .page-header h2 { color: var(--purple); font-weight: 600; }
-        .filter-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; }
-        .filter-card h4 { color: var(--text); font-weight: 600; margin-bottom: 1rem; }
-        .key-card { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
-        .key-card h4 { color: var(--purple); font-weight: 600; margin-bottom: 1rem; }
-        .duration-option { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
-        .duration-badge { background: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85em; }
-        .price { font-weight: 600; color: var(--text); font-size: 1.1em; }
-        .available { background: #0ea5e9; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85em; }
-        .btn-generate { background: #10b981; border: none; color: white; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
-        .btn-generate:hover { background: #059669; color: white; }
-        .empty-message { text-align: center; color: var(--muted); padding: 1rem; font-size: 0.95em; }
-        .alert { border-radius: 8px; border: none; }
-        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
-        @media (max-width: 991.98px) {
-            .sidebar { display: none; }
-            .main-content { margin-left: 0; padding: 1rem; padding-top: 20px !important; }
-            
-            /* Fix Back Button Spacing */
-            .back-btn-container {
-                position: relative !important;
-                top: 0 !important;
-                left: 0 !important;
-                margin-bottom: 15px !important;
-                z-index: 10;
-            }
-            
-            .page-header { padding: 1.25rem; }
-            .page-header h2 { font-size: 1.5rem; word-break: break-word; overflow-wrap: break-word; }
-            .page-header .d-flex { flex-direction: column; gap: 0.75rem; }
-            .back-button { padding: 0.6rem 1rem; font-size: 0.9rem; }
-            .key-card { padding: 1rem; }
-            .duration-option { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
-            .filter-card { padding: 1.25rem; }
-            input[type="number"] { width: 60px !important; }
+            padding: 10px 15px;
         }
         
-        @media (max-width: 480px) {
-            .main-content { padding: 0.75rem; padding-top: 75px; }
-            .page-header { padding: 1rem; margin-bottom: 1rem; }
-            .page-header h2 { font-size: 1.25rem; }
-            .back-button { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
-            div[style*="position: absolute"] { position: static !important; margin-bottom: 1rem; }
-            .key-card { padding: 0.75rem; margin-bottom: 0.75rem; }
-            .filter-card { padding: 1rem; }
-            .duration-option form { width: 100%; }
-            input[type="number"] { width: 50px !important; padding: 0.4rem !important; }
-            .btn-generate { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .filter-select:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: #8b5cf6;
+            color: white;
+            outline: none;
+        }
+
+        .duration-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .duration-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
         }
     </style>
-    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
-    <link href="assets/css/dark-mode.css" rel="stylesheet">
-    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row" style="position: relative;">
-            <div class="back-btn-container" style="position: absolute; top: 20px; left: 20px; z-index: 999;">
-                <a href="user_dashboard.php" class="back-button" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <i class="fas fa-arrow-left" style="font-size: 1rem;"></i><span>Back</span>
-                </a>
+    <header class="header">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn text-white p-0 d-lg-none" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h4 class="m-0 text-neon fw-bold">SilentMultiPanel</h4>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-end d-none d-sm-block">
+                <div class="small fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
+                <div class="text-secondary small">Balance: <?php echo formatCurrency($user['balance']); ?></div>
             </div>
-            <div class="col-md-3 col-lg-2 sidebar">
-                <div class="p-4 border-bottom">
-                    <h4 style="color: var(--purple); font-weight: 700; margin-bottom: 0;"><i class="fas fa-crown me-2"></i>SilentMultiPanel</h4>
-                    <p class="text-muted small mb-0">User Panel</p>
-                </div>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="user_dashboard.php"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
-                    <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key"></i>Manage Keys</a>
-                    <a class="nav-link active" href="user_generate.php"><i class="fas fa-plus"></i>Generate</a>
-                    <a class="nav-link" href="user_transactions.php"><i class="fas fa-exchange-alt"></i>Transaction</a>
-                    <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt"></i>Applications</a>
-                    <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban"></i>Block & Reset</a>
-                    <a class="nav-link" href="user_notifications.php"><i class="fas fa-bell"></i>Notifications</a>
-                    <a class="nav-link" href="user_settings.php"><i class="fas fa-cog"></i>Settings</a>
-                    <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt"></i>Logout</a>
-                </nav>
+            <div class="user-avatar-header" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
             </div>
-            
-            <div class="col-md-9 col-lg-10 main-content">
-                <a href="user_dashboard.php" class="back-btn-anim" title="Back to Dashboard">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <div class="page-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2"><i class="fas fa-plus me-2"></i>Generate</h2>
-                            <p class="text-muted mb-0">Purchase new license keys for mod applications</p>
-                        </div>
-                        <div class="d-none d-md-flex align-items-center">
-                            <div class="text-end me-3">
-                                <div class="fw-bold"><?php echo htmlspecialchars($user['username']); ?></div>
-                                <small class="text-muted">Balance: <?php echo formatCurrency($user['balance']); ?></small>
-                            </div>
-                            <div class="user-avatar"><?php echo strtoupper(substr($user['username'], 0, 2)); ?></div>
-                        </div>
-                    </div>
+        </div>
+    </header>
+
+    <aside class="sidebar p-3" id="sidebar">
+        <nav class="nav flex-column gap-2">
+            <a class="nav-link" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a class="nav-link active" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
+            <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key me-2"></i> Manage Keys</a>
+            <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt me-2"></i> Applications</a>
+            <a class="nav-link" href="user_notifications.php"><i class="fas fa-bell me-2"></i> Notifications</a>
+            <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban me-2"></i> Block & Reset</a>
+            <a class="nav-link" href="user_settings.php"><i class="fas fa-cog me-2"></i> Settings</a>
+            <a class="nav-link" href="user_transactions.php"><i class="fas fa-history me-2"></i> Transactions</a>
+            <hr class="border-secondary opacity-25">
+            <a class="nav-link text-danger" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="cyber-card mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-neon mb-1">Generate License Key</h2>
+                    <p class="text-secondary mb-0">Select a mod and duration to purchase your key.</p>
                 </div>
-                
-                <?php if ($success): ?>
-                <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i><?php echo $success; ?><button type="button" class="btn-close" data-bs-alert="alert"></button></div>
-                <?php endif; ?>
-                
-                <?php if ($error): ?>
-                <div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-                <?php endif; ?>
-                
-                <!-- Filter -->
-                <div class="filter-card">
-                    <h4>FILTER BY MOD:</h4>
-                    <form method="GET" class="row g-3">
-                        <div class="col-md-8">
-                            <select class="form-control" name="mod_id" style="border-radius: 12px; border: 1px solid var(--border); padding: 0.75rem;">
-                                <option value="">All Mods</option>
+            </div>
+        </div>
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4">
+                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-4">
+                <div class="cyber-card">
+                    <h5 class="mb-4"><i class="fas fa-filter text-primary me-2"></i> Filter Mods</h5>
+                    <form method="GET">
+                        <div class="mb-3">
+                            <select name="mod_id" class="form-select filter-select w-100" onchange="this.form.submit()">
+                                <option value="">All Applications</option>
                                 <?php foreach ($mods as $mod): ?>
-                                <option value="<?php echo $mod['id']; ?>" <?php echo $modId == $mod['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($mod['name']); ?></option>
+                                    <option value="<?php echo $mod['id']; ?>" <?php echo $modId == $mod['id'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($mod['name']); ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <button type="submit" class="btn btn-generate w-100"><i class="fas fa-filter me-2"></i>Filter</button>
-                            <a href="user_generate.php" class="btn btn-secondary w-100 mt-2"><i class="fas fa-times me-2"></i>Clear</a>
-                        </div>
+                        <?php if ($modId): ?>
+                            <a href="user_generate.php" class="btn btn-outline-secondary w-100 rounded-3">Clear Filters</a>
+                        <?php endif; ?>
                     </form>
                 </div>
-                
-                <!-- Available Keys -->
-                <div>
-                    <h5 style="color: var(--purple); font-weight: 600; margin-bottom: 1.5rem;"><i class="fas fa-lock me-2"></i>Available Keys</h5>
-                    
-                    <?php if (empty($keysByMod)): ?>
-                        <div class="alert alert-info">No available keys to purchase.</div>
-                    <?php else: ?>
-                        <?php foreach ($keysByMod as $modName => $keys): ?>
-                        <div class="key-card">
-                            <h4><i class="fas fa-box me-2"></i><?php echo htmlspecialchars($modName); ?></h4>
-                            <div style="text-align: right; margin-bottom: 1rem;">
-                                <span class="badge bg-purple" style="background: var(--purple);"><?php echo count($keys); ?> Duration Options</span>
-                            </div>
-                            
-                            <?php foreach ($keys as $key): ?>
-                            <div class="duration-option">
-                                <div>
-                                    <span class="duration-badge"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span>
-                                    <div style="margin-top: 0.5rem;">
-                                        <div class="price"><?php echo formatCurrency($key['price']); ?></div>
-                                        <span class="available"><?php echo 'Available: ' . $key['key_count']; ?></span>
+            </div>
+
+            <div class="col-12 col-lg-8">
+                <?php if (empty($keysByMod)): ?>
+                    <div class="cyber-card text-center py-5">
+                        <i class="fas fa-key text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <h5 class="text-secondary">No keys available for the selected mod.</h5>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($keysByMod as $modName => $keys): ?>
+                        <div class="cyber-card mb-4">
+                            <h5 class="mb-4 text-white"><i class="fas fa-cube text-secondary me-2"></i> <?php echo htmlspecialchars($modName); ?></h5>
+                            <div class="row g-3">
+                                <?php foreach ($keys as $key): ?>
+                                    <div class="col-12">
+                                        <div class="duration-item d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                            <div>
+                                                <div class="fw-bold text-white"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></div>
+                                                <div class="small text-secondary"><?php echo formatCurrency($key['price']); ?> | <?php echo $key['key_count']; ?> available</div>
+                                            </div>
+                                            <form method="POST" class="d-flex align-items-center gap-2">
+                                                <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
+                                                <input type="number" name="quantity" class="form-control bg-dark border-secondary text-white text-center" value="1" min="1" max="<?php echo $key['key_count']; ?>" style="width: 70px; border-radius: 8px;">
+                                                <button type="submit" name="purchase_key" class="cyber-btn py-2">
+                                                    <i class="fas fa-shopping-cart"></i> Buy
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
-                                </div>
-                                <form method="POST" style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
-                                    <input type="number" name="quantity" min="1" max="<?php echo $key['key_count']; ?>" value="1" style="width: 70px; padding: 0.5rem; border: 1px solid var(--border); border-radius: 6px; text-align: center;">
-                                    <button type="submit" name="purchase_key" class="btn-generate">
-                                        <i class="fas fa-shopping-cart me-1"></i>Generate
-                                    </button>
-                                </form>
+                                <?php endforeach; ?>
                             </div>
-                            <?php endforeach; ?>
-                            
-                            <div class="empty-message">Select a duration option above to purchase</div>
                         </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-                
-                <!-- Purchased Keys -->
-                <div style="margin-top: 2rem;">
-                    <h5 style="color: var(--purple); font-weight: 600; margin-bottom: 1.5rem;"><i class="fas fa-shopping-bag me-2"></i>My Purchased Keys</h5>
-                    <?php if (empty($purchasedKeys)): ?>
-                        <div class="alert alert-info">No purchased keys yet. Generate one above!</div>
-                    <?php else: ?>
-                        <div class="table-responsive">
-                            <table class="table" style="border-radius: 12px;">
-                                <thead style="background: var(--purple); color: white;">
-                                    <tr><th>Mod Name</th><th>License Key</th><th>Duration</th><th>Date</th><th>Actions</th></tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($purchasedKeys as $key): ?>
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td><?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?></td>
-                                        <td><code style="background: #f8fafc; padding: 0.5rem; border-radius: 6px;"><?php echo htmlspecialchars($key['license_key']); ?></code></td>
-                                        <td><span class="badge bg-primary"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span></td>
-                                        <td class="text-muted-date"><?php echo formatDate($key['sold_at']); ?></td>
-                                        <td><button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')"><i class="fas fa-copy"></i></button></td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
-                </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
-    </div>
-    
-    <div id="customToast">
-        <i class="fas fa-check-circle"></i>
-        <div class="toast-content">
-            <div class="toast-title">Success!</div>
-            <div class="toast-msg" id="toastMessage">Key purchased and copied.</div>
-        </div>
-    </div>
+    </main>
 
     <script>
-        function showStylishToast(message) {
-            const toast = document.getElementById('customToast');
-            document.getElementById('toastMessage').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 4000);
-        }
-
-        function copyToClipboard(text, isAuto = false) {
-            function performCopy() {
-                try {
-                    // Try the modern API first
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(text).then(() => {
-                            showStylishToast(isAuto ? 'Keys purchased & copied to clipboard!' : 'License key copied to clipboard!');
-                        }).catch(err => {
-                            console.warn('Async copy failed, trying fallback', err);
-                            fallbackCopy(text);
-                        });
-                    } else {
-                        fallbackCopy(text);
-                    }
-                } catch (e) {
-                    console.error('Copy attempt failed', e);
-                    fallbackCopy(text);
-                }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
+        
+        // Confetti burst logic
+        const createConfetti = () => {
+            const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = confetti.style.width;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 5000);
             }
+        };
 
-            function fallbackCopy(val) {
-                const textArea = document.createElement('textarea');
-                textArea.value = val;
-                
-                // Ensure the textarea is invisible but part of the document
-                textArea.style.position = 'fixed';
-                textArea.style.left = '-9999px';
-                textArea.style.top = '0';
-                textArea.setAttribute('readonly', ''); // Prevent keyboard on mobile
-                document.body.appendChild(textArea);
-                
-                textArea.select();
-                textArea.setSelectionRange(0, 99999); // For mobile devices
-                
-                let successful = false;
-                try {
-                    successful = document.execCommand('copy');
-                } catch (err) {
-                    console.error('Fallback copy failed', err);
-                }
-                
-                document.body.removeChild(textArea);
-                
-                if (successful) {
-                    showStylishToast(isAuto ? 'Keys purchased & copied to clipboard!' : 'License key copied to clipboard!');
-                } else {
-                    console.error('All copy methods failed');
-                }
-            }
-            performCopy();
-        }
-
-        // Auto-copy on load if purchase just happened
-        window.addEventListener('load', function() {
-            const copyData = document.getElementById('autoCopyData');
-            const copyModal = document.getElementById('copyModal');
-            if (copyData && copyModal) {
-                copyModal.style.display = 'flex';
-            }
-        });
-
-        function manualCopyAndClose() {
-            const copyData = document.getElementById('autoCopyData');
-            const copyModal = document.getElementById('copyModal');
-            if (copyData) {
-                const keys = copyData.getAttribute('data-keys');
-                copyToClipboard(keys, true);
-                if (copyModal) copyModal.style.display = 'none';
-            }
-        }
+        <?php if ($success): ?>
+            createConfetti();
+        <?php endif; ?>
     </script>
-    <script src="assets/js/dark-mode.js"></script>
-<script src="assets/js/menu-logic.js"></script></body>
+</body>
 </html>
