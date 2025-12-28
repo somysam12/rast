@@ -56,7 +56,7 @@ if ($_POST) {
             --accent: #ec4899;
             --bg: #0a0e27;
             --card-bg: rgba(15, 23, 42, 0.7);
-            --text-main: #0a0e27;
+            --text-main: #f8fafc;
             --text-dim: #94a3b8;
             --border-light: rgba(148, 163, 184, 0.1);
             --border-glow: rgba(139, 92, 246, 0.2);
