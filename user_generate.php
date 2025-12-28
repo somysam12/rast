@@ -444,7 +444,7 @@ try {
         .product-search-input::placeholder {
             color: rgba(255, 255, 255, 0.3);
         }
-        .no-results {
+        #noResults {
             display: none;
             text-align: center;
             padding: 3rem;
@@ -595,38 +595,38 @@ try {
             document.getElementById('modPopup').classList.toggle('show');
         }
 
-        // Search Logic
-        const searchInput = document.getElementById('productSearch');
-        const noResults = document.getElementById('noResults');
-        const resultsContainer = document.querySelector('.results-container');
-        const modSections = document.querySelectorAll('.mod-section');
+        // Real-time Search Logic (Matching Manage Keys behavior)
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('productSearch');
+            const noResults = document.getElementById('noResults');
+            const resultsContainer = document.querySelector('.results-container');
+            const modSections = document.querySelectorAll('.mod-section');
 
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                const query = this.value.toLowerCase().trim();
-                let visibleCount = 0;
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    let anyVisible = false;
 
-                modSections.forEach(section => {
-                    const modName = section.getAttribute('data-mod-name').toLowerCase();
-                    if (query === '' || modName.includes(query)) {
-                        section.style.setProperty('display', 'block', 'important');
-                        visibleCount++;
+                    modSections.forEach(section => {
+                        const modName = section.getAttribute('data-mod-name').toLowerCase();
+                        if (query === '' || modName.includes(query)) {
+                            section.style.setProperty('display', 'block', 'important');
+                            anyVisible = true;
+                        } else {
+                            section.style.setProperty('display', 'none', 'important');
+                        }
+                    });
+
+                    if (!anyVisible && query !== '') {
+                        noResults.style.setProperty('display', 'block', 'important');
+                        resultsContainer.style.setProperty('display', 'none', 'important');
                     } else {
-                        section.style.setProperty('display', 'none', 'important');
+                        noResults.style.setProperty('display', 'none', 'important');
+                        resultsContainer.style.setProperty('display', 'block', 'important');
                     }
                 });
-
-                if (visibleCount === 0 && query !== '') {
-                    noResults.style.setProperty('display', 'block', 'important');
-                    resultsContainer.classList.remove('show');
-                } else {
-                    noResults.style.setProperty('display', 'none', 'important');
-                    if (visibleCount > 0 || query === '') {
-                        resultsContainer.classList.add('show');
-                    }
-                }
-            });
-        }
+            }
+        });
 
         // Close popup when clicking outside
         document.addEventListener('click', function(e) {
