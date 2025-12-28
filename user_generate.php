@@ -292,6 +292,8 @@ try {
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
         }
         .search-wrapper:focus-within {
             border-color: #8b5cf6;
@@ -305,17 +307,20 @@ try {
             transform: translateY(-50%);
             color: #8b5cf6;
             font-size: 1.1rem;
-            z-index: 1;
+            z-index: 10;
         }
-        .search-wrapper input {
+        .search-wrapper .product-search-input {
             background: transparent !important;
             border: none !important;
             padding-left: 45px !important;
             color: white !important;
             height: 50px;
             box-shadow: none !important;
+            width: 100%;
+            outline: none !important;
+            font-size: 1rem;
         }
-        .search-wrapper input::placeholder {
+        .search-wrapper .product-search-input::placeholder {
             color: rgba(148, 163, 184, 0.5);
         }
     </style>
@@ -364,7 +369,7 @@ try {
 
         <div class="search-wrapper">
             <i class="fas fa-search"></i>
-            <input type="text" id="productSearch" class="form-control" placeholder="Search for applications or durations..." autocomplete="off">
+            <input type="text" id="productSearch" class="product-search-input" placeholder="Search for applications or durations..." autocomplete="off">
         </div>
 
         <?php if ($error): ?>
@@ -438,33 +443,41 @@ try {
         const productSearch = document.getElementById('productSearch');
         const modCards = document.querySelectorAll('.mod-card-container');
 
-        productSearch.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            
-            modCards.forEach(card => {
-                const modName = card.querySelector('.mod-title').textContent.toLowerCase();
-                const durations = Array.from(card.querySelectorAll('.duration-name')).map(d => d.textContent.toLowerCase());
+        if (productSearch) {
+            productSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
                 
-                const matchesMod = modName.includes(query);
-                const matchesDuration = durations.some(d => d.includes(query));
+                modCards.forEach(card => {
+                    const modName = card.querySelector('.mod-title').textContent.toLowerCase();
+                    const durations = Array.from(card.querySelectorAll('.duration-name')).map(d => d.textContent.toLowerCase());
+                    
+                    const matchesMod = modName.includes(query);
+                    const matchesDuration = durations.some(d => d.includes(query));
 
-                if (matchesMod || matchesDuration) {
-                    card.style.display = 'block';
-                    // Filter individual durations within the card if needed
-                    const items = card.querySelectorAll('.duration-item-container');
-                    items.forEach(item => {
-                        const itemName = item.querySelector('.duration-name').textContent.toLowerCase();
-                        if (matchesMod || itemName.includes(query)) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
+                    if (matchesMod || matchesDuration || query === '') {
+                        card.classList.remove('d-none');
+                        // Filter individual durations within the card
+                        const items = card.querySelectorAll('.duration-item-container');
+                        let visibleItems = 0;
+                        items.forEach(item => {
+                            const itemName = item.querySelector('.duration-name').textContent.toLowerCase();
+                            if (query === '' || matchesMod || itemName.includes(query)) {
+                                item.classList.remove('d-none');
+                                visibleItems++;
+                            } else {
+                                item.classList.add('d-none');
+                            }
+                        });
+                        
+                        if (query !== '' && !matchesMod && visibleItems === 0) {
+                            card.classList.add('d-none');
                         }
-                    });
-                } else {
-                    card.style.display = 'none';
-                }
+                    } else {
+                        card.classList.add('d-none');
+                    }
+                });
             });
-        });
+        }
 
         // Confetti burst logic
         const createConfetti = () => {
