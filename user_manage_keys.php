@@ -261,10 +261,20 @@ try {
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                        <div class="col-12 col-md-5">
+                            <label class="small fw-bold text-secondary mb-2">SEARCH KEYS</label>
+                            <div class="search-wrapper">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" name="search" class="search-input" placeholder="Search by key or mod name..." value="<?php echo htmlspecialchars($searchQuery); ?>">
+                            </div>
+                        </div>
                         <div class="col-12 col-md-3 d-flex gap-2">
+                            <button type="submit" class="cyber-btn w-100 py-2">
+                                <i class="fas fa-search"></i> Search
+                            </button>
                             <?php if ($modFilter || $searchQuery): ?>
                                 <a href="user_manage_keys.php" class="btn btn-outline-secondary rounded-3 px-3">
-                                    <i class="fas fa-times"></i> Clear Filter
+                                    <i class="fas fa-times"></i>
                                 </a>
                             <?php endif; ?>
                         </div>
