@@ -46,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
                     $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
                     $stmt->execute([$username, $email, $user['id']]);
                     $_SESSION['username'] = $username;
-                    $_SESSION['email'] = $email;
                     $success = 'Profile updated successfully!';
                     $user = getUserData();
                 } catch (Exception $e) {
