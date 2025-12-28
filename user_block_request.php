@@ -40,6 +40,7 @@ if (!function_exists('formatDate')) {
 }
 
 $success = $_SESSION['success'] ?? '';
+$showCancelAnimation = !empty($success);
 unset($_SESSION['success']);
 $error = '';
 
@@ -364,6 +365,16 @@ try {
             border-radius: 24px !important;
             box-shadow: 0 0 40px rgba(139, 92, 246, 0.2) !important;
         }
+        
+        @keyframes slideOutAndFade {
+            0% { opacity: 1; transform: translateX(0) scale(1); }
+            50% { opacity: 1; transform: translateX(20px) scale(1.02); }
+            100% { opacity: 0; transform: translateX(-100%) scale(0.95); }
+        }
+        
+        .request-card.cancelled {
+            animation: slideOutAndFade 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
     </style>
 </head>
 <body>
@@ -545,6 +556,31 @@ try {
                 }
             }
         }
+        
+        <?php if ($showCancelAnimation): ?>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Request Cancelled!',
+                text: 'Your request has been successfully cancelled.',
+                icon: 'success',
+                background: 'rgba(15, 23, 42, 0.95)',
+                color: '#fff',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                backdrop: `rgba(34, 197, 94, 0.1)`,
+                customClass: {
+                    popup: 'cyber-swal'
+                },
+                didOpen: (toast) => {
+                    const confirmButton = toast.querySelector('[role="status"]');
+                    if (confirmButton) {
+                        confirmButton.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                    }
+                }
+            });
+        });
+        <?php endif; ?>
 
         const keySearch = document.getElementById('keySearch');
         const searchResults = document.getElementById('searchResults');
