@@ -41,9 +41,8 @@ if(!$user){
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_block_reset_request'])) {
     $requestType = $_POST['request_type'] ?? '';
     $licenseKey = $_POST['license_key'] ?? '';
-    $reason = $_POST['reason'] ?? '';
     
-    if ($requestType && $licenseKey && $reason && in_array($requestType, ['block', 'reset'])) {
+    if ($requestType && $licenseKey && in_array($requestType, ['block', 'reset'])) {
         try {
             // Get key details
             $stmt = $pdo->prepare('SELECT id, mod_id FROM license_keys WHERE license_key = ? AND sold_to = ? LIMIT 1');
@@ -62,9 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_block_reset_re
                     if ($modResult) $modName = $modResult['name'];
                 }
                 
-                // Insert request
-                $stmt = $pdo->prepare('INSERT INTO key_requests (user_id, key_id, request_type, mod_name, reason, status, created_at) VALUES (?, ?, ?, ?, ?, "pending", NOW())');
-                $stmt->execute([$user['id'], $keyDetails['id'], $requestType, $modName, $reason]);
+                // Insert request with empty reason (user can add it later from pending requests)
+                $stmt = $pdo->prepare('INSERT INTO key_requests (user_id, key_id, request_type, mod_name, reason, status, created_at) VALUES (?, ?, ?, ?, "", "pending", NOW())');
+                $stmt->execute([$user['id'], $keyDetails['id'], $requestType, $modName]);
                 
                 $pdo->commit();
                 echo "<script>
@@ -515,23 +514,18 @@ try {
         
         function showRequestModal(requestType, licenseKey, modName) {
             const typeLabel = requestType === 'reset' ? 'Reset HWID' : 'Block Key';
-            const typeIcon = requestType === 'reset' ? 'fa-sync-alt' : 'fa-ban';
             const typeColor = requestType === 'reset' ? '#06b6d4' : '#ef4444';
             
             Swal.fire({
                 title: typeLabel,
                 html: `
                     <div style="text-align: left; margin: 20px 0;">
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 8px; font-weight: 600;">KEY DETAILS</label>
-                            <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); padding: 12px; border-radius: 8px; font-size: 0.85rem;">
-                                <div style="color: rgba(255,255,255,0.7); margin-bottom: 5px;"><strong>Mod:</strong> ${modName}</div>
-                                <div style="color: rgba(255,255,255,0.7);"><strong>Key:</strong> ${licenseKey}</div>
-                            </div>
+                        <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); padding: 12px; border-radius: 8px; font-size: 0.85rem;">
+                            <div style="color: rgba(255,255,255,0.7); margin-bottom: 5px;"><strong>Mod:</strong> ${modName}</div>
+                            <div style="color: rgba(255,255,255,0.7);"><strong>Key:</strong> ${licenseKey}</div>
                         </div>
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 8px; font-weight: 600;">REASON FOR REQUEST</label>
-                            <textarea id="requestReason" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.5); border: 1.5px solid rgba(148, 163, 184, 0.1); color: white; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; resize: vertical;" rows="3" placeholder="Explain your reason..."></textarea>
+                        <div style="margin-top: 15px; color: rgba(255,255,255,0.6); font-size: 0.9rem;">
+                            Are you sure you want to proceed with this request?
                         </div>
                     </div>
                 `,
@@ -539,32 +533,15 @@ try {
                 background: 'rgba(15, 23, 42, 0.95)',
                 color: '#fff',
                 showCancelButton: true,
-                confirmButtonText: 'Send Request',
+                confirmButtonText: 'Confirm',
                 cancelButtonText: 'Cancel',
                 confirmButtonColor: typeColor,
                 cancelButtonColor: '#6b7280',
                 customClass: {
                     popup: 'cyber-swal'
-                },
-                didOpen: (modal) => {
-                    const reasonInput = document.getElementById('requestReason');
-                    reasonInput.focus();
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const reason = document.getElementById('requestReason').value.trim();
-                    if (reason.length < 5) {
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Please provide a reason (at least 5 characters)',
-                            icon: 'error',
-                            background: 'rgba(15, 23, 42, 0.95)',
-                            color: '#fff',
-                            customClass: { popup: 'cyber-swal' }
-                        });
-                        return;
-                    }
-                    
                     // Create a hidden form and submit it
                     const form = document.createElement('form');
                     form.method = 'POST';
@@ -580,11 +557,6 @@ try {
                     keyInput.name = 'license_key';
                     keyInput.value = licenseKey;
                     
-                    const reasonInput2 = document.createElement('input');
-                    reasonInput2.type = 'hidden';
-                    reasonInput2.name = 'reason';
-                    reasonInput2.value = reason;
-                    
                     const submitInput = document.createElement('input');
                     submitInput.type = 'hidden';
                     submitInput.name = 'submit_block_reset_request';
@@ -592,7 +564,6 @@ try {
                     
                     form.appendChild(typeInput);
                     form.appendChild(keyInput);
-                    form.appendChild(reasonInput2);
                     form.appendChild(submitInput);
                     document.body.appendChild(form);
                     form.submit();
