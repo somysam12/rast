@@ -5,1096 +5,165 @@ ini_set('display_errors', 1);
 
 require_once 'config/database.php';
 
-// Check if user is logged in
 session_start();
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
 
-// Check if user is admin (redirect to admin panel)
 if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
     header('Location: admin_dashboard.php');
     exit();
 }
 
 $pdo = getDBConnection();
-
-// Get user data
 $userId = $_SESSION['user_id'];
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$userId]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Get user statistics
-        $pdo = getDBConnection();        $stmt = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(balance), 0) as total_balance, COALESCE(AVG(balance), 0) as avg_balance FROM users WHERE role = 'user'");        $userStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['count' => 0, 'total_balance' => 0, 'avg_balance' => 0];
-
 $stats = ['total_purchases' => 0, 'total_spent' => 0];
 try {
-    // Get actual purchased keys count and total spent from license_keys and transactions
-    $stmt = $pdo->prepare("SELECT 
-        COUNT(DISTINCT lk.id) as total_purchases,
-        COALESCE(SUM(lk.price), 0) as total_spent
-        FROM license_keys lk
-        WHERE lk.sold_to = ?");
+    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT id) as total_purchases, COALESCE(SUM(price), 0) as total_spent FROM license_keys WHERE sold_to = ?");
     $stmt->execute([$userId]);
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($result) {
-        $stats = $result;
-    }
-} catch (Exception $e) {
-    // Use defaults
-}
-        $pdo = getDBConnection();        $stmt = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(balance), 0) as total_balance, COALESCE(AVG(balance), 0) as avg_balance FROM users WHERE role = 'user'");        $userStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['count' => 0, 'total_balance' => 0, 'avg_balance' => 0];
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['total_purchases' => 0, 'total_spent' => 0];
+} catch (Exception $e) {}
+
 try {
     $stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
     $stmt->execute([$userId]);
     $recentTransactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    // Ignore errors
-}
+} catch (Exception $e) { $recentTransactions = []; }
 
-// Get available mods
-$mods = [];
-try {
-    $stmt = $pdo->query("SELECT * FROM mods WHERE status = 'active' ORDER BY name");
-    $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    // Ignore errors
-}
-
-// Helper functions
-function formatCurrency($amount) {
-    return '₹' . number_format($amount, 2, '.', ',');
-}
-
-function formatDate($date) {
-    if (empty($date)) return 'N/A';
-    $timestamp = strtotime($date);
-    if ($timestamp === false) return 'Invalid Date';
-    return date('d M Y H:i', $timestamp);
-}
+function formatCurrency($amount) { return '₹' . number_format($amount, 2); }
+function formatDate($date) { return $date ? date('d M Y H:i', strtotime($date)) : 'N/A'; }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>User Dashboard - Mod APK Manager</title>
+    <title>Dashboard - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="assets/css/cyber-ui.css" rel="stylesheet">
     <style>
-        /* Component Specific Overrides */
-        body {
-            padding-top: 60px;
-        }
-        
-        .modern-header {
-            background: rgba(5, 7, 10, 0.8) !important;
-            backdrop-filter: blur(20px) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1.5rem;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1050;
-        }
-
-        .main-content {
-            margin-left: 280px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar {
-            width: 280px;
-            position: fixed;
-            top: 60px;
-            bottom: 0;
-            left: 0;
-            z-index: 1040;
-            padding-top: 1rem;
-        }
-
+        body { padding-top: 60px; }
+        .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; transition: transform 0.3s ease; }
+        .main-content { margin-left: 260px; padding: 2rem; transition: margin-left 0.3s ease; }
+        .header { height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; background: rgba(5,7,10,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; }
         @media (max-width: 992px) {
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-            }
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.show {
-                transform: translateX(0);
-                width: 280px;
-            }
-        }
-
-        .cyber-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 12px;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px var(--primary-glow);
-        }
-
-        .cyber-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--primary-glow);
-            filter: brightness(1.1);
+            .sidebar { transform: translateX(-260px); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
         }
     </style>
-        
-        /* Modern Header */
-        .modern-header {
-            background: rgba(15, 23, 42, 0.7);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1002;
-            height: 60px;
-            box-sizing: border-box;
-        }
-        
-        .hamburger-menu {
-            background: none;
-            border: none;
-            color: #7c3aed;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 8px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .hamburger-menu:hover {
-            color: #6d28d9;
-        }
-        
-        .user-section {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .user-avatar-header {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #7c3aed;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .user-avatar-header:hover {
-            background: #6d28d9;
-        }
-        
-        .dropdown-arrow {
-            color: #7c3aed;
-            font-size: 0.7rem;
-            transition: transform 0.3s ease;
-            margin-left: 4px;
-            cursor: pointer;
-        }
-        
-        .user-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            box-shadow: var(--shadow-large);
-            min-width: 200px;
-            padding: 0.5rem 0;
-            margin-top: 0.5rem;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            z-index: 1003;
-        }
-        
-        .user-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .dropdown-item {
-            padding: 0.75rem 1rem;
-            color: var(--text);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .dropdown-item:hover {
-            background: var(--accent-100);
-            color: var(--accent);
-        }
-        
-        .dropdown-item i {
-            width: 16px;
-            text-align: center;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            background: rgba(15, 23, 42, 0.7);
-            color: #f8fafc;
-            border-right: 1px solid rgba(148, 163, 184, 0.1);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            position: fixed;
-            width: 280px;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-            height: 100vh;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(0);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-        
-        .sidebar.hidden {
-            transform: translateX(-100%);
-        }
-        
-        .sidebar .nav-link {
-            color: #94a3b8;
-            padding: 12px 20px;
-            margin: 8px 16px;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 1003;
-            pointer-events: auto;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-            border-radius: 12px;
-            border: 1px solid transparent;
-        }
-        
-        .sidebar .nav-link:hover {
-            background: rgba(139, 92, 246, 0.1);
-            color: #f8fafc;
-            border-color: rgba(139, 92, 246, 0.2);
-            transform: translateX(5px);
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
-        }
-        
-        .sidebar .nav-link i {
-            color: #6b7280;
-            width: 20px;
-            margin-right: 12px;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar .nav-link:hover i {
-            color: #7c3aed;
-        }
-        
-        .sidebar .nav-link.active {
-            background: #7c3aed;
-            color: white;
-            border-color: #6d28d9;
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-        }
-        
-        .sidebar .nav-link.active i {
-            color: white;
-        }
-
-        .sidebar-footer {
-            margin-top: auto;
-            padding: 20px;
-            text-align: center;
-            border-top: 1px solid rgba(148, 163, 184, 0.1);
-            background: rgba(15, 23, 42, 0.5);
-        }
-
-        .signature-text {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #94a3b8;
-            margin: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .signature-name {
-            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-        
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 2rem;
-            min-height: 100vh;
-            transition: margin-left 0.3s ease;
-        overflow-y: auto;
-        
-        }
-        
-        .main-content-with-header {
-            margin-top: 10px;
-        }
-        
-        .main-content.full-width {
-            margin-left: 0;
-        }
-        
-        /* Page Header */
-        .page-header {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 20px;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-primary);
-        }
-        
-        .page-header h2 {
-            color: var(--text);
-            font-weight: 700;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        .page-header h2 i {
-            margin-right: 12px;
-            color: var(--accent);
-            font-size: 1.5rem;
-        }
-        
-        .page-header p {
-            color: var(--muted);
-            font-size: 1.1rem;
-            margin-bottom: 0;
-        }
-        
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 1.2em;
-            box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
-        }
-        
-        .user-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: var(--shadow-large);
-        }
-        
-        /* Stats Cards */
-        .stats-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stats-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-primary);
-        }
-        
-        .stats-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-large);
-        }
-        
-        .stats-card.balance::before { background: var(--gradient-success); }
-        .stats-card.purchases::before { background: var(--gradient-info); }
-        .stats-card.spent::before { background: var(--gradient-warning); }
-        
-        .stats-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5em;
-            margin-bottom: 1rem;
-            color: white;
-        }
-        
-        .stats-icon.balance { background: var(--gradient-success); }
-        .stats-icon.purchases { background: var(--gradient-info); }
-        .stats-icon.spent { background: var(--gradient-warning); }
-        
-        /* Table Cards */
-        .table-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
-            margin-bottom: 2rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .table-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-primary);
-        }
-        
-        .table-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .table-card h5 {
-            color: var(--text);
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        .table-card h5 i {
-            margin-right: 10px;
-            color: var(--accent);
-        }
-        
-        /* Mod Cards */
-        .mod-card {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid var(--line);
-            box-shadow: var(--shadow-light);
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .mod-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--gradient-primary);
-        }
-        
-        .mod-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        /* Buttons */
-        .btn-primary {
-            background: var(--gradient-primary);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            color: white;
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-large);
-            color: white;
-        }
-        
-        .btn-sm {
-            padding: 8px 16px;
-            font-size: 0.875rem;
-        }
-        
-        /* Tables */
-        .table {
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .table thead th {
-            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
-            color: white;
-            border: none;
-            font-weight: 700;
-            padding: 20px 16px;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .table tbody tr {
-            transition: all 0.3s ease;
-            border-bottom: 1px solid var(--line);
-        }
-        
-        .table tbody tr:hover {
-            background: rgba(139, 92, 246, 0.1);
-            transform: scale(1.01);
-        }
-        
-        .table tbody td {
-            padding: 20px 16px;
-            border: none;
-            color: #f8fafc;
-            vertical-align: middle;
-            font-weight: 500;
-        }
-        
-        .table tbody tr:last-child td {
-            border-bottom: none;
-        }
-        
-        /* Badges */
-        .badge {
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-weight: 600;
-            font-size: 0.8rem;
-        }
-        
-        /* Animations */
-        .fade-in {
-            animation: fadeInUp 0.6s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .floating-animation {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        /* Theme Toggle */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1001;
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: var(--muted);
-            box-shadow: var(--shadow-medium);
-            backdrop-filter: blur(20px);
-        }
-        
-        .theme-toggle:hover {
-            color: var(--accent);
-            box-shadow: var(--shadow-large);
-            transform: scale(1.1);
-        }
-        
-        /* Mobile Responsive */
-        .mobile-header {
-            display: none !important;
-        }
-        
-        .mobile-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.45);
-            z-index: 1001;
-            pointer-events: none;
-        }
-        
-        .mobile-overlay.show {
-            pointer-events: auto;
-        }
-        
-        @media (max-width: 991.98px) {
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 1rem;
-                padding-top: 20px !important;
-            }
-            
-            .main-content-with-header {
-                margin-top: 10px;
-            }
-            
-            .sidebar {
-                width: 100%;
-                left: 0;
-                right: 0;
-                transform: translateX(-100%);
-                background: rgba(15, 23, 42, 0.95);
-                backdrop-filter: blur(30px);
-                border-right: none;
-                border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-                z-index: 1002;
-                pointer-events: none;
-            }
-            
-            .sidebar.show {
-                transform: translateX(0);
-        overflow-y: auto;
-        overflow-x: hidden;
-                pointer-events: auto;
-            }
-            
-            .mobile-overlay.show {
-                display: block;
-                pointer-events: auto;
-            }
-            
-            .modern-header {
-                display: flex !important;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .page-header {
-                padding: 1rem !important;
-                margin-bottom: 1rem !important;
-            }
-            
-            .page-header .d-flex {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.35rem;
-            }
-            
-            .col-md-4, .col-md-8, .col-md-6, .col-md-12 {
-                flex: 0 0 100%;
-                max-width: 100%;
-            }
-            
-            .stats-card {
-                padding: 1rem !important;
-                margin-bottom: 1rem !important;
-            }
-            
-            .table-card {
-                padding: 1rem !important;
-            }
-            
-            .stats-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2em;
-            }
-            
-            .user-avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 1em;
-            }
-        }
-    </style>
-    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
-    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Modern Header -->
-    <div class="modern-header">
-        <div class="d-flex align-items-center gap-2">
-            <button class="hamburger-menu" onclick="toggleSidebar(event)" title="Toggle Menu" style="background: none; border: none; color: #7c3aed; font-size: 1.2rem; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h4 class="m-0 fw-bold d-none d-sm-block" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif;">SilentMultiPanel</h4>
+    <header class="header">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn text-white p-0 d-lg-none" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h4 class="m-0 text-neon fw-bold">SilentMultiPanel</h4>
         </div>
-        
-        <div class="user-section">
-            <div class="user-avatar-header" onclick="toggleUserDropdown(event)" title="User Menu">
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-end d-none d-sm-block">
+                <div class="small fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
+                <div class="text-secondary small">User</div>
+            </div>
+            <div class="user-avatar-header" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
                 <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
             </div>
-            <i class="fas fa-chevron-down dropdown-arrow" onclick="toggleUserDropdown(event)"></i>
-            
-            <div class="user-dropdown" id="userDropdown">
-                <div class="px-3 py-2 border-bottom">
-                    <div class="fw-bold"><?php echo htmlspecialchars($user['username']); ?></div>
-                    <small class="text-muted"><?php echo htmlspecialchars($user['email']); ?></small>
+        </div>
+    </header>
+
+    <aside class="sidebar p-3" id="sidebar">
+        <nav class="nav flex-column gap-2">
+            <a class="nav-link active" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a class="nav-link" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
+            <a class="nav-link" href="user_keys.php"><i class="fas fa-key me-2"></i> My Keys</a>
+            <a class="nav-link" href="user_balance.php"><i class="fas fa-wallet me-2"></i> Add Balance</a>
+            <a class="nav-link" href="user_transactions.php"><i class="fas fa-history me-2"></i> Transactions</a>
+            <hr class="border-secondary opacity-25">
+            <a class="nav-link text-danger" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="cyber-card mb-4">
+            <h2 class="text-neon mb-1">Welcome, <?php echo htmlspecialchars($user['username']); ?>!</h2>
+            <p class="text-secondary mb-0">Manage your mod keys and balance from your futuristic dashboard.</p>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="cyber-card">
+                    <div class="text-secondary small fw-bold mb-1">CURRENT BALANCE</div>
+                    <h2 class="m-0 text-white"><?php echo formatCurrency($user['balance']); ?></h2>
                 </div>
-                <a href="user_settings.php" class="dropdown-item">
-                    <i class="fas fa-user-cog"></i>Profile Settings
-                </a>
-                <a href="user_transactions.php" class="dropdown-item">
-                    <i class="fas fa-wallet"></i>My Wallet
-                </a>
-                <a href="javascript:history.back()" class="dropdown-item">
-                    <i class="fas fa-arrow-left"></i>Back
-                </a>
-                <hr style="margin: 0.5rem 0; border-color: var(--line);">
-                <a href="logout.php" class="dropdown-item">
-                    <i class="fas fa-sign-out-alt"></i>Logout
-                </a>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="cyber-card">
+                    <div class="text-secondary small fw-bold mb-1">TOTAL PURCHASES</div>
+                    <h2 class="m-0 text-white"><?php echo $stats['total_purchases']; ?></h2>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="cyber-card">
+                    <div class="text-secondary small fw-bold mb-1">TOTAL SPENT</div>
+                    <h2 class="m-0 text-white"><?php echo formatCurrency($stats['total_spent']); ?></h2>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar(event)"></div>
-    
-    <!-- Theme Toggle Button -->
-    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
-        <i class="fas fa-moon"></i>
-    </button>
-    
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-                <div class="p-3">
-                    <h4 style="background: linear-gradient(135deg, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; margin-bottom: 0;">
-                        <i class="fas fa-user" style="color: #8b5cf6; margin-right: 8px;"></i>User Panel
-                    </h4>
-                </div>
-                <nav class="nav flex-column">
-                    <a class="nav-link active" href="user_dashboard.php">
-                        <i class="fas fa-tachometer-alt"></i>Dashboard
-                    </a>
-                    <a class="nav-link" href="user_manage_keys.php">
-                        <i class="fas fa-key"></i>Manage Keys
-                    </a>
-                    <a class="nav-link" href="user_generate.php">
-                        <i class="fas fa-plus"></i>Generate
-                    </a>
-                    <a class="nav-link" href="user_transactions.php">
-                        <i class="fas fa-exchange-alt"></i>Transaction
-                    </a>
-                    <a class="nav-link" href="user_applications.php">
-                        <i class="fas fa-mobile-alt"></i>Applications
-                    </a>
-                    <a class="nav-link" href="user_block_request.php">
-                        <i class="fas fa-ban"></i>Block & Reset
-                    </a>
-                    <a class="nav-link" href="user_notifications.php">
-                        <i class="fas fa-bell"></i>Notifications
-                        <?php
-                        try {
-                            $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM key_confirmations WHERE user_id = ? AND status = 'unread'");
-                            $stmt_count->execute([$userId]);
-                            $notifCount = $stmt_count->fetchColumn();
-                            if ($notifCount > 0) {
-                                echo '<span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">' . $notifCount . '</span>';
-                            }
-                        } catch (Exception $e) {}
-                        ?>
-                    </a>
-                    <a class="nav-link" href="user_settings.php">
-                        <i class="fas fa-cog"></i>Settings
-                    </a>
-                    <a class="nav-link" href="logout.php">
-                        <i class="fas fa-sign-out-alt"></i>Logout
-                    </a>
-                </nav>
-                <!-- Sidebar Footer Signature -->
-                <div class="sidebar-footer">
-                    <p class="signature-text">
-                        Made With ❤️ By <span class="signature-name">@tGsHaitaan</span>
-                    </p>
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-8">
+                <div class="cyber-card h-100">
+                    <h5 class="mb-4"><i class="fas fa-history text-primary me-2"></i> Recent Activity</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($recentTransactions)): ?>
+                                    <tr><td colspan="3" class="text-center py-4 text-secondary">No recent transactions</td></tr>
+                                <?php else: ?>
+                                    <?php foreach ($recentTransactions as $tx): ?>
+                                        <tr>
+                                            <td class="small fw-bold"><?php echo ucfirst($tx['type']); ?></td>
+                                            <td class="fw-bold <?php echo $tx['type'] == 'add' ? 'text-success' : 'text-danger'; ?>">
+                                                <?php echo ($tx['type'] == 'add' ? '+' : '-') . formatCurrency($tx['amount']); ?>
+                                            </td>
+                                            <td class="small text-secondary"><?php echo formatDate($tx['created_at']); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content main-content-with-header" id="mainContent">
-                <div class="page-header fade-in">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><i class="fas fa-crown me-2" style="color: #7c3aed; -webkit-text-fill-color: #7c3aed;"></i>SilentMultiPanel</h2>
-                            <p class="text-muted mb-0">Welcome, <strong><?php echo htmlspecialchars($user['username']); ?></strong>!</p>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="text-end me-3">
-                                <div class="fw-bold"><?php echo htmlspecialchars($user['username']); ?></div>
-                                <small class="text-muted">User Account</small>
-                            </div>
-                            <div class="user-avatar floating-animation">
-                                <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Stats Cards -->
-                <div class="row mb-4 fade-in">
-                    <div class="col-md-4 mb-3">
-                        <div class="stats-card balance">
-                            <div class="text-center">
-                                <div class="stats-icon balance mx-auto">
-                                    <i class="fas fa-wallet text-white"></i>
-                                </div>
-                                <h6 class="text-muted mb-2">Current Balance</h6>
-                                <h2 class="mb-0 fw-bold"><?php echo formatCurrency($user['balance']); ?></h2>
-                                <small class="text-success">
-                                    <i class="fas fa-arrow-up me-1"></i>Available for purchases
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="stats-card purchases">
-                            <div class="text-center">
-                                <div class="stats-icon purchases mx-auto">
-                                    <i class="fas fa-shopping-cart text-white"></i>
-                                </div>
-                                <h6 class="text-muted mb-2">Total Purchases</h6>
-                                <h2 class="mb-0 fw-bold"><?php echo $stats['total_purchases'] ?: 0; ?></h2>
-                                <small class="text-info">
-                                    <i class="fas fa-shopping-bag me-1"></i>License keys bought
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="stats-card spent">
-                            <div class="text-center">
-                                <div class="stats-icon spent mx-auto">
-                                    <i class="fas fa-rupee-sign text-white"></i>
-                                </div>
-                                <h6 class="text-muted mb-2">Total Spent</h6>
-                                <h2 class="mb-0 fw-bold"><?php echo formatCurrency($stats['total_spent'] ?: 0); ?></h2>
-                                <small class="text-warning">
-                                    <i class="fas fa-chart-line me-1"></i>All time spending
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Available Mods -->
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="table-card">
-                            <h5><i class="fas fa-mobile-alt me-2"></i>Available Mods</h5>
-                            <div class="row">
-                                <?php foreach ($mods as $mod): ?>
-                                <div class="col-md-6 mb-3">
-                                    <div class="mod-card">
-                                        <h6 class="text-primary"><?php echo htmlspecialchars($mod['name']); ?></h6>
-                                        <p class="text-muted mb-2"><?php echo htmlspecialchars($mod['description'] ?: 'No description available'); ?></p>
-                                        <a href="user_manage_keys.php?mod_id=<?php echo $mod['id']; ?>" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-key me-1"></i>View Keys
-                                        </a>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="table-card">
-                            <h5><i class="fas fa-history me-2"></i>Recent Transactions</h5>
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Type</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($recentTransactions as $transaction): ?>
-                                        <tr>
-                                            <td><?php echo date('d M', strtotime($transaction['created_at'])); ?></td>
-                                            <td>
-                                                <span class="badge bg-<?php echo $transaction['type'] === 'purchase' ? 'primary' : 'success'; ?> p-1" style="font-size: 0.7rem;">
-                                                    <?php echo ucfirst($transaction['type']); ?>
-                                                </span>
-                                            </td>
-                                            <td class="<?php echo $transaction['amount'] < 0 ? 'text-danger' : 'text-success'; ?> fw-bold">
-                                                <?php echo formatCurrency($transaction['amount']); ?>
-                                            </td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                        <?php if (empty($recentTransactions)): ?>
-                                        <tr>
-                                            <td colspan="3" class="text-center text-muted py-3">No recent transactions</td>
-                                        </tr>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="text-center mt-3">
-                                <a href="user_transactions.php" class="btn btn-outline-primary btn-sm w-100">
-                                    View All Transactions
-                                </a>
-                            </div>
-                        </div>
+            <div class="col-12 col-lg-4">
+                <div class="cyber-card h-100">
+                    <h5 class="mb-4"><i class="fas fa-bolt text-secondary me-2"></i> Quick Actions</h5>
+                    <div class="d-grid gap-3">
+                        <a href="user_generate.php" class="cyber-btn"><i class="fas fa-plus"></i> Generate New Key</a>
+                        <a href="user_balance.php" class="cyber-btn" style="background: rgba(255,255,255,0.05) !important; box-shadow: none !important; border: 1px solid rgba(255,255,255,0.1) !important;">
+                            <i class="fas fa-wallet"></i> Top Up Balance
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    </main>
+
     <script>
-        // Sidebar Toggle
-        function toggleSidebar(e) {
-            if (e) e.stopPropagation();
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-        }
-
-        // User Dropdown Toggle
-        function toggleUserDropdown(e) {
-            if (e) e.stopPropagation();
-            const dropdown = document.getElementById('userDropdown');
-            const arrow = document.querySelector('.dropdown-arrow');
-            dropdown.classList.toggle('show');
-            if (arrow) arrow.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0)';
-        }
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('userDropdown');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            
-            if (dropdown && !dropdown.contains(e.target)) {
-                dropdown.classList.remove('show');
-                const arrow = document.querySelector('.dropdown-arrow');
-                if (arrow) arrow.style.transform = 'rotate(0)';
-            }
-            
-            if (window.innerWidth <= 991 && sidebar && !sidebar.contains(e.target)) {
-                sidebar.classList.remove('show');
-                if (overlay) overlay.classList.remove('show');
-            }
-        });
-
-        // Theme Management
-        function toggleTheme() {
-            const html = document.documentElement;
-            const icon = document.querySelector('.theme-toggle i');
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            
-            if (icon) {
-                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-            }
-        }
-
-        // Apply saved theme on load
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            const icon = document.querySelector('.theme-toggle i');
-            if (icon) {
-                icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-            }
-        });
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
     </script>
-    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>
