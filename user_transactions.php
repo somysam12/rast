@@ -259,9 +259,15 @@ foreach ($transactions as $tx) {
                         $isDebit = $tx['amount'] < 0;
                         $txType = $tx['type'] ?? 'transaction';
                         $isPurchase = stripos($tx['description'], 'purchase') !== false;
-                        $productName = $tx['description'];
-                        $keyId = null;
                         
+                        // Clean product name: remove "License key purchase - " or "License purchase - "
+                        $productName = $tx['description'];
+                        if ($isPurchase) {
+                            $productName = str_ireplace(['License key purchase - ', 'License purchase - ', 'License key purchase', 'License purchase'], '', $productName);
+                            $productName = trim($productName, " -");
+                        }
+                        
+                        $keyId = null;
                         if ($isPurchase) {
                             if (preg_match('/#(\d+)/', $tx['reference'], $matches)) {
                                 $keyId = $matches[1];
