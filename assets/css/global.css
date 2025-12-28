@@ -11,11 +11,11 @@
     --secondary: #06b6d4;
     --accent: #ec4899;
     --bg: #0a0e27;
-    --card-bg: rgba(15, 23, 42, 0.7);
+    --card-bg: rgba(15, 23, 42, 0.8);
     --text-main: #f8fafc;
     --text-dim: #94a3b8;
-    --border: rgba(148, 163, 184, 0.1);
-    --shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    --border: rgba(148, 163, 184, 0.15);
+    --shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 html, body {
@@ -27,27 +27,6 @@ html, body {
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
     overflow-x: hidden !important;
-}
-
-/* ==================== ANIMATIONS ==================== */
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes borderGlow {
-    0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
-    50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.5); }
 }
 
 /* ==================== TYPOGRAPHY ==================== */
@@ -65,7 +44,6 @@ p, span, div, a, li {
 
 /* ==================== CONTAINERS & LAYOUTS ==================== */
 .container, .container-fluid {
-    animation: slideUp 0.6s ease-out !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
 }
@@ -80,19 +58,18 @@ button, .btn, a.btn, input[type="submit"] {
     font-weight: 600 !important;
     font-size: 14px !important;
     cursor: pointer !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     position: relative !important;
     overflow: hidden !important;
-    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3) !important;
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.2) !important;
     display: inline-block !important;
     text-decoration: none !important;
     white-space: nowrap !important;
+    border: none !important;
 }
 
 button:hover, .btn:hover, a.btn:hover, input[type="submit"]:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5) !important;
-    filter: brightness(1.1) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3) !important;
 }
 
 button:active, .btn:active, a.btn:active, input[type="submit"]:active {
@@ -127,14 +104,13 @@ button:disabled, .btn:disabled {
 /* ==================== INPUTS & FORMS ==================== */
 input[type="text"], input[type="email"], input[type="password"], input[type="number"], 
 input[type="date"], input[type="time"], select, textarea {
-    background: rgba(15, 23, 42, 0.5) !important;
+    background: rgba(15, 23, 42, 0.6) !important;
     border: 1.5px solid var(--border) !important;
     border-radius: 12px !important;
     padding: 10px 12px !important;
     color: var(--text-main) !important;
     font-weight: 500 !important;
     font-size: 14px !important;
-    transition: all 0.3s !important;
     font-family: inherit !important;
 }
 
@@ -144,9 +120,9 @@ input::placeholder, textarea::placeholder {
 
 input:focus, select:focus, textarea:focus {
     outline: none !important;
-    background: rgba(139, 92, 246, 0.05) !important;
+    background: rgba(139, 92, 246, 0.08) !important;
     border-color: var(--primary) !important;
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15) !important;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1) !important;
 }
 
 label {
@@ -163,7 +139,7 @@ table {
 }
 
 thead {
-    background: rgba(139, 92, 246, 0.1) !important;
+    background: rgba(139, 92, 246, 0.08) !important;
 }
 
 th {
@@ -171,39 +147,36 @@ th {
     text-align: left !important;
     font-weight: 600 !important;
     color: var(--text-main) !important;
-    border-bottom: 2px solid var(--border) !important;
+    border-bottom: 1px solid var(--border) !important;
 }
 
 td {
     padding: 12px !important;
     border-bottom: 1px solid var(--border) !important;
     word-wrap: break-word !important;
+    color: var(--text-main) !important;
 }
 
 tbody tr {
-    transition: all 0.3s !important;
+    background: rgba(15, 23, 42, 0.4) !important;
 }
 
 tbody tr:hover {
-    background: rgba(139, 92, 246, 0.05) !important;
+    background: rgba(139, 92, 246, 0.08) !important;
 }
 
 /* ==================== CARDS & PANELS ==================== */
 .card, .panel, .glass-card {
     background: var(--card-bg) !important;
-    backdrop-filter: blur(30px) !important;
-    border: 2px solid !important;
-    border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1 !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 16px !important;
     padding: 20px !important;
-    box-shadow: 0 0 60px rgba(139, 92, 246, 0.15), 0 0 20px rgba(6, 182, 212, 0.05) !important;
-    animation: slideIn 0.6s ease-out !important;
-    transition: all 0.3s ease !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
 }
 
 .card:hover, .panel:hover, .glass-card:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 0 80px rgba(139, 92, 246, 0.2) !important;
+    box-shadow: 0 12px 40px rgba(139, 92, 246, 0.15) !important;
 }
 
 .card-body, .panel-body {
@@ -211,7 +184,7 @@ tbody tr:hover {
 }
 
 .card-header, .panel-heading {
-    background: rgba(139, 92, 246, 0.1) !important;
+    background: rgba(139, 92, 246, 0.08) !important;
     border-bottom: 1px solid var(--border) !important;
     padding: 15px 20px !important;
     font-weight: 600 !important;
@@ -221,10 +194,9 @@ tbody tr:hover {
 /* ==================== SIDEBAR STYLES ==================== */
 .sidebar {
     background: var(--card-bg) !important;
-    backdrop-filter: blur(30px) !important;
-    border-right: 2px solid var(--border) !important;
+    backdrop-filter: blur(20px) !important;
+    border-right: 1px solid var(--border) !important;
     padding: 20px !important;
-    transition: all 0.3s ease !important;
 }
 
 .sidebar .nav-link {
@@ -232,7 +204,6 @@ tbody tr:hover {
     padding: 12px 16px !important;
     border-radius: 10px !important;
     margin: 5px 0 !important;
-    transition: all 0.3s !important;
     font-weight: 500 !important;
     word-wrap: break-word !important;
 }
@@ -241,7 +212,6 @@ tbody tr:hover {
 .sidebar .nav-link.active {
     background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
     color: white !important;
-    transform: translateX(4px) !important;
 }
 
 .sidebar .nav-link i {
@@ -250,33 +220,32 @@ tbody tr:hover {
 
 /* ==================== ALERTS & MESSAGES ==================== */
 .alert {
-    border: 1.5px solid !important;
+    border: 1px solid !important;
     border-radius: 12px !important;
     padding: 14px 16px !important;
-    animation: slideDown 0.4s !important;
     word-wrap: break-word !important;
 }
 
 .alert-success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)) !important;
+    background: rgba(16, 185, 129, 0.1) !important;
     border-color: rgba(16, 185, 129, 0.3) !important;
     color: #6ee7b7 !important;
 }
 
 .alert-danger, .alert-error {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)) !important;
+    background: rgba(239, 68, 68, 0.1) !important;
     border-color: rgba(239, 68, 68, 0.3) !important;
     color: #fca5a5 !important;
 }
 
 .alert-warning {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)) !important;
+    background: rgba(245, 158, 11, 0.1) !important;
     border-color: rgba(245, 158, 11, 0.3) !important;
     color: #fde68a !important;
 }
 
 .alert-info {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(6, 182, 212, 0.05)) !important;
+    background: rgba(6, 182, 212, 0.1) !important;
     border-color: rgba(6, 182, 212, 0.3) !important;
     color: #a5f3fc !important;
 }
@@ -300,22 +269,24 @@ ul, ol {
 li {
     margin-bottom: 0.5rem !important;
     word-wrap: break-word !important;
+    color: var(--text-main) !important;
 }
 
 /* ==================== MODALS & OVERLAYS ==================== */
 .modal {
-    animation: fadeIn 0.3s !important;
+    background: rgba(0, 0, 0, 0.8) !important;
 }
 
 .modal-content {
     background: var(--card-bg) !important;
-    border: 2px solid var(--border) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 16px !important;
     color: var(--text-main) !important;
 }
 
 .modal-header {
     border-bottom: 1px solid var(--border) !important;
+    color: var(--text-main) !important;
 }
 
 .modal-body {
@@ -339,6 +310,55 @@ li {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--secondary);
+}
+
+/* ==================== DROPDOWN & MENUS ==================== */
+.dropdown-menu {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+}
+
+.dropdown-item {
+    color: var(--text-main) !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: var(--primary) !important;
+}
+
+/* ==================== NAV BARS ==================== */
+nav {
+    transition: none !important;
+}
+
+.navbar {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+.navbar-brand {
+    color: var(--text-main) !important;
+    font-weight: 700 !important;
+}
+
+.nav-tabs {
+    border-bottom: 1px solid var(--border) !important;
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-dim) !important;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--primary) !important;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary) !important;
+    border-bottom-color: var(--primary) !important;
 }
 
 /* ==================== RESPONSIVE DESIGN ==================== */
@@ -520,76 +540,12 @@ li {
 .p-2 { padding: 1rem !important; }
 .p-3 { padding: 1.5rem !important; }
 
-/* ==================== DROPDOWN & MENUS ==================== */
-.dropdown-menu {
-    background: var(--card-bg) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 10px !important;
-}
-
-.dropdown-item {
-    color: var(--text-main) !important;
-    transition: all 0.3s !important;
-}
-
-.dropdown-item:hover {
-    background: rgba(139, 92, 246, 0.1) !important;
-    color: var(--primary) !important;
-}
-
-/* ==================== NAV BARS ==================== */
-nav {
-    transition: all 0.3s ease !important;
-}
-
-.navbar {
-    background: var(--card-bg) !important;
-    backdrop-filter: blur(30px) !important;
-    border-bottom: 1px solid var(--border) !important;
-}
-
-.navbar-brand {
-    color: var(--text-main) !important;
-    font-weight: 700 !important;
-}
-
-.nav-tabs {
-    border-bottom: 2px solid var(--border) !important;
-}
-
-.nav-tabs .nav-link {
-    color: var(--text-dim) !important;
-    transition: all 0.3s !important;
-}
-
-.nav-tabs .nav-link:hover {
-    color: var(--primary) !important;
-}
-
-.nav-tabs .nav-link.active {
-    color: var(--primary) !important;
-    border-bottom-color: var(--primary) !important;
-}
-
-/* ==================== ANIMATIONS ==================== */
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-5px); }
-}
-
-/* Apply smooth transitions globally */
+/* Disable transitions for better performance */
 * {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+    transition: none !important;
 }
 
-/* Remove transition from performance-heavy properties on mobile */
-@media (max-width: 768px) {
-    * {
-        transition: none !important;
-    }
+/* Only enable transitions for specific interactive elements */
+button:hover, .btn:hover, a:hover, .nav-link:hover {
+    transition: none !important;
 }

@@ -508,6 +508,5 @@ if ($_POST) {
             </div>
         </div>
     </div>
-    <script src="assets/js/password-toggle.js"></script>
 </body>
 </html>
