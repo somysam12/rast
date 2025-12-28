@@ -170,71 +170,94 @@ if ($_POST) {
         }
 
         .brand-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 20px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #6366f1, #06b6d4);
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 28px;
+            margin: 0 auto 24px;
+            font-size: 36px;
             color: white;
-            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .brand-icon::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 24px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.5), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .brand-section h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+            color: white;
         }
 
         .input-field {
             width: 100%;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 12px 16px 12px 44px;
+            background: rgba(10, 15, 25, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px 14px 48px;
             color: white;
             font-size: 14px;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
         }
-        
+
         .input-field:focus {
-            border-color: var(--primary);
-            background: rgba(15, 23, 42, 0.9);
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            border-color: #6366f1;
+            background: rgba(10, 15, 25, 0.8);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
             outline: none;
         }
 
-        .password-toggle {
+        .field-icon {
             position: absolute;
-            right: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-dim);
-            cursor: pointer;
-            z-index: 10;
-            transition: color 0.2s;
+            color: #94a3b8;
+            font-size: 18px;
+            transition: color 0.3s ease;
         }
-        
-        .password-toggle:hover {
-            color: var(--primary);
+
+        .form-group:focus-within .field-icon {
+            color: #6366f1;
         }
 
         .btn-submit {
             width: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(90deg, #8b5cf6, #06b6d4);
             border: none;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 14px;
+            padding: 16px;
             color: white;
             font-weight: 700;
             font-size: 16px;
             margin-top: 10px;
             cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
         }
 
         .btn-submit:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+            filter: brightness(1.1);
         }
 
         .btn-submit:active {
