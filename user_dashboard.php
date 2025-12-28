@@ -81,7 +81,8 @@ function formatDate($date) { return $date ? date('d M Y H:i', strtotime($date)) 
         <nav class="nav flex-column gap-2">
             <a class="nav-link active" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
             <a class="nav-link" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
-            <a class="nav-link" href="user_keys.php"><i class="fas fa-key me-2"></i> My Keys</a>
+            <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key me-2"></i> My Keys</a>
+            <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban me-2"></i> Block & Reset</a>
             <a class="nav-link" href="user_balance.php"><i class="fas fa-wallet me-2"></i> Add Balance</a>
             <a class="nav-link" href="user_transactions.php"><i class="fas fa-history me-2"></i> Transactions</a>
             <hr class="border-secondary opacity-25">

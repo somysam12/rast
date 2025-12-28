@@ -240,9 +240,17 @@ try {
                                         <td><?php echo formatCurrency($key['price']); ?></td>
                                         <td><?php echo formatDate($key['sold_at']); ?></td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')" title="Copy Key">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')" title="Copy Key">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                                <a href="user_block_request.php?key=<?php echo urlencode($key['license_key']); ?>&action=block" class="btn btn-sm btn-outline-danger" title="Block Key">
+                                                    <i class="fas fa-ban"></i>
+                                                </a>
+                                                <a href="user_block_request.php?key=<?php echo urlencode($key['license_key']); ?>&action=reset" class="btn btn-sm btn-outline-warning" title="Reset Device">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
