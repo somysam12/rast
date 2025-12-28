@@ -11,7 +11,10 @@ function formatCurrency($amount){
 }
 function formatDate($dt){
     if(!$dt){ return '-'; }
-    return date('d M Y, h:i A', strtotime($dt));
+    // Set Indian Timezone for formatting
+    $date = new DateTime($dt, new DateTimeZone('UTC'));
+    $date->setTimezone(new DateTimeZone('Asia/Kolkata'));
+    return $date->format('d M Y, h:i A');
 }
 
 if (!isset($_SESSION['user_id'])) {
@@ -172,10 +175,32 @@ try {
             letter-spacing: 0.5px;
         }
         
-        .table thead th {
-            font-weight: 700;
-            color: var(--text-secondary);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .table-responsive {
+            border-radius: 15px;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(10, 15, 25, 0.5);
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+            min-width: 900px;
+            margin-bottom: 0;
+        }
+
+        /* Custom scrollbar for better UI */
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.5);
         }
     </style>
 </head>
