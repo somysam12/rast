@@ -8,15 +8,19 @@ requireUser();
 $pdo = getDBConnection();
 $user = getUserData();
 
-function formatCurrency($amount){
-    return '₹' . number_format((float)$amount, 2, '.', ',');
+if (!function_exists('formatCurrency')) {
+    function formatCurrency($amount){
+        return '₹' . number_format((float)$amount, 2, '.', ',');
+    }
 }
 
-function formatDate($dt){
-    if(!$dt){ return '-'; }
-    $date = new DateTime($dt, new DateTimeZone('UTC'));
-    $date->setTimezone(new DateTimeZone('Asia/Kolkata'));
-    return $date->format('d M Y, h:i A');
+if (!function_exists('formatDate')) {
+    function formatDate($dt){
+        if(!$dt){ return '-'; }
+        $date = new DateTime($dt, new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone('Asia/Kolkata'));
+        return $date->format('d M Y, h:i A');
+    }
 }
 
 // Get only mods that have an APK uploaded
