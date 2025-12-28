@@ -44,41 +44,20 @@ if ($_POST) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SilentMultiPanel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #8b5cf6;
-            --primary-dark: #7c3aed;
-            --secondary: #06b6d4;
-            --accent: #ec4899;
-            --bg: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.7);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.1);
-            --border-glow: rgba(139, 92, 246, 0.2);
-        }
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="glass-card animate-fade">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h1 class="text-gradient">SilentMultiPanel</h1>
+                <p class="text-dim">Login to your dashboard</p>
+            </div>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-main);
-            overflow-x: hidden;
-            position: relative;
-        }
 
         body::before {
             content: '';

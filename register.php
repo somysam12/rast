@@ -85,7 +85,8 @@ if ($_POST) {
     <div class="register-wrapper">
         <div class="glass-card animate-fade">
             <div class="brand-section">
-                <h2 class="text-gradient">Create Account</h2>
+                <div class="brand-icon"><i class="fas fa-user-plus"></i></div>
+                <h1 class="text-gradient">Create Account</h1>
                 <p class="text-dim">Join SilentMultiPanel today</p>
             </div>
 
