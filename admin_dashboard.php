@@ -65,45 +65,21 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - SilentMultiPanel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --sidebar-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-light: #a78bfa;
-            --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border-light: #e2e8f0;
-            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        
-        [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --sidebar-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-light: #334155;
-        }
-        
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
+</head>
+<body>
+    <div class="main-layout">
+        <main class="content-wrapper">
+            <div class="glass-card mb-5">
+                <h1 class="text-gradient">Admin Overview</h1>
+            </div>
+            <!-- Admin specific content -->
+        </main>
+    </div>
+</body>
+</html><?php exit(); ?>
         
         .sidebar {
             background-color: var(--sidebar-bg);
