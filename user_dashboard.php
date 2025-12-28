@@ -80,29 +80,27 @@ function formatDate($date) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - SilentMultiPanel</title>
+    <title>User Dashboard - SilentMultiPanel</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-layout">
-        <!-- Sidebar and other components can be included here -->
         <main class="content-wrapper">
-            <div class="glass-card mb-5 animate-fade">
+            <div class="glass-card mb-4 animate-fade">
                 <h2 class="text-gradient">Welcome, <?= htmlspecialchars($user['username']) ?></h2>
                 <div class="stats-grid mt-4">
                     <div class="glass-card">
-                        <span class="text-dim small uppercase">Balance</span>
+                        <span class="text-dim small text-uppercase">Balance</span>
                         <h3 class="mb-0"><?= formatCurrency($user['balance']) ?></h3>
                     </div>
                     <div class="glass-card">
-                        <span class="text-dim small uppercase">Active Licenses</span>
-                        <h3 class="mb-0"><?= $stats['total_purchases'] ?></h3>
+                        <span class="text-dim small text-uppercase">Total Spent</span>
+                        <h3 class="mb-0"><?= formatCurrency($stats['total_spent']) ?></h3>
                     </div>
                 </div>
             </div>
-            <!-- Rest of dashboard content -->
         </main>
     </div>
 </body>

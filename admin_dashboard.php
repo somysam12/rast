@@ -72,10 +72,10 @@ try {
 <body>
     <div class="main-layout">
         <main class="content-wrapper">
-            <div class="glass-card mb-5">
-                <h1 class="text-gradient">Admin Overview</h1>
+            <div class="glass-card mb-4 animate-fade">
+                <h1 class="text-gradient">Admin Panel</h1>
+                <p class="text-dim">Manage your platform overview and users</p>
             </div>
-            <!-- Admin specific content -->
         </main>
     </div>
 </body>
