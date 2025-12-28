@@ -81,9 +81,11 @@ function formatDate($date) { return $date ? date('d M Y H:i', strtotime($date)) 
         <nav class="nav flex-column gap-2">
             <a class="nav-link active" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
             <a class="nav-link" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
-            <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key me-2"></i> My Keys</a>
+            <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key me-2"></i> Manage Keys</a>
+            <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt me-2"></i> Applications</a>
+            <a class="nav-link" href="user_notifications.php"><i class="fas fa-bell me-2"></i> Notifications</a>
             <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban me-2"></i> Block & Reset</a>
-            <a class="nav-link" href="user_balance.php"><i class="fas fa-wallet me-2"></i> Add Balance</a>
+            <a class="nav-link" href="user_settings.php"><i class="fas fa-cog me-2"></i> Settings</a>
             <a class="nav-link" href="user_transactions.php"><i class="fas fa-history me-2"></i> Transactions</a>
             <hr class="border-secondary opacity-25">
             <a class="nav-link text-danger" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
@@ -154,8 +156,8 @@ function formatDate($date) { return $date ? date('d M Y H:i', strtotime($date)) 
                     <h5 class="mb-4"><i class="fas fa-bolt text-secondary me-2"></i> Quick Actions</h5>
                     <div class="d-grid gap-3">
                         <a href="user_generate.php" class="cyber-btn"><i class="fas fa-plus"></i> Generate New Key</a>
-                        <a href="user_balance.php" class="cyber-btn" style="background: rgba(255,255,255,0.05) !important; box-shadow: none !important; border: 1px solid rgba(255,255,255,0.1) !important;">
-                            <i class="fas fa-wallet"></i> Top Up Balance
+                        <a href="user_applications.php" class="cyber-btn" style="background: rgba(255,255,255,0.05) !important; box-shadow: none !important; border: 1px solid rgba(255,255,255,0.1) !important;">
+                            <i class="fas fa-mobile-alt"></i> Download Applications
                         </a>
                     </div>
                 </div>
