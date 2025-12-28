@@ -81,47 +81,23 @@ function formatDate($date) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>User Dashboard - Mod APK Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Modern Dashboard Design */
-        :root {
-            --bg: #f9fafb;
-            --card: #ffffff;
-            --text: #374151;
-            --muted: #6b7280;
-            --line: #e5e7eb;
-            --accent: #7c3aed;
-            --accent-600: #6d28d9;
-            --accent-100: #f3e8ff;
-            --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            --gradient-info: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        
-        [data-theme="dark"] {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --muted: #94a3b8;
-            --line: #334155;
-        }
-        
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        body {
-            background: var(--bg);
-            overflow-x: hidden;
-            color: var(--text);
-            transition: all 0.3s ease;
-        }
+    <link href="assets/css/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-container">
+    <div class="glass-card mb-4 animate-fade">
+        <h2 class="text-gradient">Welcome, <?= htmlspecialchars($user['username']) ?></h2>
+        <div class="stats-grid">
+            <div class="glass-card">
+                <p class="text-dim">Balance</p>
+                <h3><?= formatCurrency($user['balance']) ?></h3>
+            </div>
+            <div class="glass-card">
+                <p class="text-dim">Total Purchases</p>
+                <h3><?= $stats['total_purchases'] ?></h3>
+            </div>
+        </div>
+    </div>
         
         /* Modern Header */
         .modern-header {
