@@ -135,7 +135,7 @@ try {
 
         .sidebar-brand {
             padding: 0 1.5rem 2rem;
-            border-bottom: 1.5px solid var(--border-light);
+            border-bottom: 2px solid rgba(139, 92, 246, 0.4);
             margin-bottom: 1.5rem;
         }
 
@@ -143,10 +143,12 @@ try {
             font-size: 1.3rem;
             font-weight: 800;
             margin-bottom: 0.25rem;
-            background: linear-gradient(135deg, var(--text-main), var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .sidebar-brand h4 i {
+            color: var(--primary);
         }
 
         .sidebar-brand p {
@@ -543,6 +545,95 @@ try {
             color: var(--text-dim);
             font-size: 0.9rem;
             margin: 0;
+        }
+
+        .admin-menu-container {
+            position: relative;
+        }
+
+        .admin-menu-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            position: relative;
+            z-index: 1002;
+        }
+
+        .admin-menu-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .admin-menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        .admin-dropdown {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1.5px solid var(--border-light);
+            border-radius: 16px;
+            min-width: 200px;
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
+            z-index: 1003;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0.5rem 0;
+        }
+
+        .admin-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .admin-dropdown a,
+        .admin-dropdown button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .admin-dropdown a:hover,
+        .admin-dropdown button:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--text-main);
+            padding-left: 20px;
+        }
+
+        .admin-dropdown a i,
+        .admin-dropdown button i {
+            width: 18px;
+            text-align: center;
+            color: var(--primary);
         }
 
         .mobile-overlay {
@@ -1085,8 +1176,20 @@ try {
             </button>
             <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--primary);"></i>SilentMultiPanel</h5>
         </div>
-        <div class="user-avatar" style="width: 40px; height: 40px; font-size: 0.9rem;">
-            <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+        <div class="admin-menu-container">
+            <div class="admin-menu-btn" onclick="toggleAdminMenu(event)">
+                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+                <a href="manage_users.php">
+                    <i class="fas fa-users"></i>
+                    <span>Manage Users</span>
+                </a>
+                <a href="logout.php">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -1320,6 +1423,17 @@ try {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function toggleAdminMenu(event) {
+            if (event) event.stopPropagation();
+            const dropdown = document.getElementById('adminDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function closeAdminMenu() {
+            const dropdown = document.getElementById('adminDropdown');
+            dropdown.classList.remove('show');
+        }
+
         function toggleSidebar(event) {
             if (event) event.preventDefault();
             const sidebar = document.getElementById('sidebar');
@@ -1340,6 +1454,7 @@ try {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.getElementById('overlay');
             const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            const adminDropdown = document.getElementById('adminDropdown');
 
             navLinks.forEach(link => {
                 link.addEventListener('click', function() {
@@ -1356,6 +1471,20 @@ try {
 
             if (overlay) {
                 overlay.addEventListener('click', toggleSidebar);
+            }
+
+            // Close admin dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (adminDropdown && !e.target.closest('.admin-menu-container')) {
+                    adminDropdown.classList.remove('show');
+                }
+            });
+
+            // Close admin dropdown when clicking a link
+            if (adminDropdown) {
+                adminDropdown.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', closeAdminMenu);
+                });
             }
         });
 
