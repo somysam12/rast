@@ -233,6 +233,17 @@ try {
             .main-content { margin-left: 0; padding: 1rem; }
         }
         
+        .user-nav-wrapper { position: relative; }
+        .user-avatar-header { cursor:pointer; transition:all 0.3s ease; }
+        .user-avatar-header:hover { transform:scale(1.05); box-shadow:0 0 15px rgba(139, 92, 246, 0.4); }
+        .avatar-dropdown { position:absolute; top:calc(100% + 15px); right:0; width:220px; background:rgba(10, 15, 25, 0.95); backdrop-filter:blur(20px); border:1px solid rgba(139, 92, 246, 0.3); border-radius:16px; padding:10px; z-index:1002; display:none; box-shadow:0 10px 30px rgba(0,0,0,0.5); animation:dropdownFade 0.3s ease; }
+        .avatar-dropdown.show { display:block; }
+        @keyframes dropdownFade { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .dropdown-item-cyber { display:flex; align-items:center; gap:12px; padding:10px 15px; color:rgba(255, 255, 255, 0.7); text-decoration:none; border-radius:10px; transition:all 0.2s ease; font-size:0.9rem; }
+        .dropdown-item-cyber:hover { background:rgba(139, 92, 246, 0.1); color:#fff; transform:translateX(5px); }
+        .dropdown-item-cyber i { width:20px; text-align:center; color:var(--primary); }
+        .dropdown-divider { height:1px; background:rgba(255, 255, 255, 0.05); margin:8px 0; }
+        
         .cyber-swal {
             border: 2px solid;
             border-image: linear-gradient(135deg, #8b5cf6, #06b6d4) 1;
@@ -468,8 +479,30 @@ try {
                 <div class="small fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
                 <div class="text-secondary small">Balance: <?php echo formatCurrency($user['balance']); ?></div>
             </div>
-            <div class="user-avatar-header" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
-                <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
+            <div class="user-nav-wrapper">
+                <div class="user-avatar-header" onclick="toggleAvatarDropdown()" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                    <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
+                </div>
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div class="px-3 py-2">
+                        <div class="fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
+                        <div class="text-secondary small">ID: #<?php echo $user['id']; ?></div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="user_transactions.php" class="dropdown-item-cyber">
+                        <i class="fas fa-history"></i> Transactions
+                    </a>
+                    <a href="user_generate.php" class="dropdown-item-cyber">
+                        <i class="fas fa-plus"></i> Generate Key
+                    </a>
+                    <a href="user_settings.php" class="dropdown-item-cyber">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="logout.php" class="dropdown-item-cyber text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
             </div>
         </div>
     </header>
@@ -590,6 +623,22 @@ try {
 
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
+        
+        function toggleAvatarDropdown() {
+            document.getElementById('avatarDropdown').classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.user-avatar-header')) {
+                var dropdowns = document.getElementsByClassName("avatar-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
         
         function toggleModPopup() {
             document.getElementById('modPopup').classList.toggle('show');
