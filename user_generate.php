@@ -254,19 +254,150 @@ try {
             animation: confettiFall 3s linear forwards;
         }
 
-        .filter-select {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1.5px solid rgba(148, 163, 184, 0.1);
-            color: white;
-            border-radius: 12px;
-            padding: 10px 15px;
+        /* Redesigned Filter Button & Popup */
+        .mod-selector-wrapper {
+            position: relative;
+            margin-bottom: 2rem;
         }
-        
-        .filter-select:focus {
-            background: rgba(15, 23, 42, 0.8);
+
+        .mod-trigger-btn {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            padding: 1.2rem 2rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .mod-trigger-btn:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.2);
+        }
+
+        .mod-trigger-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+        }
+
+        .mod-trigger-btn:hover::before {
+            left: 100%;
+        }
+
+        .mod-popup-menu {
+            position: absolute;
+            top: calc(100% + 15px);
+            left: 0;
+            right: 0;
+            background: rgba(10, 15, 25, 0.95);
+            backdrop-filter: blur(25px);
+            border: 2px solid #8b5cf6;
+            border-radius: 24px;
+            padding: 1.5rem;
+            z-index: 100;
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(139, 92, 246, 0.1);
+            animation: popupReveal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .mod-popup-menu.show {
+            display: grid;
+        }
+
+        @keyframes popupReveal {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .mod-option-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mod-option-item i {
+            font-size: 1.5rem;
+            color: #8b5cf6;
+        }
+
+        .mod-option-item:hover {
+            background: rgba(139, 92, 246, 0.1);
             border-color: #8b5cf6;
             color: white;
-            outline: none;
+            transform: scale(1.05);
+        }
+
+        .mod-option-item.active {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            color: white;
+            border: none;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .mod-option-item.active i {
+            color: white;
+        }
+
+        /* Animated Border for Results */
+        .results-container {
+            position: relative;
+            padding: 3px;
+            border-radius: 28px;
+            background: linear-gradient(45deg, #8b5cf6, #06b6d4, #ec4899, #8b5cf6);
+            background-size: 400% 400%;
+            animation: gradientBorder 15s ease infinite;
+            display: none;
+        }
+
+        .results-container.show {
+            display: block;
+            animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-inner {
+            background: rgba(5, 7, 12, 0.95);
+            border-radius: 25px;
+            padding: 2rem;
         }
 
         .duration-item {
@@ -282,60 +413,6 @@ try {
             background: rgba(255, 255, 255, 0.05);
             border-color: rgba(139, 92, 246, 0.3);
             transform: translateY(-2px);
-        }
-        .search-container {
-            margin-bottom: 2.5rem;
-            position: relative;
-        }
-        .stylish-search-wrapper {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px);
-            border: 2px solid #8b5cf6;
-            border-radius: 24px;
-            padding: 8px 25px;
-            display: flex;
-            align-items: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
-        }
-        .stylish-search-wrapper:focus-within {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 0 50px rgba(139, 92, 246, 0.4);
-            border-color: #06b6d4;
-        }
-        .stylish-search-wrapper i {
-            color: #8b5cf6;
-            font-size: 1.4rem;
-            margin-right: 15px;
-            transition: all 0.3s ease;
-        }
-        .stylish-search-wrapper:focus-within i {
-            color: #06b6d4;
-            transform: rotate(15deg);
-        }
-        .product-search-input {
-            background: transparent !important;
-            border: none !important;
-            color: white !important;
-            height: 50px;
-            width: 100%;
-            outline: none !important;
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .product-search-input::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-            font-weight: 400;
-        }
-        
-        .no-results {
-            display: none;
-            text-align: center;
-            padding: 3rem;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 20px;
-            border: 1px dashed rgba(139, 92, 246, 0.3);
         }
     </style>
 </head>
@@ -381,51 +458,69 @@ try {
             </div>
         </div>
 
-        <div class="row g-4">
-            <div class="col-12 col-lg-4">
-                <div class="cyber-card">
-                    <h5 class="mb-4"><i class="fas fa-filter text-primary me-2"></i> Filter Mods</h5>
-                    <form method="GET">
-                        <div class="mb-3">
-                            <select name="mod_id" class="form-select filter-select w-100" onchange="this.form.submit()">
-                                <option value="">All Applications</option>
-                                <?php foreach ($mods as $mod): ?>
-                                    <option value="<?php echo $mod['id']; ?>" <?php echo $modId == $mod['id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($mod['name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+        <!-- Stylish Mod Selector -->
+        <div class="mod-selector-wrapper">
+            <div class="mod-trigger-btn" onclick="toggleModPopup()">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fas fa-th-large text-primary fs-4"></i>
+                    <div>
+                        <div class="fw-bold">
+                            <?php 
+                            $currentModName = "All Applications";
+                            foreach($mods as $m) if($m['id'] == $modId) $currentModName = $m['name'];
+                            echo htmlspecialchars($currentModName);
+                            ?>
                         </div>
-                        <?php if ($modId): ?>
-                            <a href="user_generate.php" class="btn btn-outline-secondary w-100 rounded-3">Clear Filters</a>
-                        <?php endif; ?>
-                    </form>
+                        <div class="small text-secondary">Tap to browse available mods</div>
+                    </div>
                 </div>
+                <i class="fas fa-chevron-down opacity-50"></i>
             </div>
+            
+            <div class="mod-popup-menu" id="modPopup">
+                <a href="user_generate.php" class="mod-option-item <?php echo !$modId ? 'active' : ''; ?>">
+                    <i class="fas fa-globe"></i>
+                    <span>All Mods</span>
+                </a>
+                <?php foreach ($mods as $mod): ?>
+                    <a href="user_generate.php?mod_id=<?php echo $mod['id']; ?>" class="mod-option-item <?php echo $modId == $mod['id'] ? 'active' : ''; ?>">
+                        <i class="fas fa-cube"></i>
+                        <span><?php echo htmlspecialchars($mod['name']); ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
 
-            <div class="col-12 col-lg-8">
+        <?php if ($error): ?>
+            <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4">
+                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="results-container <?php echo !empty($keysByMod) ? 'show' : ''; ?>">
+            <div class="results-inner">
                 <?php if (empty($keysByMod)): ?>
-                    <div class="cyber-card text-center py-5">
+                    <div class="text-center py-5">
                         <i class="fas fa-key text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
                         <h5 class="text-secondary">No keys available for the selected mod.</h5>
                     </div>
                 <?php else: ?>
                     <?php foreach ($keysByMod as $modName => $keys): ?>
-                        <div class="cyber-card mb-4 mod-card-container">
-                            <h5 class="mb-4 text-white mod-title"><i class="fas fa-cube text-secondary me-2"></i> <?php echo htmlspecialchars($modName); ?></h5>
+                        <div class="mb-5 last-child-mb-0">
+                            <h4 class="mb-4 text-white"><i class="fas fa-shield-alt text-primary me-2"></i> <?php echo htmlspecialchars($modName); ?></h4>
                             <div class="row g-3">
                                 <?php foreach ($keys as $key): ?>
-                                    <div class="col-12 duration-item-container">
-                                        <div class="duration-item d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                            <div>
-                                                <div class="fw-bold text-white duration-name"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></div>
-                                                <div class="small text-secondary"><?php echo formatCurrency($key['price']); ?> | <?php echo $key['key_count']; ?> available</div>
+                                    <div class="col-12 col-md-6 col-xl-4">
+                                        <div class="duration-item">
+                                            <div class="mb-3">
+                                                <div class="fw-bold text-white fs-5"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></div>
+                                                <div class="text-secondary">₹<?php echo number_format($key['price'], 2); ?> | <span class="text-success"><?php echo $key['key_count']; ?> In Stock</span></div>
                                             </div>
                                             <form method="POST" class="d-flex align-items-center gap-2">
                                                 <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
                                                 <input type="number" name="quantity" class="form-control bg-dark border-secondary text-white text-center" value="1" min="1" max="<?php echo $key['key_count']; ?>" style="width: 70px; border-radius: 8px;">
-                                                <button type="submit" name="purchase_key" class="cyber-btn py-2">
-                                                    <i class="fas fa-shopping-cart"></i> Buy
+                                                <button type="submit" name="purchase_key" class="cyber-btn py-2 flex-grow-1">
+                                                    <i class="fas fa-shopping-cart"></i> Buy Now
                                                 </button>
                                             </form>
                                         </div>
@@ -441,6 +536,19 @@ try {
 
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
+        
+        function toggleModPopup() {
+            document.getElementById('modPopup').classList.toggle('show');
+        }
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function(e) {
+            const popup = document.getElementById('modPopup');
+            const trigger = document.querySelector('.mod-trigger-btn');
+            if (popup && !popup.contains(e.target) && !trigger.contains(e.target)) {
+                popup.classList.remove('show');
+            }
+        });
         
         // Confetti burst logic
         const createConfetti = () => {
