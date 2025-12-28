@@ -185,6 +185,33 @@ try {
             background: rgba(139, 92, 246, 0.1);
             color: white;
         }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            z-index: 1002;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .search-result-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .search-result-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -235,11 +262,22 @@ try {
         <div class="row g-4">
             <div class="col-12 col-lg-7">
                 <div class="cyber-card">
-                    <h5 class="mb-4 text-white"><i class="fas fa-paper-plane text-primary me-2"></i> New Request</h5>
+                    <h5 class="mb-4 text-white"><i class="fas fa-search text-primary me-2"></i> Find & Select Key</h5>
+                    
+                    <div class="mb-4 position-relative">
+                        <label class="form-label text-secondary small fw-bold">SEARCH LICENSE KEY</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-end-0 text-secondary"><i class="fas fa-search"></i></span>
+                            <input type="text" id="keySearch" class="form-control border-start-0" placeholder="Type key or mod name to search..." autocomplete="off">
+                        </div>
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+
+                    <h5 class="mb-4 text-white border-top pt-4"><i class="fas fa-paper-plane text-primary me-2"></i> New Request</h5>
                     <form method="POST">
                         <div class="mb-4">
-                            <label class="form-label text-secondary small fw-bold">SELECT LICENSE KEY</label>
-                            <select name="license_key" class="form-select" required>
+                            <label class="form-label text-secondary small fw-bold">SELECTED LICENSE KEY</label>
+                            <select name="license_key" id="license_key_select" class="form-select" required>
                                 <option value="">Choose a key...</option>
                                 <?php foreach ($purchasedKeys as $key): ?>
                                     <option value="<?php echo htmlspecialchars($key['license_key']); ?>">
@@ -314,6 +352,53 @@ try {
 
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
+
+        const keySearch = document.getElementById('keySearch');
+        const searchResults = document.getElementById('searchResults');
+        const licenseSelect = document.getElementById('license_key_select');
+        const purchasedKeys = <?php echo json_encode($purchasedKeys); ?>;
+
+        keySearch.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            searchResults.innerHTML = '';
+            
+            if (query.length < 1) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            const filtered = purchasedKeys.filter(k => 
+                k.license_key.toLowerCase().includes(query) || 
+                k.mod_name.toLowerCase().includes(query)
+            );
+
+            if (filtered.length > 0) {
+                filtered.forEach(k => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    item.innerHTML = `
+                        <div class="fw-bold text-white">${k.mod_name}</div>
+                        <div class="small text-secondary">${k.license_key}</div>
+                    `;
+                    item.onclick = () => {
+                        licenseSelect.value = k.license_key;
+                        keySearch.value = k.mod_name + ' (' + k.license_key + ')';
+                        searchResults.style.display = 'none';
+                    };
+                    searchResults.appendChild(item);
+                });
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.innerHTML = '<div class="p-3 text-secondary small">No matching keys found.</div>';
+                searchResults.style.display = 'block';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!keySearch.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
