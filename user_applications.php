@@ -166,6 +166,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <a class="nav-link active" href="user_applications.php"><i class="fas fa-mobile-alt me-2"></i> Applications</a>
             <a class="nav-link" href="user_notifications.php"><i class="fas fa-bell me-2"></i> Notifications</a>
             <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban me-2"></i> Block & Reset</a>
+            <a class="nav-link" href="user_stock_alert.php"><i class="fas fa-warehouse me-2"></i> Stock Alert</a>
             <a class="nav-link" href="user_settings.php"><i class="fas fa-cog me-2"></i> Settings</a>
             <a class="nav-link" href="user_transactions.php"><i class="fas fa-history me-2"></i> Transactions</a>
             <hr class="border-secondary opacity-25">
