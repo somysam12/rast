@@ -40,6 +40,7 @@ if(!$user){
 // Get filter parameters
 $modFilter = $_GET['mod_id'] ?? '';
 $searchQuery = $_GET['search'] ?? '';
+$keyIdFilter = $_GET['key_id'] ?? '';
 
 // Get user's purchased mods for filter
 $purchasedMods = [];
@@ -63,6 +64,11 @@ try {
             LEFT JOIN mods m ON m.id = lk.mod_id
             WHERE lk.sold_to = ?';
     $params = [$user['id']];
+
+    if ($keyIdFilter !== '' && ctype_digit((string)$keyIdFilter)) {
+        $sql .= ' AND lk.id = ?';
+        $params[] = $keyIdFilter;
+    }
 
     if ($modFilter !== '' && ctype_digit((string)$modFilter)) {
         $sql .= ' AND lk.mod_id = ?';
@@ -272,7 +278,7 @@ try {
                             <button type="submit" class="cyber-btn w-100 py-2">
                                 <i class="fas fa-search"></i> Search
                             </button>
-                            <?php if ($modFilter || $searchQuery): ?>
+                            <?php if ($modFilter || $searchQuery || $keyIdFilter): ?>
                                 <a href="user_manage_keys.php" class="btn btn-outline-secondary rounded-3 px-3">
                                     <i class="fas fa-times"></i>
                                 </a>

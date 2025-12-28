@@ -93,50 +93,72 @@ foreach ($transactions as $tx) {
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 20px;
             padding: 1.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
+            display: block;
+            position: relative;
+            overflow: hidden;
         }
         .tx-card:hover {
             background: rgba(139, 92, 246, 0.05);
-            border-color: rgba(139, 92, 246, 0.2);
-            transform: translateX(5px);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        .tx-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 15px;
+        .tx-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .tx-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .tx-info-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .tx-info-value {
+            font-weight: 600;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .tx-badge {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .tx-badge.debit { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .tx-badge.credit { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        .view-key-btn {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        .tx-icon.debit { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .tx-icon.credit { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        
-        .tx-details { flex-grow: 1; }
-        .tx-amount { font-weight: 800; font-size: 1.1rem; text-align: right; }
-        .tx-amount.negative { color: #ef4444; }
-        .tx-amount.positive { color: #10b981; }
-
-        .view-key-btn {
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            color: #8b5cf6;
-            padding: 6px 15px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            text-decoration: none;
+            gap: 10px;
             transition: all 0.3s ease;
-            white-space: nowrap;
+            width: 100%;
         }
         .view-key-btn:hover {
-            background: #8b5cf6;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
             color: white;
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
         }
 
         .stats-row {
@@ -241,9 +263,6 @@ foreach ($transactions as $tx) {
                         <?php 
                         $isDebit = $tx['amount'] < 0;
                         $txType = $tx['type'] ?? 'transaction';
-                        
-                        // Parse product name and potential key ID from description/reference
-                        // "License key purchase - Mod Name", "License purchase #123"
                         $isPurchase = stripos($tx['description'], 'purchase') !== false;
                         $productName = $tx['description'];
                         $keyId = null;
@@ -255,22 +274,46 @@ foreach ($transactions as $tx) {
                         }
                         ?>
                         <div class="tx-card">
-                            <div class="tx-icon <?php echo $isDebit ? 'debit' : 'credit'; ?>">
-                                <i class="fas <?php echo $isDebit ? 'fa-shopping-cart' : 'fa-plus'; ?>"></i>
+                            <div class="tx-header">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="tx-badge <?php echo $isDebit ? 'debit' : 'credit'; ?>">
+                                        <?php echo $isDebit ? 'Purchase' : 'Credit'; ?>
+                                    </div>
+                                    <div class="tx-info-value"><?php echo htmlspecialchars($productName ?: ucfirst($txType)); ?></div>
+                                </div>
+                                <div class="tx-amount <?php echo $isDebit ? 'negative' : 'positive'; ?>">
+                                    <?php echo ($isDebit ? '-' : '+') . formatCurrencyLocal(abs($tx['amount'])); ?>
+                                </div>
                             </div>
-                            <div class="tx-details">
-                                <div class="fw-bold text-white"><?php echo htmlspecialchars($productName ?: ucfirst($txType)); ?></div>
-                                <div class="small text-secondary mb-1"><?php echo formatDateLocal($tx['created_at']); ?></div>
-                                <?php if ($isPurchase && $keyId): ?>
-                                    <a href="user_manage_keys.php?search=<?php echo $keyId; ?>" class="view-key-btn mt-2 d-inline-block">
-                                        <i class="fas fa-key me-1"></i> View License Key
+                            
+                            <div class="tx-body">
+                                <div>
+                                    <div class="tx-info-label">Transaction Date</div>
+                                    <div class="tx-info-value"><?php echo formatDateLocal($tx['created_at']); ?></div>
+                                </div>
+                                <div>
+                                    <div class="tx-info-label">Reference ID</div>
+                                    <div class="tx-info-value">#<?php echo htmlspecialchars($tx['id']); ?></div>
+                                </div>
+                                <div>
+                                    <div class="tx-info-label">Status</div>
+                                    <div class="tx-info-value text-success">
+                                        <i class="fas fa-check-circle me-1"></i> Completed
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="tx-info-label">Payment Method</div>
+                                    <div class="tx-info-value">Wallet Balance</div>
+                                </div>
+                            </div>
+                            
+                            <?php if ($isPurchase && $keyId): ?>
+                                <div class="mt-3">
+                                    <a href="user_manage_keys.php?key_id=<?php echo $keyId; ?>" class="view-key-btn">
+                                        <i class="fas fa-key"></i> View License Key Details
                                     </a>
-                                <?php endif; ?>
-                            </div>
-                            <div class="tx-amount <?php echo $isDebit ? 'negative' : 'positive'; ?>">
-                                <div class="amount"><?php echo ($isDebit ? '-' : '+') . formatCurrencyLocal(abs($tx['amount'])); ?></div>
-                                <div class="small text-secondary fw-normal" style="font-size: 0.75rem;">Deducted</div>
-                            </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
