@@ -381,25 +381,6 @@ try {
             </div>
         </div>
 
-        <div class="search-container">
-            <div class="stylish-search-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="text" id="productSearch" class="product-search-input" placeholder="Search applications, duration, or price..." autocomplete="off">
-            </div>
-        </div>
-
-        <div id="noResults" class="no-results mb-4">
-            <i class="fas fa-search-minus text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
-            <h5 class="text-secondary">We couldn't find any products matching your search.</h5>
-            <p class="text-muted small">Try checking your spelling or using different keywords.</p>
-        </div>
-
-        <?php if ($error): ?>
-            <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4">
-                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
-
         <div class="row g-4">
             <div class="col-12 col-lg-4">
                 <div class="cyber-card">
@@ -461,62 +442,6 @@ try {
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
         
-        // Product Search Logic
-        const productSearch = document.getElementById('productSearch');
-        const modCards = document.querySelectorAll('.mod-card-container');
-
-        if (productSearch) {
-            productSearch.addEventListener('input', function() {
-                const query = this.value.toLowerCase().trim();
-                const noResults = document.getElementById('noResults');
-                const modCards = document.querySelectorAll('.mod-card-container'); // Re-select to be safe
-                let totalVisibleMods = 0;
-                
-                modCards.forEach(card => {
-                    const modTitleElem = card.querySelector('.mod-title');
-                    // Get only the text nodes to avoid icon tags interfering
-                    let modName = "";
-                    if (modTitleElem) {
-                        modTitleElem.childNodes.forEach(node => {
-                            if (node.nodeType === Node.TEXT_NODE) modName += node.textContent;
-                        });
-                    }
-                    modName = modName.toLowerCase().trim();
-                    
-                    const durationItems = card.querySelectorAll('.duration-item-container');
-                    let visibleDurationsInCard = 0;
-
-                    durationItems.forEach(item => {
-                        const durationNameElem = item.querySelector('.duration-name');
-                        const durationName = durationNameElem ? durationNameElem.textContent.toLowerCase().trim() : '';
-                        
-                        const smallTextElem = item.querySelector('.small');
-                        const smallText = smallTextElem ? smallTextElem.textContent.toLowerCase().trim() : '';
-
-                        if (query === '' || modName.includes(query) || durationName.includes(query) || smallText.includes(query)) {
-                            item.style.setProperty('display', 'block', 'important');
-                            visibleDurationsInCard++;
-                        } else {
-                            item.style.setProperty('display', 'none', 'important');
-                        }
-                    });
-
-                    if (visibleDurationsInCard > 0) {
-                        card.style.setProperty('display', 'block', 'important');
-                        totalVisibleMods++;
-                    } else {
-                        card.style.setProperty('display', 'none', 'important');
-                    }
-                });
-
-                if (totalVisibleMods === 0 && query !== '') {
-                    noResults.style.setProperty('display', 'block', 'important');
-                } else {
-                    noResults.style.setProperty('display', 'none', 'important');
-                }
-            });
-        }
-
         // Confetti burst logic
         const createConfetti = () => {
             const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b'];
