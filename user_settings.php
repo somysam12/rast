@@ -1,3 +1,4 @@
+<?php require_once "includes/optimization.php"; ?>
 <?php
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
@@ -8,8 +9,6 @@ $success = '';
 $error = '';
 
 $pdo = getDBConnection();
-
-// Get current user data
 $user = getUserData();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
@@ -80,541 +79,212 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         }
     }
 }
+
+function formatCurrency($amount){
+    return '₹' . number_format((float)$amount, 2, '.', ',');
+}
+
+if (!function_exists('formatDate')) {
+    function formatDate($dt){
+        if(!$dt){ return '-'; }
+        $date = new DateTime($dt, new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone('Asia/Kolkata'));
+        return $date->format('d M Y');
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - SilentMultiPanel Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Settings - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="assets/css/cyber-ui.css" rel="stylesheet">
     <style>
-        .back-btn-anim { 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            width: 40px; 
-            height: 40px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            color: var(--purple);
-            background: white;
-            text-decoration: none;
-            margin-bottom: 1.5rem;
-        }
-        .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { padding-top: 60px; }
+        .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; transition: transform 0.3s ease; }
+        .main-content { margin-left: 260px; padding: 2rem; transition: margin-left 0.3s ease; }
+        .header { height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; background: rgba(5,7,10,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; }
         
-        :root {
-            --bg-color: #f8fafc;
-            --sidebar-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-hover: #7c3aed;
-            --text-dark: #1e293b;
-            --text-light: #64748b;
-            --border-light: #e2e8f0;
-            --white: #ffffff;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #3b82f6;
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-260px); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
         }
-        
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
-        body {
-            background-color: var(--bg-color);
-            font-family: 'Inter', sans-serif;
-            color: var(--text-dark);
-        }
-        
-        .sidebar {
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-light);
-            min-height: 100vh;
-            position: fixed;
-            width: 280px;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-            transition: transform 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            transform: translateX(0);
-        }
-        
-        .sidebar.hidden {
-            transform: translateX(-100%);
-        }
-        
-        .sidebar .nav-link {
-            color: var(--text-light);
-            padding: 12px 20px;
-            margin: 2px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-        
-        .sidebar .nav-link:hover {
-            background-color: #f1f5f9;
-            color: var(--purple);
-        }
-        
-        .sidebar .nav-link.active {
-            background-color: var(--purple);
-            color: var(--white);
-        }
-        
-        .sidebar .nav-link i {
-            width: 22px;
-            margin-right: 12px;
-            font-size: 1.1em;
-        }
-        
-        .main-content {
-            margin-left: 280px;
-            padding: 2rem;
-            min-height: 100vh;
-            transition: margin-left 0.3s ease;
-        }
-        
-        .main-content.full-width {
-            margin-left: 0;
-        }
-        
-        .mobile-header {
-            display: none;
-            background-color: var(--white);
-            padding: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            border-bottom: 1px solid var(--border-light);
-        }
-        
-        .mobile-toggle {
-            background-color: var(--purple);
-            border: none;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        
-        .balance-badge {
-            background-color: var(--purple);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-        
-        .card {
-            background-color: var(--white);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
-        }
-        
-        .card:hover {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .page-header {
-            background-color: var(--white);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
+
+        .settings-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--purple);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .form-control {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1.5px solid rgba(148, 163, 184, 0.1);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 15px;
+        }
+        .form-control:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: #8b5cf6;
+            color: white;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+        .form-control[readonly] {
+            background: rgba(0, 0, 0, 0.2);
+            border-color: transparent;
+            color: #94a3b8;
+        }
+        .settings-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none;
+            border-radius: 14px;
+            padding: 12px 25px;
             color: white;
             font-weight: 700;
-            font-size: 1.2em;
+            transition: all 0.3s ease;
         }
-        
-        .form-card {
-            background-color: var(--white);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .form-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background-color: var(--purple);
-        }
-        
-        .form-card h5 {
-            color: var(--purple);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-control {
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            transition: all 0.2s ease;
-            background-color: var(--white);
-        }
-        
-        .form-control:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
-        }
-        
-        .form-control[readonly] {
-            background-color: #f8fafc;
-            color: var(--text-light);
-        }
-        
-        .btn-primary {
-            background-color: var(--purple);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--purple-hover);
-            transform: translateY(-1px);
-        }
-        
-        .btn-outline-secondary {
-            border: 1px solid var(--border-light);
-            color: var(--text-light);
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-outline-secondary:hover {
-            background-color: var(--purple);
-            border-color: var(--purple);
-            color: white;
-        }
-        
-        .alert {
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-        
-        .alert-success {
-            background-color: #f0fdf4;
-            color: #166534;
-        }
-        
-        .alert-danger {
-            background-color: #fef2f2;
-            color: #dc2626;
-        }
-        
-        .referral-info {
-            background-color: #f8fafc;
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 0.5rem;
-        }
-        
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
-        
-        .overlay.show {
-            display: block;
-        }
-        
-        @media (max-width: 991.98px) {
-            .sidebar {
-                width: 100%;
-                transform: translateX(-100%);
-                background-color: var(--sidebar-bg);
-            }
-            
-            .sidebar.show {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-                padding-top: 20px !important;
-            }
-            
-            .mobile-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            
-            .page-header {
-                padding: 1.5rem;
-                margin-bottom: 1rem;
-            }
-            
-            .form-card {
-                padding: 1rem;
-            }
-            
-            .user-avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 1em;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .main-content {
-                padding: 0.5rem;
-            }
-            
-            .page-header {
-                padding: 1rem;
-            }
-            
-            .form-card {
-                padding: 0.75rem;
-            }
+        .settings-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
         }
     </style>
-    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
-    <link href="assets/css/dark-mode.css" rel="stylesheet">
-    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
-    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
-    
-    
-        <div class="d-flex align-items-center">
-            <span class="balance-badge d-none d-sm-inline"><?php echo formatCurrency($user['balance']); ?></span>
-            <div class="user-avatar ms-2" style="width: 35px; height: 35px; font-size: 0.9em;">
+    <header class="header">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn text-white p-0 d-lg-none" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h4 class="m-0 text-neon fw-bold">SilentMultiPanel</h4>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-end d-none d-sm-block">
+                <div class="small fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
+                <div class="text-secondary small">Balance: <?php echo formatCurrency($user['balance']); ?></div>
+            </div>
+            <div class="user-avatar-header" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
                 <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
             </div>
         </div>
-    </div>
-    
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-                <div class="p-4 border-bottom border-light">
-                    <h4 class="mb-1" style="color: var(--purple); font-weight: 700;">
-                        <i class="fas fa-crown me-2"></i>SilentMultiPanel Panel
-                    </h4>
-                    <p class="text-muted small mb-0">User Dashboard</p>
+    </header>
+
+    <aside class="sidebar p-3" id="sidebar">
+        <nav class="nav flex-column gap-2">
+            <a class="nav-link" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a class="nav-link" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
+            <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key me-2"></i> Manage Keys</a>
+            <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt me-2"></i> Applications</a>
+            <a class="nav-link" href="user_notifications.php"><i class="fas fa-bell me-2"></i> Notifications</a>
+            <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban me-2"></i> Block & Reset</a>
+            <a class="nav-link active" href="user_settings.php"><i class="fas fa-cog me-2"></i> Settings</a>
+            <a class="nav-link" href="user_transactions.php"><i class="fas fa-history me-2"></i> Transactions</a>
+            <hr class="border-secondary opacity-25">
+            <a class="nav-link text-danger" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="cyber-card mb-4">
+            <h2 class="text-neon mb-1">Account Settings</h2>
+            <p class="text-secondary mb-0">Update your profile and manage security options.</p>
+        </div>
+
+        <?php if ($success): ?>
+            <div class="alert alert-success border-0 bg-success bg-opacity-10 text-success mb-4"><?php echo htmlspecialchars($success); ?></div>
+        <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+
+        <div class="row g-4">
+            <div class="col-12 col-xl-6">
+                <div class="settings-card">
+                    <h5 class="text-white mb-4"><i class="fas fa-user-circle text-primary me-2"></i> Profile Details</h5>
+                    <form method="POST">
+                        <input type="hidden" name="update_profile" value="1">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold">USERNAME</label>
+                            <input type="text" name="username" class="form-control" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold">EMAIL ADDRESS</label>
+                            <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small fw-bold">ACCOUNT TYPE</label>
+                            <input type="text" class="form-control" value="<?php echo ucfirst($user['role']); ?>" readonly>
+                        </div>
+                        <button type="submit" class="settings-btn w-100">Update Profile</button>
+                    </form>
                 </div>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="user_dashboard.php">
-                        <i class="fas fa-tachometer-alt"></i>Dashboard
-                    </a>
-                    <a class="nav-link" href="user_manage_keys.php">
-                        <i class="fas fa-key"></i>Manage Keys
-                    </a>
-                    <a class="nav-link" href="user_generate.php">
-                        <i class="fas fa-plus"></i>Generate
-                    </a>
-                    <a class="nav-link" href="user_transactions.php">
-                        <i class="fas fa-exchange-alt"></i>Transaction
-                    </a>
-                    <a class="nav-link" href="user_applications.php">
-                        <i class="fas fa-mobile-alt"></i>Applications
-                    </a>
-                    <a class="nav-link" href="user_block_request.php">
-                        <i class="fas fa-ban"></i>Block & Reset
-                    </a>
-                    <a class="nav-link" href="user_notifications.php">
-                        <i class="fas fa-bell"></i>Notifications
-                        <?php
-                        try {
-                            $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM key_confirmations WHERE user_id = ? AND status = 'unread'");
-                            $stmt_count->execute([$user['id']]);
-                            $notifCount = $stmt_count->fetchColumn();
-                            if ($notifCount > 0) {
-                                echo '<span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">' . $notifCount . '</span>';
-                            }
-                        } catch (Exception $e) {}
-                        ?>
-                    </a>
-                    <a class="nav-link active" href="user_settings.php">
-                        <i class="fas fa-cog"></i>Settings
-                    </a>
-                    <a class="nav-link" href="logout.php">
-                        <i class="fas fa-sign-out-alt"></i>Logout
-                    </a>
-                </nav>
             </div>
-            
-            <div class="col-md-9 col-lg-10 main-content" id="mainContent">
-                <a href="user_dashboard.php" class="back-btn-anim" title="Back to Dashboard">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <div class="page-header">
-                    <div class="d-flex justify-content-between align-items-center">
+
+            <div class="col-12 col-xl-6">
+                <div class="settings-card">
+                    <h5 class="text-white mb-4"><i class="fas fa-lock text-primary me-2"></i> Security</h5>
+                    <form method="POST">
+                        <input type="hidden" name="change_password" value="1">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold">CURRENT PASSWORD</label>
+                            <input type="password" name="current_password" class="form-control" placeholder="••••••••" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold">NEW PASSWORD</label>
+                            <input type="password" name="new_password" class="form-control" placeholder="••••••••" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small fw-bold">CONFIRM NEW PASSWORD</label>
+                            <input type="password" name="confirm_password" class="form-control" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="settings-btn w-100">Change Password</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="settings-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="text-white mb-2"><i class="fas fa-gift text-primary me-2"></i> Referral Program</h5>
+                            <p class="text-secondary small mb-md-0">Share your code with others to earn rewards when they join.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-dark bg-opacity-50 border border-secondary border-opacity-10 rounded-3 text-center">
+                                <div class="small text-secondary mb-1">YOUR CODE</div>
+                                <div class="h4 text-neon mb-0"><?php echo htmlspecialchars($user['referral_code'] ?: 'N/A'); ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="settings-card border-danger border-opacity-10">
+                    <h5 class="text-danger mb-4"><i class="fas fa-exclamation-triangle me-2"></i> Danger Zone</h5>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                         <div>
-                            <h2 class="mb-2" style="color: var(--purple); font-weight: 600;">
-                                <i class="fas fa-cog me-2"></i>Account Settings
-                            </h2>
-                            <p class="text-muted mb-0">Manage your account information and security settings.</p>
+                            <div class="fw-bold text-white">Reset Device Binding</div>
+                            <div class="small text-secondary">Force logout from all devices and reset your active session.</div>
                         </div>
-                        <div class="d-none d-md-flex align-items-center">
-                            <div class="text-end me-3">
-                                <div class="fw-bold"><?php echo htmlspecialchars($user['username']); ?></div>
-                                <small class="text-muted">Balance: <?php echo formatCurrency($user['balance']); ?></small>
-                            </div>
-                            <div class="user-avatar">
-                                <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <?php if ($success): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <?php echo htmlspecialchars($success); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if ($error): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        <?php echo htmlspecialchars($error); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-card">
-                            <h5><i class="fas fa-user me-2"></i>Account Information</h5>
-                            <form method="POST">
-                                <input type="hidden" name="update_profile" value="1">
-                                
-                                <div class="mb-3">
-                                    <label for="username" class="form-label">Username</label>
-                                    <input type="text" class="form-control" id="username" name="username" 
-                                           value="<?php echo htmlspecialchars($user['username']); ?>" required>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" 
-                                           value="<?php echo htmlspecialchars($user['email']); ?>" required>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Role</label>
-                                    <input type="text" class="form-control" value="<?php echo ucfirst($user['role']); ?>" readonly>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Join Date</label>
-                                    <input type="text" class="form-control" value="<?php echo formatDate($user['created_at']); ?>" readonly>
-                                </div>
-                                
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-check me-2"></i>Update Details
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="form-card">
-                            <h5><i class="fas fa-shield-alt me-2"></i>Change Password</h5>
-                            <form method="POST">
-                                <input type="hidden" name="change_password" value="1">
-                                
-                                <div class="mb-3">
-                                    <label for="current_password" class="form-label">Current Password</label>
-                                    <input type="password" class="form-control" id="current_password" name="current_password" required>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="new_password" class="form-label">New Password</label>
-                                    <input type="password" class="form-control" id="new_password" name="new_password" required>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="confirm_password" class="form-label">Confirm New Password</label>
-                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                                </div>
-                                
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-key me-2"></i>Change Password
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-card">
-                    <h5><i class="fas fa-gift me-2"></i>Referral Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Your Referral Code</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($user['referral_code']); ?>" readonly>
-                                    <button class="btn btn-outline-secondary" type="button">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Referred By</label>
-                                <input type="text" class="form-control" 
-                                       value="<?php echo $user['referred_by'] ? htmlspecialchars($user['referred_by']) : 'No referral'; ?>" readonly>
-                            </div>
-                        </div>
+                        <form method="POST" class="d-flex gap-2">
+                            <input type="hidden" name="reset_device" value="1">
+                            <input type="password" name="password" class="form-control form-control-sm" placeholder="Verify Password" style="max-width: 150px;">
+                            <button type="submit" class="btn btn-outline-danger btn-sm px-3 rounded-pill">Reset Now</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    </main>
+
     <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
+    </script>
+</body>
+</html>
