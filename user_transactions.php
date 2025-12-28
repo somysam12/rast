@@ -105,55 +105,50 @@ foreach ($transactions as $tx) {
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         .tx-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.2rem;
-            padding-bottom: 1.2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: none;
         }
         .tx-body {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 1.2rem;
+            margin-bottom: 1.5rem;
+            align-items: start;
         }
         .tx-info-label {
             font-size: 0.75rem;
             color: rgba(255, 255, 255, 0.4);
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         .tx-info-value {
             font-weight: 600;
             color: #fff;
             font-size: 0.95rem;
+            word-break: break-word;
         }
-        .tx-badge {
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
+        .tx-amount-col .tx-info-value {
+            font-weight: 800;
+            font-size: 1.1rem;
         }
-        .tx-badge.debit { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .tx-badge.credit { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .tx-amount-col.negative .tx-info-value { color: #ef4444; }
+        .tx-amount-col.positive .tx-info-value { color: #10b981; }
 
         .view-key-btn {
             background: linear-gradient(135deg, #8b5cf6, #06b6d4);
             color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-size: 0.9rem;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 0.85rem;
             font-weight: 600;
             text-decoration: none !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.3s ease;
             width: 100%;
+            margin-top: 5px;
         }
         .view-key-btn:hover {
             transform: translateY(-2px);
@@ -274,19 +269,17 @@ foreach ($transactions as $tx) {
                         }
                         ?>
                         <div class="tx-card">
-                            <div class="tx-header">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="tx-badge <?php echo $isDebit ? 'debit' : 'credit'; ?>">
-                                        <?php echo $isDebit ? 'Purchase' : 'Credit'; ?>
-                                    </div>
+                            <div class="tx-body mb-0">
+                                <div>
+                                    <div class="tx-info-label">Product Name</div>
                                     <div class="tx-info-value"><?php echo htmlspecialchars($productName ?: ucfirst($txType)); ?></div>
                                 </div>
-                                <div class="tx-amount <?php echo $isDebit ? 'negative' : 'positive'; ?>">
-                                    <?php echo ($isDebit ? '-' : '+') . formatCurrencyLocal(abs($tx['amount'])); ?>
+                                <div class="tx-amount-col <?php echo $isDebit ? 'negative' : 'positive'; ?>">
+                                    <div class="tx-info-label">Amount</div>
+                                    <div class="tx-info-value">
+                                        <?php echo ($isDebit ? '-' : '+') . formatCurrencyLocal(abs($tx['amount'])); ?>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="tx-body">
                                 <div>
                                     <div class="tx-info-label">Transaction Date</div>
                                     <div class="tx-info-value"><?php echo formatDateLocal($tx['created_at']); ?></div>
@@ -305,15 +298,17 @@ foreach ($transactions as $tx) {
                                     <div class="tx-info-label">Payment Method</div>
                                     <div class="tx-info-value">Wallet Balance</div>
                                 </div>
-                            </div>
-                            
-                            <?php if ($isPurchase && $keyId): ?>
-                                <div class="mt-3">
-                                    <a href="user_manage_keys.php?key_id=<?php echo $keyId; ?>" class="view-key-btn">
-                                        <i class="fas fa-key"></i> View License Key Details
-                                    </a>
+                                <div>
+                                    <div class="tx-info-label">Action</div>
+                                    <?php if ($isPurchase && $keyId): ?>
+                                        <a href="user_manage_keys.php?key_id=<?php echo $keyId; ?>" class="view-key-btn">
+                                            <i class="fas fa-key"></i> View Key
+                                        </a>
+                                    <?php else: ?>
+                                        <div class="tx-info-value text-secondary small">N/A</div>
+                                    <?php endif; ?>
                                 </div>
-                            <?php endif; ?>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
