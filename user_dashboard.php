@@ -254,7 +254,7 @@ function formatDate($date) {
         }
         
         .sidebar .nav-link {
-            color: #6b7280;
+            color: #94a3b8;
             padding: 12px 20px;
             margin: 8px 16px;
             transition: all 0.3s ease;
@@ -270,11 +270,11 @@ function formatDate($date) {
         }
         
         .sidebar .nav-link:hover {
-            background: #f3f4f6;
-            color: #374151;
-            border-color: #e5e7eb;
+            background: rgba(139, 92, 246, 0.1);
+            color: #f8fafc;
+            border-color: rgba(139, 92, 246, 0.2);
             transform: translateX(5px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
         }
         
         .sidebar .nav-link i {
@@ -304,16 +304,16 @@ function formatDate($date) {
             margin-top: auto;
             padding: 20px;
             text-align: center;
-            border-top: 1px solid #e5e7eb;
-            background: #f9fafb;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            background: rgba(15, 23, 42, 0.5);
         }
 
         .signature-text {
             font-size: 0.85rem;
             font-weight: 600;
-            color: #6b7280;
+            color: #94a3b8;
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .signature-name {
@@ -343,13 +343,14 @@ function formatDate($date) {
         
         /* Page Header */
         .page-header {
-            background: var(--card);
-            border: 1px solid var(--line);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
             border-radius: 20px;
             padding: 2.5rem;
             margin-bottom: 2rem;
-            box-shadow: var(--shadow-light);
-            backdrop-filter: blur(20px);
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
             position: relative;
             overflow: hidden;
         }
@@ -407,11 +408,13 @@ function formatDate($date) {
         
         /* Stats Cards */
         .stats-card {
-            background: var(--card);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border-radius: 20px;
             padding: 2rem;
-            border: 1px solid var(--line);
-            box-shadow: var(--shadow-light);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -454,11 +457,13 @@ function formatDate($date) {
         
         /* Table Cards */
         .table-card {
-            background: var(--card);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border-radius: 20px;
             padding: 2rem;
-            border: 1px solid var(--line);
-            box-shadow: var(--shadow-light);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
             margin-bottom: 2rem;
             transition: all 0.3s ease;
             position: relative;
@@ -549,12 +554,12 @@ function formatDate($date) {
         .table {
             border-radius: 16px;
             overflow: hidden;
-            border: 1px solid var(--line);
-            box-shadow: var(--shadow-light);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
         }
         
         .table thead th {
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
             color: white;
             border: none;
             font-weight: 700;
@@ -570,14 +575,14 @@ function formatDate($date) {
         }
         
         .table tbody tr:hover {
-            background: var(--accent-100);
+            background: rgba(139, 92, 246, 0.1);
             transform: scale(1.01);
         }
         
         .table tbody td {
             padding: 20px 16px;
             border: none;
-            color: var(--text);
+            color: #f8fafc;
             vertical-align: middle;
             font-weight: 500;
         }
@@ -681,9 +686,10 @@ function formatDate($date) {
                 left: 0;
                 right: 0;
                 transform: translateX(-100%);
-                background: #ffffff;
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(30px);
                 border-right: none;
-                border-bottom: 1px solid #e5e7eb;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.1);
                 z-index: 1002;
                 pointer-events: none;
             }
