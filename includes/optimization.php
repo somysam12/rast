@@ -7,5 +7,9 @@ if (!headers_sent()) {
     header('X-Frame-Options: SAMEORIGIN');
     header('X-XSS-Protection: 1; mode=block');
     header('Cache-Control: public, max-age=3600');
+    // Enable Gzip compression if available
+    if (extension_loaded('zlib')) {
+        ini_set('zlib.output_compression', 'On');
+    }
 }
 ?>

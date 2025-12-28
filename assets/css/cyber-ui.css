@@ -34,16 +34,20 @@ body {
 }
 
 .cyber-card {
-    background: var(--bg-card) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+    background: rgba(10, 15, 25, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
     border: 1px solid var(--border-dim) !important;
-    border-radius: 20px !important;
+    border-radius: 16px !important;
     padding: 1.5rem;
     position: relative;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    transition: transform 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+}
+
+.cyber-card:hover {
+    transform: translateY(-2px);
 }
 
 .text-neon {
