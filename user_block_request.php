@@ -81,6 +81,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
 
             $pdo->commit();
             $success = 'Your ' . ucfirst($requestType) . ' request has been submitted successfully.';
+            
+            echo "<script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Request Submitted!',
+                        text: 'Your request has been submitted and admin will process your request soon.',
+                        icon: 'success',
+                        background: 'rgba(15, 23, 42, 0.95)',
+                        color: '#fff',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        backdrop: `rgba(139, 92, 246, 0.1)`,
+                        customClass: {
+                            popup: 'cyber-swal'
+                        }
+                    });
+                });
+            </script>";
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
             $error = $e->getMessage();
@@ -133,6 +152,7 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="assets/css/cyber-ui.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { padding-top: 60px; }
         .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; transition: transform 0.3s ease; }
@@ -168,49 +188,170 @@ try {
             box-shadow: none;
         }
 
+        /* Cool Stylish Search Option */
+        .search-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .stylish-search-wrapper {
+            position: relative;
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .stylish-search-wrapper:focus-within {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        .stylish-search-wrapper i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b5cf6;
+            font-size: 1.2rem;
+            z-index: 1;
+        }
+        .stylish-search-input {
+            width: 100%;
+            background: transparent !important;
+            border: none !important;
+            padding: 15px 15px 15px 50px !important;
+            color: white !important;
+            font-size: 1rem;
+            outline: none !important;
+        }
+        .stylish-search-input::placeholder {
+            color: rgba(148, 163, 184, 0.4);
+        }
+
+        /* Cool Action Buttons */
+        .type-radio:checked + .type-btn {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.15));
+            color: white;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
+            transform: translateY(-5px);
+        }
         .type-btn {
             border: 2px solid rgba(148, 163, 184, 0.1);
             background: rgba(15, 23, 42, 0.5);
             color: var(--text-secondary);
-            padding: 20px;
-            border-radius: 15px;
+            padding: 30px 20px;
+            border-radius: 24px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .type-btn i {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: transform 0.3s ease;
+        }
+        .type-btn:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-3px);
+        }
+        .type-btn:hover i {
+            transform: scale(1.1) rotate(5deg);
         }
 
-        .type-radio:checked + .type-btn {
-            border-color: #8b5cf6;
-            background: rgba(139, 92, 246, 0.1);
+        .submit-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none;
+            border-radius: 16px;
+            padding: 18px;
             color: white;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+            position: relative;
+            overflow: hidden;
         }
+        .submit-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.6);
+            filter: brightness(1.15);
+        }
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+        .submit-btn:hover::after {
+            left: 100%;
+        }
+
+        /* Stylish Results */
         .search-results {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 12px);
             left: 0;
             right: 0;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
+            background: rgba(10, 15, 25, 0.98);
+            backdrop-filter: blur(30px);
             border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 12px;
+            border-radius: 20px;
             z-index: 1002;
-            max-height: 250px;
+            max-height: 320px;
             overflow-y: auto;
             display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+            padding: 12px;
         }
         .search-result-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
         }
         .search-result-item:hover {
-            background: rgba(139, 92, 246, 0.1);
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.2);
+            transform: translateX(8px);
         }
-        .search-result-item:last-child {
-            border-bottom: none;
+        .search-result-item .mod-name {
+            font-weight: 800;
+            color: white;
+            font-size: 1.05rem;
+        }
+        .search-result-item .key-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #8b5cf6;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .cyber-swal {
+            border: 2px solid rgba(139, 92, 246, 0.5) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.2) !important;
         }
     </style>
 </head>
@@ -249,14 +390,13 @@ try {
     <main class="main-content">
         <div class="cyber-card mb-4">
             <h2 class="text-neon mb-1">Block & Reset Requests</h2>
-            <p class="text-secondary mb-0">Submit requests for key blocking or HWID resetting.</p>
+            <p class="text-secondary mb-0">Manage your device activations and key status securely.</p>
         </div>
 
-        <?php if ($success): ?>
-            <div class="alert alert-success border-0 bg-success bg-opacity-10 text-success mb-4"><?php echo htmlspecialchars($success); ?></div>
-        <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4"><?php echo htmlspecialchars($error); ?></div>
+            <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4">
+                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+            </div>
         <?php endif; ?>
 
         <div class="row g-4">
@@ -264,16 +404,18 @@ try {
                 <div class="cyber-card">
                     <h5 class="mb-4 text-white"><i class="fas fa-search text-primary me-2"></i> Find & Select Key</h5>
                     
-                    <div class="mb-4 position-relative">
-                        <label class="form-label text-secondary small fw-bold">SEARCH LICENSE KEY</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-dark border-secondary border-end-0 text-secondary"><i class="fas fa-search"></i></span>
-                            <input type="text" id="keySearch" class="form-control border-start-0" placeholder="Type key or mod name to search..." autocomplete="off">
+                    <div class="search-container">
+                        <div class="stylish-search-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="keySearch" class="stylish-search-input" placeholder="Search by key or application name..." autocomplete="off">
                         </div>
                         <div id="searchResults" class="search-results"></div>
                     </div>
 
-                    <h5 class="mb-4 text-white border-top pt-4"><i class="fas fa-paper-plane text-primary me-2"></i> New Request</h5>
+                    <h5 class="mb-4 text-white border-top border-secondary border-opacity-10 pt-4">
+                        <i class="fas fa-paper-plane text-primary me-2"></i> New Request
+                    </h5>
+                    
                     <form method="POST">
                         <div class="mb-4">
                             <label class="form-label text-secondary small fw-bold">SELECTED LICENSE KEY</label>
@@ -288,30 +430,32 @@ try {
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label text-secondary small fw-bold">REQUEST TYPE</label>
+                            <label class="form-label text-secondary small fw-bold">CHOOSE ACTION</label>
                             <div class="row g-3">
                                 <div class="col-6">
                                     <input type="radio" name="request_type" id="type_block" value="block" class="type-radio d-none" required>
                                     <label for="type_block" class="type-btn">
-                                        <i class="fas fa-ban d-block mb-2 fa-lg"></i> Block Key
+                                        <i class="fas fa-ban"></i>
+                                        <span class="fw-bold">Block Key</span>
                                     </label>
                                 </div>
                                 <div class="col-6">
                                     <input type="radio" name="request_type" id="type_reset" value="reset" class="type-radio d-none">
                                     <label for="type_reset" class="type-btn">
-                                        <i class="fas fa-redo d-block mb-2 fa-lg"></i> Reset HWID
+                                        <i class="fas fa-sync-alt"></i>
+                                        <span class="fw-bold">Reset HWID</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label text-secondary small fw-bold">REASON</label>
-                            <textarea name="reason" class="form-control" rows="3" placeholder="Explain your request..." required></textarea>
+                            <label class="form-label text-secondary small fw-bold">REASON FOR REQUEST</label>
+                            <textarea name="reason" class="form-control" rows="3" placeholder="Explain why you need this action..." required></textarea>
                         </div>
 
-                        <button type="submit" name="submit_request" class="cyber-btn w-100 py-3">
-                            Submit Request
+                        <button type="submit" name="submit_request" class="submit-btn w-100">
+                            Send Request to Admin
                         </button>
                     </form>
                 </div>
@@ -327,7 +471,7 @@ try {
                         </div>
                     <?php else: ?>
                         <?php foreach ($pendingRequests as $req): ?>
-                            <div class="request-card mb-3">
+                            <div class="request-card mb-3 border border-secondary border-opacity-10">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <span class="badge bg-primary bg-opacity-10 text-primary">
                                         <?php echo strtoupper($req['request_type']); ?>
@@ -338,7 +482,7 @@ try {
                                 <div class="small text-secondary mb-3"><?php echo htmlspecialchars($req['license_key']); ?></div>
                                 <form method="POST">
                                     <input type="hidden" name="request_id" value="<?php echo $req['id']; ?>">
-                                    <button type="submit" name="cancel_request" class="btn btn-sm btn-outline-danger w-100 rounded-pill">
+                                    <button type="submit" name="cancel_request" class="btn btn-sm btn-outline-danger w-100 rounded-pill py-2">
                                         Cancel Request
                                     </button>
                                 </form>
@@ -377,19 +521,26 @@ try {
                     const item = document.createElement('div');
                     item.className = 'search-result-item';
                     item.innerHTML = `
-                        <div class="fw-bold text-white">${k.mod_name}</div>
-                        <div class="small text-secondary">${k.license_key}</div>
+                        <div>
+                            <div class="mod-name">${k.mod_name}</div>
+                            <div class="key-text">${k.license_key}</div>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted small"></i>
                     `;
                     item.onclick = () => {
                         licenseSelect.value = k.license_key;
                         keySearch.value = k.mod_name + ' (' + k.license_key + ')';
                         searchResults.style.display = 'none';
+                        // Add selection animation
+                        const selectBox = document.getElementById('license_key_select');
+                        selectBox.style.borderColor = '#8b5cf6';
+                        setTimeout(() => selectBox.style.borderColor = '', 1000);
                     };
                     searchResults.appendChild(item);
                 });
                 searchResults.style.display = 'block';
             } else {
-                searchResults.innerHTML = '<div class="p-3 text-secondary small">No matching keys found.</div>';
+                searchResults.innerHTML = '<div class="p-3 text-secondary text-center small">No matching licenses found.</div>';
                 searchResults.style.display = 'block';
             }
         });
