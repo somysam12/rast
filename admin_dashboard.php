@@ -572,79 +572,500 @@ try {
             }
         }
 
+        /* Tablet and iPad */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 260px;
+            }
+
+            .main-content {
+                margin-left: 260px;
+                padding: 1.5rem;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-card h3 {
+                font-size: 2.2rem;
+            }
+
+            .stats-card h6 {
+                font-size: 0.85rem;
+            }
+
+            .table-card h5 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Large mobile and small tablet */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 transform: translateX(-100%);
                 border-right: none;
+                padding: 1rem 0;
             }
 
             .sidebar.show {
                 transform: translateX(0);
+                z-index: 1001;
+            }
+
+            .sidebar-brand {
+                padding: 1rem 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .sidebar-brand h4 {
+                font-size: 1.1rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .sidebar-brand p {
+                font-size: 0.75rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .sidebar .nav {
+                padding: 0 0.5rem;
+                gap: 0.25rem;
+            }
+
+            .sidebar .nav-link {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+                gap: 10px;
+                border-radius: 10px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .sidebar .nav-link i {
+                width: 18px;
+                min-width: 18px;
+                font-size: 0.95rem;
+            }
+
+            .sidebar .nav-link span {
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .main-content {
                 margin-left: 0;
-                padding: 1rem;
+                padding: 1rem 0.75rem;
+            }
+
+            .main-content.full-width {
+                margin-left: 0;
             }
 
             .mobile-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                padding: 0.75rem 1rem;
+            }
+
+            .mobile-header h5 {
+                font-size: 1rem;
+                margin-bottom: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 200px;
+            }
+
+            .page-header {
+                margin-bottom: 1.5rem;
             }
 
             .page-header h1 {
-                font-size: 1.8rem;
+                font-size: 1.6rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .page-header p {
+                font-size: 0.9rem;
             }
 
             .stats-container {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 1rem;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 0.75rem;
+                margin-bottom: 1.5rem;
             }
 
             .stats-card {
-                padding: 1.5rem;
+                padding: 1.25rem 1rem;
+                border-radius: 16px;
+            }
+
+            .stats-card h6 {
+                font-size: 0.75rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .stats-card h3 {
+                font-size: 1.8rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .stats-card .stat-label {
+                font-size: 0.75rem;
+            }
+
+            .stats-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+                margin: 0 auto 0.75rem;
             }
 
             .glass-card,
             .table-card {
-                padding: 1.5rem;
+                padding: 1.25rem;
                 border-radius: 16px;
+                margin-bottom: 1rem;
+            }
+
+            .table-card h5 {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .table {
+                font-size: 0.9rem;
+            }
+
+            .table thead th {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            .table tbody td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .user-card {
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .user-card .user-avatar {
+                width: 48px;
+                height: 48px;
+                font-size: 1rem;
+                margin: 0 auto 0.75rem;
+            }
+
+            .user-card h6 {
+                font-size: 0.9rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .user-card p {
+                font-size: 0.8rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .d-flex > div {
+                min-width: 0;
+            }
+
+            .table tbody td .d-flex {
+                gap: 0.5rem;
+            }
+
+            .table tbody td .d-flex > div {
+                overflow: hidden;
+            }
+
+            .table tbody td .d-flex div div {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 0.9rem;
+            }
+
+            .table tbody td .d-flex small {
+                font-size: 0.7rem;
             }
         }
 
+        /* Small mobile devices */
         @media (max-width: 480px) {
             .sidebar {
-                padding: 1rem 0;
+                width: 100%;
+            }
+
+            .sidebar-brand {
+                padding: 0.75rem 1rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .sidebar-brand h4 {
+                font-size: 1rem;
+                margin-bottom: 0.15rem;
+            }
+
+            .sidebar-brand p {
+                font-size: 0.7rem;
+            }
+
+            .sidebar .nav {
+                padding: 0 0.25rem;
+                gap: 0.15rem;
+            }
+
+            .sidebar .nav-link {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+                gap: 8px;
+                margin: 0;
+            }
+
+            .sidebar .nav-link i {
+                width: 16px;
+                min-width: 16px;
+                font-size: 0.85rem;
             }
 
             .main-content {
-                padding: 0.75rem;
+                padding: 0.5rem 0.5rem;
+            }
+
+            .mobile-header {
+                padding: 0.5rem 0.75rem;
+                gap: 0.5rem;
+            }
+
+            .mobile-header h5 {
+                font-size: 0.9rem;
+                max-width: 150px;
+            }
+
+            .mobile-header .d-flex {
+                gap: 0.5rem;
+            }
+
+            .mobile-toggle {
+                padding: 0.5rem;
+                font-size: 1rem;
+            }
+
+            .page-header {
+                margin-bottom: 1rem;
             }
 
             .page-header h1 {
+                font-size: 1.3rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .page-header h1 i {
+                font-size: 1.2rem;
+                margin-right: 0.3rem;
+            }
+
+            .page-header p {
+                font-size: 0.8rem;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .stats-card {
+                padding: 1rem 0.75rem;
+                border-radius: 12px;
+            }
+
+            .stats-card h6 {
+                font-size: 0.65rem;
+                margin-bottom: 0.35rem;
+                text-transform: capitalize;
+                letter-spacing: 0.02em;
+            }
+
+            .stats-card h3 {
                 font-size: 1.5rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .stats-card .stat-label {
+                font-size: 0.65rem;
+            }
+
+            .stats-card .stat-label i {
+                font-size: 0.6rem;
+            }
+
+            .stats-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                margin: 0 auto 0.5rem;
+            }
+
+            .glass-card,
+            .table-card {
+                padding: 1rem 0.75rem;
+                border-radius: 12px;
+                margin-bottom: 0.75rem;
+            }
+
+            .table-card h5 {
+                font-size: 0.9rem;
+                margin-bottom: 0.75rem;
+                gap: 0.4rem;
+            }
+
+            .table-card h5 i {
+                font-size: 0.85rem;
+            }
+
+            .table {
+                font-size: 0.8rem;
+                margin-bottom: 0;
+            }
+
+            .table thead th {
+                padding: 0.5rem 0.4rem;
+                font-size: 0.65rem;
+                font-weight: 600;
+                white-space: nowrap;
+            }
+
+            .table tbody tr {
+                border: none;
+            }
+
+            .table tbody td {
+                padding: 0.6rem 0.4rem;
+                font-size: 0.8rem;
+            }
+
+            .table tbody td .d-flex {
+                gap: 0.4rem;
+                flex-wrap: nowrap;
+            }
+
+            .table tbody td .d-flex > div:first-child {
+                width: 28px;
+                height: 28px;
+                min-width: 28px;
+                border-radius: 6px;
+                font-size: 0.65rem;
+                flex-shrink: 0;
+            }
+
+            .table tbody td .d-flex > div:last-child {
+                min-width: 0;
+                flex: 1;
+                overflow: hidden;
+            }
+
+            .table tbody td .d-flex div div {
+                font-size: 0.8rem;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .table tbody td .d-flex small {
+                font-size: 0.65rem;
+                color: var(--text-dim);
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .user-card {
+                padding: 0.75rem;
+                margin-bottom: 0.5rem;
+                border-radius: 12px;
+            }
+
+            .user-card .user-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+                margin: 0 auto 0.5rem;
+            }
+
+            .user-card h6 {
+                font-size: 0.8rem;
+                margin-bottom: 0.15rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .user-card p {
+                font-size: 0.7rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .row {
+                margin-right: -0.25rem;
+                margin-left: -0.25rem;
+            }
+
+            .col-md-4,
+            .col-lg-3 {
+                padding-right: 0.25rem;
+                padding-left: 0.25rem;
+            }
+
+            .col-lg-6 {
+                padding-right: 0.25rem;
+                padding-left: 0.25rem;
+            }
+        }
+
+        /* Extra small devices (very small phones) */
+        @media (max-width: 360px) {
+            .sidebar .nav-link span {
+                display: none;
+            }
+
+            .sidebar .nav-link {
+                justify-content: center;
+                padding: 8px;
+            }
+
+            .page-header h1 {
+                font-size: 1.1rem;
             }
 
             .stats-container {
                 grid-template-columns: 1fr;
             }
 
-            .glass-card,
-            .table-card {
-                padding: 1rem;
-                border-radius: 12px;
-            }
-
             .stats-card h3 {
-                font-size: 2rem;
+                font-size: 1.3rem;
             }
 
-            .user-avatar {
-                width: 48px;
-                height: 48px;
-                font-size: 1rem;
+            .table-card h5 span {
+                display: none;
             }
         }
     </style>
