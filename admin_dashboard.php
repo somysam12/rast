@@ -220,12 +220,13 @@ try {
         .mobile-toggle {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
-            color: white;
+            color: #06b6d4;
             padding: 0.75rem;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+            font-weight: 700;
         }
 
         .mobile-toggle:hover {
@@ -319,14 +320,16 @@ try {
         .page-header p {
             color: #8b5cf6;
             font-size: 1.1rem;
-            margin-bottom: 0;
+            margin: 0.75rem 0 0 0;
             font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .page-header p strong {
             color: #06b6d4;
             font-weight: 700;
             text-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+            margin-left: 0.25rem;
         }
 
         .stats-container {
@@ -816,6 +819,7 @@ try {
 
             .page-header p {
                 font-size: 0.9rem;
+                margin: 0.5rem 0 0 0;
             }
 
             .stats-container {
@@ -1004,6 +1008,7 @@ try {
 
             .page-header p {
                 font-size: 0.85rem;
+                margin: 0.4rem 0 0 0;
             }
 
             .stats-container {
@@ -1206,7 +1211,6 @@ try {
             <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
                 <i class="fas fa-bars"></i>
             </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--primary);"></i>SilentMultiPanel</h5>
         </div>
         <div class="admin-menu-container">
             <div class="admin-menu-btn" onclick="toggleAdminMenu(event)">
