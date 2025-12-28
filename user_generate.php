@@ -258,13 +258,23 @@ try {
         .mod-selector-wrapper {
             position: relative;
             margin-bottom: 2rem;
+            padding: 2px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.5));
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .mod-selector-wrapper:hover {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
         }
 
         .mod-trigger-btn {
             width: 100%;
-            background: rgba(15, 23, 42, 0.6);
+            background: #0a0f19;
             backdrop-filter: blur(10px);
-            border: 2px solid rgba(139, 92, 246, 0.3);
+            border: none;
             border-radius: 20px;
             padding: 1.2rem 2rem;
             color: white;
@@ -275,28 +285,6 @@ try {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .mod-trigger-btn:hover {
-            border-color: #8b5cf6;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.2);
-        }
-
-        .mod-trigger-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            transition: 0.5s;
-        }
-
-        .mod-trigger-btn:hover::before {
-            left: 100%;
         }
 
         .mod-popup-menu {
@@ -304,7 +292,7 @@ try {
             top: calc(100% + 15px);
             left: 0;
             right: 0;
-            background: rgba(10, 15, 25, 0.95);
+            background: rgba(10, 15, 25, 0.98);
             backdrop-filter: blur(25px);
             border: 2px solid #8b5cf6;
             border-radius: 24px;
@@ -313,7 +301,7 @@ try {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(139, 92, 246, 0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(139, 92, 246, 0.2);
             animation: popupReveal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             max-height: 400px;
             overflow-y: auto;
@@ -331,8 +319,8 @@ try {
         .mod-option-item {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 1rem;
+            border-radius: 18px;
+            padding: 1.2rem;
             color: rgba(255, 255, 255, 0.7);
             text-align: center;
             cursor: pointer;
@@ -341,29 +329,34 @@ try {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .mod-option-item i {
-            font-size: 1.5rem;
-            color: #8b5cf6;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .mod-option-item:hover {
-            background: rgba(139, 92, 246, 0.1);
+            background: rgba(139, 92, 246, 0.15);
             border-color: #8b5cf6;
             color: white;
-            transform: scale(1.05);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
         .mod-option-item.active {
             background: linear-gradient(135deg, #8b5cf6, #06b6d4);
             color: white;
             border: none;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
         }
 
         .mod-option-item.active i {
+            background: none;
+            -webkit-text-fill-color: white;
             color: white;
         }
 
@@ -371,11 +364,12 @@ try {
         .results-container {
             position: relative;
             padding: 3px;
-            border-radius: 28px;
-            background: linear-gradient(45deg, #8b5cf6, #06b6d4, #ec4899, #8b5cf6);
-            background-size: 400% 400%;
-            animation: gradientBorder 15s ease infinite;
+            border-radius: 30px;
+            background: linear-gradient(45deg, #8b5cf6, #06b6d4, #ec4899, #8b5cf6, #06b6d4);
+            background-size: 300% 300%;
+            animation: gradientBorder 8s linear infinite;
             display: none;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
         }
 
         .results-container.show {
@@ -395,24 +389,25 @@ try {
         }
 
         .results-inner {
-            background: rgba(5, 7, 12, 0.95);
-            border-radius: 25px;
-            padding: 2rem;
+            background: #05070c;
+            border-radius: 27px;
+            padding: 2.5rem;
         }
 
         .duration-item {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 1rem;
+            border-radius: 20px;
+            padding: 1.5rem;
             margin-bottom: 1rem;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .duration-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(139, 92, 246, 0.3);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateX(10px);
+            box-shadow: -5px 0 15px rgba(139, 92, 246, 0.1);
         }
     </style>
 </head>
@@ -420,7 +415,10 @@ try {
     <header class="header">
         <div class="d-flex align-items-center gap-3">
             <button class="btn text-white p-0 d-lg-none" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-            <h4 class="m-0 text-neon fw-bold">SilentMultiPanel</h4>
+            <div class="logo-wrapper d-flex align-items-center gap-2">
+                <i class="fas fa-bolt text-primary fs-3"></i>
+                <h4 class="m-0 text-neon fw-bold">SilentMultiPanel</h4>
+            </div>
         </div>
         <div class="d-flex align-items-center gap-3">
             <div class="text-end d-none d-sm-block">
