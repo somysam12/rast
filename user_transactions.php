@@ -122,6 +122,23 @@ foreach ($transactions as $tx) {
         .tx-amount.negative { color: #ef4444; }
         .tx-amount.positive { color: #10b981; }
 
+        .view-key-btn {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #8b5cf6;
+            padding: 6px 15px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .view-key-btn:hover {
+            background: #8b5cf6;
+            color: white;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+
         .stats-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -224,17 +241,35 @@ foreach ($transactions as $tx) {
                         <?php 
                         $isDebit = $tx['amount'] < 0;
                         $txType = $tx['type'] ?? 'transaction';
+                        
+                        // Parse product name and potential key ID from description/reference
+                        // "License key purchase - Mod Name", "License purchase #123"
+                        $isPurchase = stripos($tx['description'], 'purchase') !== false;
+                        $productName = $tx['description'];
+                        $keyId = null;
+                        
+                        if ($isPurchase) {
+                            if (preg_match('/#(\d+)/', $tx['reference'], $matches)) {
+                                $keyId = $matches[1];
+                            }
+                        }
                         ?>
                         <div class="tx-card">
                             <div class="tx-icon <?php echo $isDebit ? 'debit' : 'credit'; ?>">
-                                <i class="fas <?php echo $isDebit ? 'fa-minus' : 'fa-plus'; ?>"></i>
+                                <i class="fas <?php echo $isDebit ? 'fa-shopping-cart' : 'fa-plus'; ?>"></i>
                             </div>
                             <div class="tx-details">
-                                <div class="fw-bold text-white"><?php echo htmlspecialchars($tx['description'] ?: ucfirst($txType)); ?></div>
-                                <div class="small text-secondary"><?php echo formatDateLocal($tx['created_at']); ?></div>
+                                <div class="fw-bold text-white"><?php echo htmlspecialchars($productName ?: ucfirst($txType)); ?></div>
+                                <div class="small text-secondary mb-1"><?php echo formatDateLocal($tx['created_at']); ?></div>
+                                <?php if ($isPurchase && $keyId): ?>
+                                    <a href="user_manage_keys.php?search=<?php echo $keyId; ?>" class="view-key-btn mt-2 d-inline-block">
+                                        <i class="fas fa-key me-1"></i> View License Key
+                                    </a>
+                                <?php endif; ?>
                             </div>
                             <div class="tx-amount <?php echo $isDebit ? 'negative' : 'positive'; ?>">
-                                <?php echo ($isDebit ? '-' : '+') . formatCurrencyLocal(abs($tx['amount'])); ?>
+                                <div class="amount"><?php echo ($isDebit ? '-' : '+') . formatCurrencyLocal(abs($tx['amount'])); ?></div>
+                                <div class="small text-secondary fw-normal" style="font-size: 0.75rem;">Deducted</div>
                             </div>
                         </div>
                     <?php endforeach; ?>
