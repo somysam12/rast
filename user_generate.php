@@ -117,16 +117,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
                 document.addEventListener('DOMContentLoaded', function() {
                     const keys = `" . $keysString . "`;
                     navigator.clipboard.writeText(keys).then(() => {
+                        // Success animation
+                        const container = document.querySelector('.main-content');
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti-burst';
+                        document.body.appendChild(confetti);
+                        
                         Swal.fire({
                             title: 'Success!',
                             text: 'Key(s) purchased and copied to clipboard!',
                             icon: 'success',
-                            background: '#111827',
+                            background: 'rgba(15, 23, 42, 0.95)',
                             color: '#fff',
                             showConfirmButton: false,
                             timer: 2000,
-                            timerProgressBar: true
+                            timerProgressBar: true,
+                            backdrop: `rgba(0,0,123,0.1)`,
+                            customClass: {
+                                popup: 'cyber-swal'
+                            }
                         });
+                        
+                        setTimeout(() => confetti.remove(), 3000);
                     });
                 });
             </script>";
@@ -184,153 +196,249 @@ foreach ($availableKeys as $key) {
     }
     $keysByMod[$modName][] = $key;
 }
+
+// Get user's purchased keys
+$purchasedKeys = [];
+try {
+    $stmt = $pdo->prepare('SELECT lk.*, m.name AS mod_name
+                           FROM license_keys lk
+                           LEFT JOIN mods m ON m.id = lk.mod_id
+                           WHERE lk.sold_to = ?
+                           ORDER BY lk.sold_at DESC');
+    $stmt->execute([$user['id']]);
+    $purchasedKeys = $stmt->fetchAll();
+} catch (Throwable $e) {
+    $purchasedKeys = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Generate Key - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="assets/css/cyber-ui.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { padding-top: 60px; background: #0f172a; }
-        .header { height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; background: rgba(15,23,42,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; }
-        .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; background: #111827; border-right: 1px solid rgba(255,255,255,0.05); }
-        .main-content { margin-left: 260px; padding: 2rem; color: white; }
+        body { padding-top: 60px; }
+        .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; transition: transform 0.3s ease; }
+        .main-content { margin-left: 260px; padding: 2rem; transition: margin-left 0.3s ease; }
+        .header { height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; background: rgba(5,7,10,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; }
         @media (max-width: 992px) {
             .sidebar { transform: translateX(-260px); }
-            .main-content { margin-left: 0; }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
+        }
+        
+        .cyber-swal {
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #8b5cf6, #06b6d4) 1;
+            border-radius: 20px !important;
+        }
+        
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #8b5cf6;
+            top: -10px;
+            z-index: 9999;
+            animation: confettiFall 3s linear forwards;
         }
 
-        /* High-End Stylish UI */
-        .mod-selector-container {
+        /* Redesigned Filter Button & Popup */
+        .mod-selector-wrapper {
             position: relative;
             margin-bottom: 2rem;
+            padding: 2px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.5));
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+            transition: all 0.3s ease;
         }
-        .mod-trigger {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
+
+        .mod-selector-wrapper:hover {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .mod-trigger-btn {
+            width: 100%;
+            background: #0a0f19;
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 20px;
+            padding: 1.2rem 2rem;
             color: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
         }
-        .mod-trigger:hover {
-            border-color: #8b5cf6;
-            background: rgba(30, 41, 59, 0.8);
-        }
-        .mod-dropdown {
+
+        .mod-popup-menu {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 15px);
             left: 0;
             right: 0;
-            background: #1e293b;
-            border: 1px solid #8b5cf6;
-            border-radius: 12px;
-            margin-top: 8px;
+            background: rgba(10, 15, 25, 0.98);
+            backdrop-filter: blur(25px);
+            border: 2px solid #8b5cf6;
+            border-radius: 24px;
+            padding: 1.5rem;
             z-index: 100;
             display: none;
-            padding: 0.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(139, 92, 246, 0.2);
+            animation: popupReveal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 400px;
+            overflow-y: auto;
         }
-        .mod-dropdown.show { display: block; }
-        .mod-item {
-            display: block;
-            padding: 0.75rem 1rem;
-            color: #94a3b8;
+
+        .mod-popup-menu.show {
+            display: grid;
+        }
+
+        @keyframes popupReveal {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .mod-option-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
             text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
-        .mod-item:hover, .mod-item.active {
-            background: #8b5cf6;
+
+        .mod-option-item i {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mod-option-item:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: #8b5cf6;
+            color: white;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .mod-option-item.active {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            color: white;
+            border: none;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .mod-option-item.active i {
+            background: none;
+            -webkit-text-fill-color: white;
             color: white;
         }
 
+        /* Animated Border for Results */
         .results-container {
+            position: relative;
+            padding: 3px;
+            border-radius: 30px;
+            background: linear-gradient(45deg, #8b5cf6, #06b6d4, #ec4899, #8b5cf6, #06b6d4);
+            background-size: 300% 300%;
+            animation: gradientBorder 8s linear infinite;
+            display: none;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .results-container.show {
+            display: block;
+            animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-inner {
+            background: #05070c;
+            border-radius: 27px;
+            padding: 2.5rem;
+        }
+
+        .duration-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 20px;
-            overflow: hidden;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            background: rgba(30, 41, 59, 0.3);
-        }
-        .mod-group {
-            padding: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .mod-group:last-child { border-bottom: none; }
-        
-        .duration-card {
-            background: #1e293b;
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
             padding: 1.5rem;
-            transition: all 0.3s;
+            margin-bottom: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .duration-card:hover {
-            transform: translateY(-5px);
-            border-color: #8b5cf6;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
-        }
-        .price-text {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #8b5cf6;
-        }
-        .stock-tag {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .buy-btn {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            border: none;
-            border-radius: 10px;
-            padding: 0.6rem 1rem;
-            color: white;
-            font-weight: 600;
-            width: 100%;
-            transition: all 0.3s;
-        }
-        .buy-btn:hover {
-            opacity: 0.9;
-            transform: scale(1.02);
+
+        .duration-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateX(10px);
+            box-shadow: -5px 0 15px rgba(139, 92, 246, 0.1);
         }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="d-flex align-items-center gap-3">
-            <h4 class="m-0 fw-bold text-white"><i class="fas fa-shield-halved text-primary me-2"></i>SilentMultiPanel</h4>
+            <button class="btn text-white p-0 d-lg-none" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="logo-wrapper d-flex align-items-center gap-2">
+                <i class="fas fa-bolt text-primary fs-3"></i>
+                <h4 class="m-0 text-neon fw-bold">SilentMultiPanel</h4>
+            </div>
         </div>
         <div class="d-flex align-items-center gap-3">
             <div class="text-end d-none d-sm-block">
                 <div class="small fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
                 <div class="text-secondary small">Balance: <?php echo formatCurrency($user['balance']); ?></div>
             </div>
-            <div style="width:35px; height:35px; border-radius:50%; background:#8b5cf6; display:flex; align-items:center; justify-content:center; font-weight:bold;">
-                <?php echo strtoupper(substr($user['username'], 0, 1)); ?>
+            <div class="user-avatar-header" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
             </div>
         </div>
     </header>
 
-    <aside class="sidebar p-3">
+    <aside class="sidebar p-3" id="sidebar">
         <nav class="nav flex-column gap-2">
             <a class="nav-link" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
-            <a class="nav-link active" href="user_generate.php"><i class="fas fa-bolt me-2"></i> Generate Key</a>
+            <a class="nav-link active" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
             <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key me-2"></i> Manage Keys</a>
-            <a class="nav-link" href="user_applications.php"><i class="fas fa-layer-group me-2"></i> Applications</a>
+            <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt me-2"></i> Applications</a>
             <a class="nav-link" href="user_notifications.php"><i class="fas fa-bell me-2"></i> Notifications</a>
-            <a class="nav-link" href="user_block_request.php"><i class="fas fa-shield me-2"></i> Block & Reset</a>
+            <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban me-2"></i> Block & Reset</a>
             <a class="nav-link" href="user_settings.php"><i class="fas fa-cog me-2"></i> Settings</a>
             <a class="nav-link" href="user_transactions.php"><i class="fas fa-history me-2"></i> Transactions</a>
             <hr class="border-secondary opacity-25">
@@ -339,92 +447,126 @@ foreach ($availableKeys as $key) {
     </aside>
 
     <main class="main-content">
-        <div class="mb-4">
-            <h2 class="fw-bold">Generate License</h2>
-            <p class="text-secondary">Choose your application and duration to get started.</p>
+        <div class="cyber-card mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-neon mb-1">Generate License Key</h2>
+                    <p class="text-secondary mb-0">Select a mod and duration to purchase your key.</p>
+                </div>
+            </div>
         </div>
 
-        <div class="mod-selector-container">
-            <div class="mod-trigger" id="modTrigger">
+        <!-- Stylish Mod Selector -->
+        <div class="mod-selector-wrapper">
+            <div class="mod-trigger-btn" onclick="toggleModPopup()">
                 <div class="d-flex align-items-center gap-3">
-                    <i class="fas fa-search text-primary"></i>
-                    <span>
-                        <?php 
-                        $selected = "Search Applications...";
-                        foreach($mods as $m) if($m['id'] == $modId) $selected = $m['name'];
-                        echo htmlspecialchars($selected);
-                        ?>
-                    </span>
+                    <i class="fas fa-th-large text-primary fs-4"></i>
+                    <div>
+                        <div class="fw-bold">
+                            <?php 
+                            $currentModName = "All Applications";
+                            foreach($mods as $m) if($m['id'] == $modId) $currentModName = $m['name'];
+                            echo htmlspecialchars($currentModName);
+                            ?>
+                        </div>
+                        <div class="small text-secondary">Tap to browse available mods</div>
+                    </div>
                 </div>
                 <i class="fas fa-chevron-down opacity-50"></i>
             </div>
-            <div class="mod-dropdown" id="modDropdown">
-                <a href="user_generate.php" class="mod-item <?php echo !$modId ? 'active' : ''; ?>">All Applications</a>
-                <?php foreach($mods as $mod): ?>
-                    <a href="user_generate.php?mod_id=<?php echo $mod['id']; ?>" class="mod-item <?php echo $modId == $mod['id'] ? 'active' : ''; ?>">
-                        <?php echo htmlspecialchars($mod['name']); ?>
+            
+            <div class="mod-popup-menu" id="modPopup">
+                <a href="user_generate.php" class="mod-option-item <?php echo !$modId ? 'active' : ''; ?>">
+                    <i class="fas fa-globe"></i>
+                    <span>All Mods</span>
+                </a>
+                <?php foreach ($mods as $mod): ?>
+                    <a href="user_generate.php?mod_id=<?php echo $mod['id']; ?>" class="mod-option-item <?php echo $modId == $mod['id'] ? 'active' : ''; ?>">
+                        <i class="fas fa-cube"></i>
+                        <span><?php echo htmlspecialchars($mod['name']); ?></span>
                     </a>
                 <?php endforeach; ?>
             </div>
         </div>
 
-        <?php if($error): ?>
+        <?php if ($error): ?>
             <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4">
-                <i class="fas fa-exclamation-circle me-2"></i> <?php echo htmlspecialchars($error); ?>
+                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
             </div>
         <?php endif; ?>
 
-        <div class="results-container">
-            <?php if(empty($keysByMod)): ?>
-                <div class="text-center py-5">
-                    <i class="fas fa-folder-open text-secondary fs-1 mb-3 opacity-25"></i>
-                    <h5 class="text-secondary">No licenses available in this category.</h5>
-                </div>
-            <?php else: ?>
-                <?php foreach($keysByMod as $modName => $keys): ?>
-                    <div class="mod-group">
-                        <h4 class="mb-4 text-white d-flex align-items-center gap-2">
-                            <span style="width:4px; height:20px; background:#8b5cf6; border-radius:2px;"></span>
-                            <?php echo htmlspecialchars($modName); ?>
-                        </h4>
-                        <div class="row g-4">
-                            <?php foreach($keys as $key): ?>
-                                <div class="col-12 col-md-6 col-xl-4">
-                                    <div class="duration-card">
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <div>
-                                                <h5 class="m-0 text-white"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></h5>
-                                                <span class="stock-tag"><?php echo $key['key_count']; ?> In Stock</span>
-                                            </div>
-                                            <div class="price-text"><?php echo formatCurrency($key['price']); ?></div>
-                                        </div>
-                                        <form method="POST">
-                                            <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
-                                            <div class="d-flex gap-2">
-                                                <input type="number" name="quantity" class="form-control bg-dark border-secondary text-white text-center" value="1" min="1" max="<?php echo $key['key_count']; ?>" style="width:70px;">
-                                                <button type="submit" name="purchase_key" class="buy-btn">Buy Now</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+        <div class="results-container <?php echo !empty($keysByMod) ? 'show' : ''; ?>">
+            <div class="results-inner">
+                <?php if (empty($keysByMod)): ?>
+                    <div class="text-center py-5">
+                        <i class="fas fa-key text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <h5 class="text-secondary">No keys available for the selected mod.</h5>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                <?php else: ?>
+                    <?php foreach ($keysByMod as $modName => $keys): ?>
+                        <div class="mb-5 last-child-mb-0">
+                            <h4 class="mb-4 text-white"><i class="fas fa-shield-alt text-primary me-2"></i> <?php echo htmlspecialchars($modName); ?></h4>
+                            <div class="row g-3">
+                                <?php foreach ($keys as $key): ?>
+                                    <div class="col-12 col-md-6 col-xl-4">
+                                        <div class="duration-item">
+                                            <div class="mb-3">
+                                                <div class="fw-bold text-white fs-5"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></div>
+                                                <div class="text-secondary">₹<?php echo number_format($key['price'], 2); ?> | <span class="text-success"><?php echo $key['key_count']; ?> In Stock</span></div>
+                                            </div>
+                                            <form method="POST" class="d-flex align-items-center gap-2">
+                                                <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
+                                                <input type="number" name="quantity" class="form-control bg-dark border-secondary text-white text-center" value="1" min="1" max="<?php echo $key['key_count']; ?>" style="width: 70px; border-radius: 8px;">
+                                                <button type="submit" name="purchase_key" class="cyber-btn py-2 flex-grow-1">
+                                                    <i class="fas fa-shopping-cart"></i> Buy Now
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
         </div>
     </main>
 
     <script>
-        const trigger = document.getElementById('modTrigger');
-        const dropdown = document.getElementById('modDropdown');
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
         
-        trigger.onclick = (e) => {
-            e.stopPropagation();
-            dropdown.classList.toggle('show');
+        function toggleModPopup() {
+            document.getElementById('modPopup').classList.toggle('show');
+        }
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function(e) {
+            const popup = document.getElementById('modPopup');
+            const trigger = document.querySelector('.mod-trigger-btn');
+            if (popup && !popup.contains(e.target) && !trigger.contains(e.target)) {
+                popup.classList.remove('show');
+            }
+        });
+        
+        // Confetti burst logic
+        const createConfetti = () => {
+            const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = confetti.style.width;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 5000);
+            }
         };
 
-        document.onclick = () => dropdown.classList.remove('show');
+        <?php if ($success): ?>
+            createConfetti();
+        <?php endif; ?>
     </script>
 </body>
 </html>
