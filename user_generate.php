@@ -283,6 +283,41 @@ try {
             border-color: rgba(139, 92, 246, 0.3);
             transform: translateY(-2px);
         }
+        .search-wrapper {
+            position: relative;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+        .search-wrapper:focus-within {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+            transform: translateY(-2px);
+        }
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b5cf6;
+            font-size: 1.1rem;
+            z-index: 1;
+        }
+        .search-wrapper input {
+            background: transparent !important;
+            border: none !important;
+            padding-left: 45px !important;
+            color: white !important;
+            height: 50px;
+            box-shadow: none !important;
+        }
+        .search-wrapper input::placeholder {
+            color: rgba(148, 163, 184, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -327,6 +362,11 @@ try {
             </div>
         </div>
 
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="productSearch" class="form-control" placeholder="Search for applications or durations..." autocomplete="off">
+        </div>
+
         <?php if ($error): ?>
             <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4">
                 <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
@@ -363,14 +403,14 @@ try {
                     </div>
                 <?php else: ?>
                     <?php foreach ($keysByMod as $modName => $keys): ?>
-                        <div class="cyber-card mb-4">
-                            <h5 class="mb-4 text-white"><i class="fas fa-cube text-secondary me-2"></i> <?php echo htmlspecialchars($modName); ?></h5>
+                        <div class="cyber-card mb-4 mod-card-container">
+                            <h5 class="mb-4 text-white mod-title"><i class="fas fa-cube text-secondary me-2"></i> <?php echo htmlspecialchars($modName); ?></h5>
                             <div class="row g-3">
                                 <?php foreach ($keys as $key): ?>
-                                    <div class="col-12">
+                                    <div class="col-12 duration-item-container">
                                         <div class="duration-item d-flex justify-content-between align-items-center flex-wrap gap-3">
                                             <div>
-                                                <div class="fw-bold text-white"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></div>
+                                                <div class="fw-bold text-white duration-name"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></div>
                                                 <div class="small text-secondary"><?php echo formatCurrency($key['price']); ?> | <?php echo $key['key_count']; ?> available</div>
                                             </div>
                                             <form method="POST" class="d-flex align-items-center gap-2">
@@ -394,6 +434,38 @@ try {
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
         
+        // Product Search Logic
+        const productSearch = document.getElementById('productSearch');
+        const modCards = document.querySelectorAll('.mod-card-container');
+
+        productSearch.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            modCards.forEach(card => {
+                const modName = card.querySelector('.mod-title').textContent.toLowerCase();
+                const durations = Array.from(card.querySelectorAll('.duration-name')).map(d => d.textContent.toLowerCase());
+                
+                const matchesMod = modName.includes(query);
+                const matchesDuration = durations.some(d => d.includes(query));
+
+                if (matchesMod || matchesDuration) {
+                    card.style.display = 'block';
+                    // Filter individual durations within the card if needed
+                    const items = card.querySelectorAll('.duration-item-container');
+                    items.forEach(item => {
+                        const itemName = item.querySelector('.duration-name').textContent.toLowerCase();
+                        if (matchesMod || itemName.includes(query)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
         // Confetti burst logic
         const createConfetti = () => {
             const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b'];
