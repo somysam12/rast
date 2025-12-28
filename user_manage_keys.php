@@ -62,34 +62,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_block_reset_re
                 }
                 
                 // Insert request with empty reason (user can add it later from pending requests)
-                $stmt = $pdo->prepare('INSERT INTO key_requests (user_id, key_id, request_type, mod_name, reason, status, created_at) VALUES (?, ?, ?, ?, "", "pending", NOW())');
-                $stmt->execute([$user['id'], $keyDetails['id'], $requestType, $modName]);
+                $stmt = $pdo->prepare('INSERT INTO key_requests (user_id, key_id, request_type, mod_name, reason, status) VALUES (?, ?, ?, ?, ?, ?)');
+                $stmt->execute([$user['id'], $keyDetails['id'], $requestType, $modName, '', 'pending']);
                 
                 $pdo->commit();
-                echo "<script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        Swal.fire({
-                            title: 'Request Submitted!',
-                            text: 'Your " . ucfirst($requestType) . " request has been submitted to admin and will be processed soon.',
-                            icon: 'success',
-                            background: 'rgba(15, 23, 42, 0.95)',
-                            color: '#fff',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true,
-                            backdrop: `rgba(139, 92, 246, 0.1)`,
-                            customClass: {
-                                popup: 'cyber-swal'
-                            }
-                        }).then(() => {
-                            location.reload();
-                        });
-                    });
-                </script>";
+                
+                // Return JSON response for AJAX handling
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => ucfirst($requestType) . ' request submitted successfully']);
+                exit;
+            } else {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'License key not found']);
+                exit;
             }
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+            exit;
         }
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Invalid request']);
+        exit;
     }
 }
 
@@ -542,31 +538,56 @@ try {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Create a hidden form and submit it
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.style.display = 'none';
+                    // Submit via fetch for better response handling
+                    const formData = new FormData();
+                    formData.append('request_type', requestType);
+                    formData.append('license_key', licenseKey);
+                    formData.append('submit_block_reset_request', '1');
                     
-                    const typeInput = document.createElement('input');
-                    typeInput.type = 'hidden';
-                    typeInput.name = 'request_type';
-                    typeInput.value = requestType;
-                    
-                    const keyInput = document.createElement('input');
-                    keyInput.type = 'hidden';
-                    keyInput.name = 'license_key';
-                    keyInput.value = licenseKey;
-                    
-                    const submitInput = document.createElement('input');
-                    submitInput.type = 'hidden';
-                    submitInput.name = 'submit_block_reset_request';
-                    submitInput.value = '1';
-                    
-                    form.appendChild(typeInput);
-                    form.appendChild(keyInput);
-                    form.appendChild(submitInput);
-                    document.body.appendChild(form);
-                    form.submit();
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Request Sent!',
+                                text: 'Your ' + (requestType === 'reset' ? 'Reset HWID' : 'Block Key') + ' request has been sent to admin.',
+                                icon: 'success',
+                                background: 'rgba(15, 23, 42, 0.95)',
+                                color: '#fff',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                backdrop: `rgba(139, 92, 246, 0.1)`,
+                                customClass: {
+                                    popup: 'cyber-swal'
+                                }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message || 'An error occurred',
+                                icon: 'error',
+                                background: 'rgba(15, 23, 42, 0.95)',
+                                color: '#fff',
+                                customClass: { popup: 'cyber-swal' }
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to send request',
+                            icon: 'error',
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            color: '#fff',
+                            customClass: { popup: 'cyber-swal' }
+                        });
+                    });
                 }
             });
         }
