@@ -409,6 +409,49 @@ try {
             transform: translateX(10px);
             box-shadow: -5px 0 15px rgba(139, 92, 246, 0.1);
         }
+
+        /* Search Styles */
+        .search-container {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .stylish-search-wrapper {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 2px solid #8b5cf6;
+            border-radius: 20px;
+            padding: 8px 25px;
+            display: flex;
+            align-items: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+        .stylish-search-wrapper:focus-within {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+            border-color: #06b6d4;
+        }
+        .product-search-input {
+            background: transparent !important;
+            border: none !important;
+            color: white !important;
+            height: 50px;
+            width: 100%;
+            outline: none !important;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .product-search-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 20px;
+            border: 1px dashed rgba(139, 92, 246, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -454,6 +497,19 @@ try {
                     <p class="text-secondary mb-0">Select a mod and duration to purchase your key.</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Stylish Search Bar -->
+        <div class="search-container">
+            <div class="stylish-search-wrapper">
+                <i class="fas fa-search text-primary me-3 fs-5"></i>
+                <input type="text" id="productSearch" class="product-search-input" placeholder="Search for applications or mods..." autocomplete="off">
+            </div>
+        </div>
+
+        <div id="noResults" class="no-results mb-4">
+            <i class="fas fa-search-minus text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+            <h5 class="text-secondary">No products found matching your search.</h5>
         </div>
 
         <!-- Stylish Mod Selector -->
@@ -504,7 +560,7 @@ try {
                     </div>
                 <?php else: ?>
                     <?php foreach ($keysByMod as $modName => $keys): ?>
-                        <div class="mb-5 last-child-mb-0">
+                        <div class="mb-5 last-child-mb-0 mod-section" data-mod-name="<?php echo htmlspecialchars($modName); ?>">
                             <h4 class="mb-4 text-white"><i class="fas fa-shield-alt text-primary me-2"></i> <?php echo htmlspecialchars($modName); ?></h4>
                             <div class="row g-3">
                                 <?php foreach ($keys as $key): ?>
@@ -537,6 +593,37 @@ try {
         
         function toggleModPopup() {
             document.getElementById('modPopup').classList.toggle('show');
+        }
+
+        // Search Logic
+        const searchInput = document.getElementById('productSearch');
+        const noResults = document.getElementById('noResults');
+        const resultsContainer = document.querySelector('.results-container');
+        const modSections = document.querySelectorAll('.mod-section');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                modSections.forEach(section => {
+                    const modName = section.getAttribute('data-mod-name').toLowerCase();
+                    if (query === '' || modName.includes(query)) {
+                        section.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+
+                if (visibleCount === 0 && query !== '') {
+                    noResults.style.display = 'block';
+                    resultsContainer.classList.remove('show');
+                } else {
+                    noResults.style.display = 'none';
+                    resultsContainer.classList.add('show');
+                }
+            });
         }
 
         // Close popup when clicking outside
