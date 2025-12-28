@@ -286,56 +286,33 @@ try {
         }
 
         .page-header {
-            background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1.5px solid;
-            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
-            border-radius: 24px;
-            padding: 2rem;
-            box-shadow: 
-                0 0 60px rgba(139, 92, 246, 0.15),
-                0 0 20px rgba(6, 182, 212, 0.05),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            position: relative;
-            overflow: hidden;
+            background: transparent;
+            padding: 1.5rem 0;
             margin-bottom: 2rem;
             animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
-            pointer-events: none;
-        }
-
-        .page-header > * {
-            position: relative;
-            z-index: 2;
-        }
-
         .page-header h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 900;
             letter-spacing: -0.03em;
             color: var(--secondary);
             margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .page-header h1 i {
             color: var(--primary);
+            font-size: 2.2rem;
         }
 
         .page-header p {
             color: var(--primary);
-            font-size: 1rem;
+            font-size: 1.1rem;
             margin-bottom: 0;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .page-header p strong {
@@ -814,17 +791,21 @@ try {
 
             .page-header {
                 margin-bottom: 1.5rem;
-                padding: 1.5rem 1rem;
-                border-radius: 16px;
+                padding: 1rem 0;
             }
 
             .page-header h1 {
-                font-size: 1.4rem;
-                margin-bottom: 0.3rem;
+                font-size: 1.3rem;
+                margin-bottom: 0.5rem;
+                gap: 0.5rem;
+            }
+
+            .page-header h1 i {
+                font-size: 1.3rem;
             }
 
             .page-header p {
-                font-size: 0.85rem;
+                font-size: 0.9rem;
             }
 
             .stats-container {
@@ -997,18 +978,17 @@ try {
 
             .page-header {
                 margin-bottom: 1rem;
-                padding: 1rem 0.75rem;
-                border-radius: 12px;
+                padding: 0.75rem 0;
             }
 
             .page-header h1 {
-                font-size: 1.2rem;
-                margin-bottom: 0.25rem;
+                font-size: 1.1rem;
+                margin-bottom: 0.4rem;
+                gap: 0.4rem;
             }
 
             .page-header h1 i {
                 font-size: 1.1rem;
-                margin-right: 0.3rem;
             }
 
             .page-header p {
@@ -1381,14 +1361,12 @@ try {
                             <thead>
                                 <tr>
                                     <th>Name</th>
-                                    <th class="d-none d-sm-table-cell">Upload Date</th>
-                                    <th class="d-sm-none">Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($recentMods)): ?>
                                 <tr>
-                                    <td colspan="2" style="text-align: center; color: var(--text-dim); padding: 2rem 0;">
+                                    <td style="text-align: center; color: var(--text-dim); padding: 2rem 0;">
                                         <i class="fas fa-box fa-2x mb-2 d-block" style="opacity: 0.5;"></i>
                                         No mods uploaded yet
                                     </td>
@@ -1403,11 +1381,9 @@ try {
                                                 </div>
                                                 <div style="min-width: 0;">
                                                     <div style="font-weight: 600; color: var(--secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($mod['name']); ?></div>
-                                                    <small style="color: var(--primary); font-weight: 500;"><?php echo formatDate($mod['created_at']); ?></small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="d-none d-sm-table-cell" style="color: var(--secondary); font-weight: 500;"><?php echo formatDate($mod['created_at']); ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -1424,14 +1400,12 @@ try {
                             <thead>
                                 <tr>
                                     <th>Username</th>
-                                    <th class="d-none d-sm-table-cell">Join Date</th>
-                                    <th class="d-sm-none">Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($recentUsers)): ?>
                                 <tr>
-                                    <td colspan="2" style="text-align: center; color: var(--text-dim); padding: 2rem 0;">
+                                    <td style="text-align: center; color: var(--text-dim); padding: 2rem 0;">
                                         <i class="fas fa-users fa-2x mb-2 d-block" style="opacity: 0.5;"></i>
                                         No users registered yet
                                     </td>
@@ -1446,11 +1420,9 @@ try {
                                                 </div>
                                                 <div style="min-width: 0;">
                                                     <div style="font-weight: 600; color: var(--secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($user['username']); ?></div>
-                                                    <small style="color: var(--primary); font-weight: 500;"><?php echo formatDate($user['created_at']); ?></small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="d-none d-sm-table-cell" style="color: var(--secondary); font-weight: 500;"><?php echo formatDate($user['created_at']); ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
