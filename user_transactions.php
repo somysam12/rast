@@ -271,9 +271,8 @@ foreach ($transactions as $tx) {
                         <div class="tx-card">
                             <div class="tx-body mb-0">
                                 <div>
-                                    <div class="tx-info-label">Product Details</div>
-                                    <div class="tx-info-value" style="color: var(--primary);"><?php echo $isDebit ? 'License Purchase' : 'Balance Credit'; ?></div>
-                                    <div class="small text-secondary mt-1"><?php echo htmlspecialchars($productName ?: ucfirst($txType)); ?></div>
+                                    <div class="tx-info-label">Product Name</div>
+                                    <div class="tx-info-value"><?php echo htmlspecialchars($productName ?: ucfirst($txType)); ?></div>
                                 </div>
                                 <div class="tx-amount-col <?php echo $isDebit ? 'negative' : 'positive'; ?>">
                                     <div class="tx-info-label">Amount</div>
