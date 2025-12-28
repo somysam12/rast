@@ -183,14 +183,20 @@ if ($_POST) {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding: 3rem 0;
+            padding: 0;
+            margin: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--text-primary);
         }
         
         .register-container {
             width: 100%;
+            padding: 2rem 1rem;
             animation: fadeIn 0.8s ease-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
         @keyframes fadeIn {
@@ -207,6 +213,8 @@ if ($_POST) {
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            width: 100%;
+            max-width: 600px;
         }
 
         .register-card::before {
@@ -235,14 +243,14 @@ if ($_POST) {
         .register-header {
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
             color: white;
-            padding: 3rem 2rem;
+            padding: 2.5rem 1.5rem;
             text-align: center;
             border-bottom: 1px solid var(--border-light);
         }
         
         .register-header h3 {
             font-weight: 800;
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             letter-spacing: -0.025em;
             margin-bottom: 0.5rem;
             background: linear-gradient(to right, #fff, var(--purple-light));
@@ -251,17 +259,18 @@ if ($_POST) {
         }
         
         .register-body {
-            padding: 3rem 2.5rem;
+            padding: 2rem 1.5rem;
         }
         
         .form-control {
             border-radius: 12px;
             border: 2px solid var(--border-light);
-            padding: 14px 18px;
+            padding: 12px 16px;
             transition: all 0.3s;
             background: rgba(15, 23, 42, 0.5);
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: white;
+            width: 100%;
         }
         
         .form-control:focus {
@@ -274,21 +283,23 @@ if ($_POST) {
         .form-label {
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
         }
         
         .btn-register {
             background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
             border: none;
             border-radius: 12px;
-            padding: 14px;
+            padding: 12px;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: all 0.3s;
             color: white;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-top: 1rem;
+            width: 100%;
         }
         
         .btn-register:hover {
@@ -312,9 +323,55 @@ if ($_POST) {
         .referral-info {
             background: rgba(139, 92, 246, 0.1);
             border-radius: 12px;
-            padding: 15px;
+            padding: 12px;
             border: 1px solid rgba(139, 92, 246, 0.2);
             margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            backdrop-filter: blur(12px);
+        }
+
+        .theme-toggle:hover {
+            color: var(--purple-light);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 576px) {
+            .register-card {
+                border-radius: 0;
+                border: none;
+                max-width: 100%;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                background: transparent;
+                box-shadow: none;
+            }
+            .register-container {
+                padding: 0;
+            }
+            .register-header {
+                background: transparent;
+                border: none;
+            }
         }
     </style>
         
@@ -422,10 +479,10 @@ if ($_POST) {
     </button>
     
     <div class="register-container">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="register-card">
+        <div class="container-fluid">
+            <div class="row justify-content-center align-items-center min-vh-100">
+                <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+                    <div class="register-card">
                     <div class="register-header">
                         <i class="fas fa-user-plus fa-3x mb-3"></i>
                         <h3>Create Account</h3>

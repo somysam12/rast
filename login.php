@@ -69,12 +69,18 @@ if ($_POST) {
             align-items: center;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--text-primary);
+            margin: 0;
+            padding: 0;
         }
         
         .login-container {
             width: 100%;
-            padding: 2rem 0;
+            padding: 2rem 1rem;
             animation: fadeIn 0.8s ease-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
         @keyframes fadeIn {
@@ -91,6 +97,8 @@ if ($_POST) {
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            width: 100%;
+            max-width: 400px;
         }
 
         .login-card::before {
@@ -107,7 +115,7 @@ if ($_POST) {
         }
         
         .login-card:hover {
-            transform: translateY(-5px) scale(1.01);
+            transform: translateY(-5px);
             border-color: var(--purple-light);
             box-shadow: 0 0 30px var(--glow-color);
         }
@@ -119,14 +127,14 @@ if ($_POST) {
         .login-header {
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
             color: white;
-            padding: 3rem 2rem;
+            padding: 2.5rem 1.5rem;
             text-align: center;
             border-bottom: 1px solid var(--border-light);
         }
         
         .login-header h3 {
             font-weight: 800;
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             letter-spacing: -0.025em;
             margin-bottom: 0.5rem;
             background: linear-gradient(to right, #fff, var(--purple-light));
@@ -135,17 +143,18 @@ if ($_POST) {
         }
         
         .login-body {
-            padding: 3rem 2.5rem;
+            padding: 2rem 1.5rem;
         }
         
         .form-control {
             border-radius: 12px;
             border: 2px solid var(--border-light);
-            padding: 14px 18px;
+            padding: 12px 16px;
             transition: all 0.3s;
             background: rgba(15, 23, 42, 0.5);
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: white;
+            width: 100%;
         }
         
         .form-control:focus {
@@ -159,14 +168,15 @@ if ($_POST) {
             background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
             border: none;
             border-radius: 12px;
-            padding: 14px;
+            padding: 12px;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: all 0.3s;
             color: white;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-top: 1rem;
+            width: 100%;
         }
         
         .btn-login:hover {
@@ -189,21 +199,23 @@ if ($_POST) {
 
         .input-group {
             position: relative;
-            margin-bottom: 1.75rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
         }
 
         .input-icon {
             position: absolute;
-            left: 18px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-secondary);
             pointer-events: none;
             transition: color 0.3s;
+            z-index: 5;
         }
 
         .form-control.with-icon {
-            padding-left: 50px;
+            padding-left: 45px;
         }
 
         .form-control:focus + .input-icon {
@@ -212,7 +224,7 @@ if ($_POST) {
 
         .password-toggle {
             position: absolute;
-            right: 18px;
+            right: 16px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
@@ -221,6 +233,7 @@ if ($_POST) {
             cursor: pointer;
             padding: 5px;
             transition: color 0.3s;
+            z-index: 5;
         }
 
         .password-toggle:hover {
@@ -229,18 +242,18 @@ if ($_POST) {
 
         .form-check-label {
             color: var(--text-secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .info-card {
             background: rgba(139, 92, 246, 0.1);
             border-radius: 12px;
-            padding: 15px;
+            padding: 12px;
             border: 1px solid rgba(139, 92, 246, 0.2);
-            margin-top: 2rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
         }
-    </style>
-        
+
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -248,7 +261,7 @@ if ($_POST) {
             z-index: 1000;
             background: var(--card-bg);
             border: 1px solid var(--border-light);
-            border-radius: 8px;
+            border-radius: 12px;
             width: 44px;
             height: 44px;
             display: flex;
@@ -257,8 +270,35 @@ if ($_POST) {
             cursor: pointer;
             transition: all 0.2s ease;
             color: var(--text-secondary);
-            box-shadow: var(--shadow-medium);
+            backdrop-filter: blur(12px);
         }
+
+        .theme-toggle:hover {
+            color: var(--purple-light);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 576px) {
+            .login-card {
+                border-radius: 0;
+                border: none;
+                max-width: 100%;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                background: transparent;
+                box-shadow: none;
+            }
+            .login-container {
+                padding: 0;
+            }
+            .login-header {
+                background: transparent;
+                border: none;
+            }
+        }
+    </style>
         
         .theme-toggle:hover {
             color: var(--purple);
@@ -436,9 +476,9 @@ if ($_POST) {
     </button>
     
     <div class="login-container">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-lg-5 col-xl-4">
+        <div class="container-fluid">
+            <div class="row justify-content-center align-items-center min-vh-100">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-4 col-xl-3">
                     <div class="login-card">
                         <div class="login-header">
                             <div class="logo">
