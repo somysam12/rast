@@ -84,31 +84,76 @@ function formatDate($date) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="assets/css/glass-theme.css" rel="stylesheet">
+    <link href="assets/css/cyber-ui.css" rel="stylesheet">
     <style>
-        /* Modern Dashboard Design Overrides */
-        :root {
-            --bg: #0a0e27;
-            --card: rgba(15, 23, 42, 0.7);
-            --text: #f8fafc;
-            --muted: #94a3b8;
-            --line: rgba(148, 163, 184, 0.1);
-            --accent: #8b5cf6;
-            --accent-600: #7c3aed;
-            --accent-100: rgba(139, 92, 246, 0.1);
-            --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
-        }
-        
-        * {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        
+        /* Component Specific Overrides */
         body {
-            background: var(--bg);
-            overflow-x: hidden;
-            color: var(--text);
+            padding-top: 60px;
+        }
+        
+        .modern-header {
+            background: rgba(5, 7, 10, 0.8) !important;
+            backdrop-filter: blur(20px) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
             transition: all 0.3s ease;
         }
+
+        .sidebar {
+            width: 280px;
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            z-index: 1040;
+            padding-top: 1rem;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+                width: 280px;
+            }
+        }
+
+        .cyber-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .cyber-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+            filter: brightness(1.1);
+        }
+    </style>
         
         /* Modern Header */
         .modern-header {
