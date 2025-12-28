@@ -276,7 +276,7 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                                     border-radius: 12px;
                                     border: 1px solid rgba(148, 163, 184, 0.15);
                                     text-align: center;
-                                    transition: all 0.3s ease;
+                                    transition: none !important;
                                     animation: float 3s ease-in-out infinite;
                                     will-change: transform;
                                     transform: translateZ(0);

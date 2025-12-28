@@ -86,7 +86,7 @@ if ($isLoggedIn) {
             border-radius: 16px;
             padding: 2rem;
             box-shadow: var(--shadow-large);
-            transition: all 0.3s ease;
+            transition: none !important;
             border: 1px solid var(--border-light);
             height: 100%;
         }
@@ -119,7 +119,7 @@ if ($isLoggedIn) {
             width: 100%;
             top: 0;
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .navbar-custom.scrolled {
@@ -166,7 +166,7 @@ if ($isLoggedIn) {
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            transition: all 0.2s ease;
+            transition: none !important;
             box-shadow: var(--shadow-medium);
         }
         
@@ -186,7 +186,7 @@ if ($isLoggedIn) {
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .btn-outline-cta:hover {
@@ -254,7 +254,7 @@ if ($isLoggedIn) {
         .fade-in {
             opacity: 0;
             transform: translateY(20px);
-            transition: all 0.6s ease;
+            transition: none !important;
         }
         
         .fade-in.visible {

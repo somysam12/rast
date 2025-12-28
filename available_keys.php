@@ -103,7 +103,7 @@ try {
             background-color: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar {
@@ -129,7 +129,7 @@ try {
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 16px;
-            transition: all 0.2s ease;
+            transition: none !important;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -155,7 +155,7 @@ try {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -185,7 +185,7 @@ try {
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-light);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .mobile-toggle:hover {
@@ -223,7 +223,7 @@ try {
             box-shadow: var(--shadow-light);
             border-left: 4px solid;
             margin-bottom: 1.5rem;
-            transition: transform 0.2s ease;
+            transition: none !important;
         }
         
         .stats-card:hover {
@@ -320,7 +320,7 @@ try {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             box-shadow: var(--shadow-light);
         }
         
@@ -409,7 +409,7 @@ try {
                 padding: 0.75rem;
                 border-radius: 12px;
                 box-shadow: var(--shadow-light);
-                transition: all 0.3s ease;
+                transition: none !important;
                 font-size: 1.1rem;
                 min-width: 48px;
                 min-height: 48px;
@@ -893,7 +893,7 @@ try {
                         box-shadow: var(--shadow-medium);
                         z-index: 10001;
                         transform: translateX(100%);
-                        transition: all 0.3s ease;
+                        transition: none !important;
                         max-width: 300px;
                     }
                     

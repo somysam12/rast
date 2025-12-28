@@ -80,7 +80,7 @@ $pendingCount = $stmt->fetchColumn();
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 16px;
-            transition: all 0.2s ease;
+            transition: none !important;
             text-decoration: none;
         }
         .sidebar .nav-link:hover,

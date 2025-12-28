@@ -125,7 +125,7 @@ foreach ($notifications as $notif) {
             margin-bottom: 1.5rem;
         }
         .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
-        .mark-all-btn { transition: all 0.3s ease; }
+        .mark-all-btn { transition: none !important; }
         .mark-all-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
         @media (max-width: 991.98px) {
             .sidebar { display: none; }

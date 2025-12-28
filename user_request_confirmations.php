@@ -81,7 +81,7 @@ foreach ($confirmations as $conf) {
             background: var(--bg);
             color: var(--text);
             font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .navbar-custom {
@@ -111,7 +111,7 @@ foreach ($confirmations as $conf) {
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            transition: all 0.3s ease;
+            transition: none !important;
             position: relative;
         }
         
@@ -154,7 +154,7 @@ foreach ($confirmations as $conf) {
             padding: 0.6rem 1.5rem;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: none !important;
             font-weight: 500;
             border: none;
         }

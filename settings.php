@@ -111,7 +111,7 @@ try {
             --shadow-dark: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
             --border-radius: 12px;
-            --transition: all 0.3s ease;
+            --transition: none !important;
         }
 
         * {

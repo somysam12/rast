@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: transform 0.3s ease;
+            transition: none !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: translateX(0);
         }
@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             margin: 2px 16px;
             border-radius: 8px;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: none !important;
             font-weight: 500;
         }
         
@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             color: white;
             padding: 0.75rem;
             border-radius: 8px;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .balance-badge {
@@ -222,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             border: 1px solid var(--border-light);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .card:hover {
@@ -282,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             border: 1px solid var(--border-light);
             border-radius: 8px;
             padding: 0.75rem 1rem;
-            transition: all 0.2s ease;
+            transition: none !important;
             background-color: var(--white);
         }
         
@@ -302,7 +302,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             border-radius: 8px;
             padding: 0.75rem 1.5rem;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .btn-primary:hover {
@@ -314,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             border: 1px solid var(--border-light);
             color: var(--text-light);
             border-radius: 8px;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .btn-outline-secondary:hover {

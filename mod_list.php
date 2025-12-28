@@ -54,7 +54,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar {
@@ -80,7 +80,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 16px;
-            transition: all 0.2s ease;
+            transition: none !important;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -106,7 +106,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -136,7 +136,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-light);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .mobile-toggle:hover {
@@ -243,7 +243,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             box-shadow: var(--shadow-light);
         }
         
@@ -333,7 +333,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 padding: 0.75rem;
                 border-radius: 12px;
                 box-shadow: var(--shadow-light);
-                transition: all 0.3s ease;
+                transition: none !important;
                 font-size: 1.1rem;
                 min-width: 48px;
                 min-height: 48px;

@@ -175,7 +175,7 @@ try {
             background-color: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar {
@@ -201,7 +201,7 @@ try {
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 16px;
-            transition: all 0.2s ease;
+            transition: none !important;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -227,7 +227,7 @@ try {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -257,7 +257,7 @@ try {
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-light);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .mobile-toggle:hover {
@@ -295,7 +295,7 @@ try {
             box-shadow: var(--shadow-light);
             border-left: 4px solid;
             margin-bottom: 1.5rem;
-            transition: transform 0.2s ease;
+            transition: none !important;
         }
         
         .stats-card:hover {
@@ -374,7 +374,7 @@ try {
             border-radius: 8px;
             border: 1px solid var(--border-light);
             padding: 0.75rem;
-            transition: all 0.2s ease;
+            transition: none !important;
             color: var(--text-primary);
             background-color: var(--card-bg);
         }
@@ -395,7 +395,7 @@ try {
         .btn {
             border-radius: 8px;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: none !important;
             padding: 0.75rem 1.5rem;
         }
         
@@ -461,7 +461,7 @@ try {
             border-radius: 6px;
             border: 1px solid rgba(139, 92, 246, 0.2);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .code-display:hover {

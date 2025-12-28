@@ -100,7 +100,7 @@ body {
     display: flex;
     align-items: center;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: none !important;
     min-height: 48px;
 }
 
@@ -183,7 +183,7 @@ body {
     margin-bottom: 1.5rem;
     position: relative;
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: none !important;
 }
 
 .card::before, .table-card::before, .key-card::before, .filter-card::before {
@@ -200,7 +200,7 @@ body {
     border-radius: 10px;
     padding: 10px 20px;
     font-weight: 600;
-    transition: all 0.2s ease;
+    transition: none !important;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
@@ -256,7 +256,7 @@ body {
     min-height: 48px;
     background: var(--card);
     color: var(--text);
-    transition: all 0.2s ease;
+    transition: none !important;
 }
 
 .form-control:focus, .form-select:focus {
@@ -558,7 +558,7 @@ body {
     border-radius: 16px;
     padding: 1.5rem;
     text-align: center;
-    transition: all 0.2s ease;
+    transition: none !important;
 }
 
 .stat-card:hover {

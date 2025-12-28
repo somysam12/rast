@@ -119,7 +119,7 @@ try {
             background: var(--bg);
             color: var(--text);
             font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .navbar-custom {

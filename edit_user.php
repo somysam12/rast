@@ -243,7 +243,7 @@ try {
             font-weight: 600;
             cursor: pointer;
             border: none;
-            transition: all 0.3s ease;
+            transition: none !important;
             display: inline-flex;
             align-items: center;
             gap: 8px;

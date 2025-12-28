@@ -87,13 +87,13 @@ try {
         }
         
         [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #f8fafc;
-            --sidebar-bg: #f8fafc;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
+            --bg-color: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --sidebar-bg: rgba(15, 23, 42, 0.8);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
             --text-muted: #94a3b8;
-            --border-light: #334155;
+            --border-light: rgba(148, 163, 184, 0.15);
         }
         
         * {
@@ -103,7 +103,7 @@ try {
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar {
@@ -115,7 +115,7 @@ try {
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: transform 0.3s ease;
+            transition: none !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: translateX(0);
             overflow-y: auto;
@@ -131,7 +131,7 @@ try {
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 12px;
-            transition: all 0.2s ease;
+            transition: none !important;
             font-weight: 500;
             font-size: 0.9rem;
         }
@@ -153,7 +153,7 @@ try {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
             overflow-y: auto;
             
         }
@@ -180,7 +180,7 @@ try {
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-medium);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .mobile-toggle:hover {
@@ -194,7 +194,7 @@ try {
             padding: 2rem;
             box-shadow: var(--shadow-medium);
             border: 1px solid var(--border-light);
-            transition: all 0.3s ease;
+            transition: none !important;
             position: relative;
             overflow: hidden;
             margin-bottom: 1.5rem;
@@ -243,7 +243,7 @@ try {
             box-shadow: var(--shadow-medium);
             margin-top: 1rem;
             border: 1px solid var(--border-light);
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .table-card:hover {
@@ -295,7 +295,7 @@ try {
         }
         
         .table tbody tr {
-            transition: all 0.2s ease;
+            transition: none !important;
             background: var(--card-bg);
         }
         
@@ -323,7 +323,7 @@ try {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             box-shadow: var(--shadow-medium);
             color: var(--text-secondary);
         }
@@ -351,7 +351,7 @@ try {
         .fade-in {
             opacity: 0;
             transform: translateY(20px);
-            transition: all 0.6s ease;
+            transition: none !important;
         }
         
         .fade-in.visible {
@@ -702,7 +702,7 @@ try {
             $roleDisplay = $userItem['role'] === 'user' ? 'User Account' : 'Administrator';
 ?>
                         <div class="col-md-4 col-lg-3 mb-3">
-                            <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;">
+                            <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light); text-align: center; transition: none !important; position: relative; overflow: hidden;">
                                 <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--purple);"></div>
                                 <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem; margin: 0 auto 1rem; box-shadow: var(--shadow-medium);">
                                     <?php echo $initials; ?>

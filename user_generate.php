@@ -337,7 +337,7 @@ try {
     <div class="container-fluid">
         <div class="row" style="position: relative;">
             <div class="back-btn-container" style="position: absolute; top: 20px; left: 20px; z-index: 999;">
-                <a href="user_dashboard.php" class="back-button" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <a href="user_dashboard.php" class="back-button" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: none !important; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                     <i class="fas fa-arrow-left" style="font-size: 1rem;"></i><span>Back</span>
                 </a>
             </div>

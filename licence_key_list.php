@@ -173,7 +173,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar {
@@ -199,7 +199,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 16px;
-            transition: all 0.2s ease;
+            transition: none !important;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -225,7 +225,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -251,7 +251,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: white;
             padding: 0.5rem 0.75rem;
             border-radius: 8px;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .mobile-toggle:hover {
@@ -306,7 +306,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         .table tbody tr {
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .table tbody tr:hover {
@@ -346,7 +346,7 @@ $licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
             height: 18px;
             border: 2px solid var(--border-light);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .form-check-input:checked {

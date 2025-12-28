@@ -75,7 +75,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar {
@@ -87,7 +87,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: transform 0.3s ease;
+            transition: none !important;
             box-shadow: var(--shadow-medium);
             transform: translateX(0);
         }
@@ -101,7 +101,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 12px;
-            transition: all 0.2s ease;
+            transition: none !important;
             font-weight: 500;
             font-size: 0.9rem;
         }
@@ -123,7 +123,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -148,7 +148,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-medium);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .mobile-toggle:hover {
@@ -162,7 +162,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 2rem;
             box-shadow: var(--shadow-medium);
             border: 1px solid var(--border-light);
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .table-card:hover {
@@ -192,7 +192,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 10px 20px;
             font-weight: 600;
             font-size: 0.9rem;
-            transition: all 0.2s ease;
+            transition: none !important;
             color: white;
             box-shadow: var(--shadow-medium);
         }
@@ -238,7 +238,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         .table tbody tr {
-            transition: all 0.2s ease;
+            transition: none !important;
             background: var(--card-bg);
         }
         
@@ -299,7 +299,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             box-shadow: var(--shadow-medium);
             color: var(--text-secondary);
         }

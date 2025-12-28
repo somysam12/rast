@@ -89,7 +89,7 @@ function formatDate($date) {
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: transform 0.3s ease;
+            transition: none !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: translateX(0);
         }
@@ -104,7 +104,7 @@ function formatDate($date) {
             margin: 2px 16px;
             border-radius: 8px;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: none !important;
             font-weight: 500;
         }
         
@@ -128,7 +128,7 @@ function formatDate($date) {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -152,7 +152,7 @@ function formatDate($date) {
             color: white;
             padding: 0.75rem;
             border-radius: 8px;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .balance-badge {
@@ -168,7 +168,7 @@ function formatDate($date) {
             border: 1px solid var(--border-light);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .card:hover {
@@ -213,7 +213,7 @@ function formatDate($date) {
         
         .table tbody tr {
             background-color: var(--white);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .table tbody tr:hover {
@@ -248,7 +248,7 @@ function formatDate($date) {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             color: var(--text-dark);
         }
         
@@ -287,7 +287,7 @@ function formatDate($date) {
             border-radius: 12px;
             padding: 1.5rem;
             text-align: center;
-            transition: all 0.2s ease;
+            transition: none !important;
             position: relative;
             overflow: hidden;
         }

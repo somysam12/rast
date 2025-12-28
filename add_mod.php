@@ -69,7 +69,7 @@ if ($_POST) {
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar {
@@ -81,7 +81,7 @@ if ($_POST) {
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: transform 0.3s ease;
+            transition: none !important;
             box-shadow: var(--shadow-medium);
             transform: translateX(0);
         }
@@ -95,7 +95,7 @@ if ($_POST) {
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 12px;
-            transition: all 0.2s ease;
+            transition: none !important;
             font-weight: 500;
             font-size: 0.9rem;
         }
@@ -117,7 +117,7 @@ if ($_POST) {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -142,7 +142,7 @@ if ($_POST) {
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-medium);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .mobile-toggle:hover {
@@ -156,7 +156,7 @@ if ($_POST) {
             padding: 2rem;
             box-shadow: var(--shadow-medium);
             border: 1px solid var(--border-light);
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .form-card:hover {
@@ -167,7 +167,7 @@ if ($_POST) {
             border-radius: 8px;
             border: 2px solid var(--border-light);
             padding: 12px 16px;
-            transition: all 0.2s ease;
+            transition: none !important;
             background: var(--card-bg);
             font-size: 0.95rem;
             color: var(--text-primary);
@@ -198,7 +198,7 @@ if ($_POST) {
             padding: 12px 24px;
             font-weight: 600;
             font-size: 0.95rem;
-            transition: all 0.2s ease;
+            transition: none !important;
             color: white;
             box-shadow: var(--shadow-medium);
         }
@@ -271,7 +271,7 @@ if ($_POST) {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             box-shadow: var(--shadow-medium);
             color: var(--text-secondary);
         }

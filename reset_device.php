@@ -71,7 +71,7 @@ if ($_POST) {
             box-shadow: var(--shadow-large);
             border: 1px solid var(--border-light);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .reset-card:hover {
@@ -107,7 +107,7 @@ if ($_POST) {
             border-radius: 8px;
             border: 2px solid var(--border-light);
             padding: 12px 16px;
-            transition: all 0.2s ease;
+            transition: none !important;
             background: var(--card-bg);
             font-size: 0.95rem;
             color: var(--text-primary);
@@ -138,7 +138,7 @@ if ($_POST) {
             padding: 12px 24px;
             font-weight: 600;
             font-size: 0.95rem;
-            transition: all 0.2s ease;
+            transition: none !important;
             color: white;
             box-shadow: var(--shadow-medium);
         }
@@ -159,7 +159,7 @@ if ($_POST) {
             color: var(--purple);
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .login-link:hover {
@@ -213,7 +213,7 @@ if ($_POST) {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             color: var(--text-secondary);
             box-shadow: var(--shadow-medium);
         }

@@ -148,7 +148,7 @@ if ($_POST) {
             background-color: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar {
@@ -174,7 +174,7 @@ if ($_POST) {
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 16px;
-            transition: all 0.2s ease;
+            transition: none !important;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -200,7 +200,7 @@ if ($_POST) {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         }
         
         .main-content.full-width {
@@ -230,7 +230,7 @@ if ($_POST) {
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-light);
-            transition: all 0.2s ease;
+            transition: none !important;
         }
         
         .mobile-toggle:hover {
@@ -362,7 +362,7 @@ if ($_POST) {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: none !important;
             box-shadow: var(--shadow-light);
         }
         
@@ -451,7 +451,7 @@ if ($_POST) {
                 padding: 0.75rem;
                 border-radius: 12px;
                 box-shadow: var(--shadow-light);
-                transition: all 0.3s ease;
+                transition: none !important;
                 font-size: 1.1rem;
                 min-width: 48px;
                 min-height: 48px;

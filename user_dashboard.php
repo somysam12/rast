@@ -106,11 +106,11 @@ function formatDate($date) {
         }
         
         [data-theme="dark"] {
-            --bg: #0f172a;
-            --card: #f8fafc;
-            --text: #f1f5f9;
+            --bg: #0a0e27;
+            --card: rgba(15, 23, 42, 0.8);
+            --text: #f8fafc;
             --muted: #94a3b8;
-            --line: #334155;
+            --line: rgba(148, 163, 184, 0.15);
         }
         
         * {
@@ -121,13 +121,13 @@ function formatDate($date) {
             background: var(--bg);
             overflow-x: hidden;
             color: var(--text);
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         /* Modern Header */
         .modern-header {
-            background: rgba(15, 23, 42, 0.8);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(15, 23, 42, 0.9) !important;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15) !important;
             padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
@@ -148,7 +148,7 @@ function formatDate($date) {
             font-size: 1.2rem;
             cursor: pointer;
             padding: 8px;
-            transition: all 0.3s ease;
+            transition: none !important;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -176,7 +176,7 @@ function formatDate($date) {
             font-weight: 700;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: none !important;
             position: relative;
         }
         
@@ -187,7 +187,7 @@ function formatDate($date) {
         .dropdown-arrow {
             color: #7c3aed;
             font-size: 0.7rem;
-            transition: transform 0.3s ease;
+            transition: none !important;
             margin-left: 4px;
             cursor: pointer;
         }
@@ -196,8 +196,8 @@ function formatDate($date) {
             position: absolute;
             top: 100%;
             right: 0;
-            background: var(--card);
-            border: 1px solid var(--line);
+            background: var(--card) !important;
+            border: 1px solid var(--line) !important;
             border-radius: 12px;
             box-shadow: var(--shadow-large);
             min-width: 200px;
@@ -206,7 +206,7 @@ function formatDate($date) {
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
-            transition: all 0.3s ease;
+            transition: none !important;
             z-index: 1003;
         }
         
@@ -223,7 +223,7 @@ function formatDate($date) {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.3s ease;
+            transition: none !important;
             border: none;
             background: none;
             width: 100%;
@@ -267,7 +267,7 @@ function formatDate($date) {
             color: #94a3b8;
             padding: 12px 20px;
             margin: 8px 16px;
-            transition: all 0.3s ease;
+            transition: none !important;
             position: relative;
             z-index: 1003;
             pointer-events: auto;
@@ -292,7 +292,7 @@ function formatDate($date) {
             width: 20px;
             margin-right: 12px;
             font-size: 1.1em;
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .sidebar .nav-link:hover i {
@@ -338,7 +338,7 @@ function formatDate($date) {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: none !important;
         overflow-y: auto;
         
         }
@@ -407,7 +407,7 @@ function formatDate($date) {
             font-weight: 700;
             font-size: 1.2em;
             box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
+            transition: none !important;
         }
         
         .user-avatar:hover {
@@ -422,7 +422,7 @@ function formatDate($date) {
             padding: 2rem;
             border: 1px solid var(--line);
             box-shadow: var(--shadow-light);
-            transition: all 0.3s ease;
+            transition: none !important;
             position: relative;
             overflow: hidden;
         }
@@ -470,7 +470,7 @@ function formatDate($date) {
             border: 1px solid var(--line);
             box-shadow: var(--shadow-light);
             margin-bottom: 2rem;
-            transition: all 0.3s ease;
+            transition: none !important;
             position: relative;
             overflow: hidden;
         }
@@ -512,7 +512,7 @@ function formatDate($date) {
             border: 1px solid var(--line);
             box-shadow: var(--shadow-light);
             margin-bottom: 1rem;
-            transition: all 0.3s ease;
+            transition: none !important;
             position: relative;
             overflow: hidden;
         }
@@ -539,7 +539,7 @@ function formatDate($date) {
             border-radius: 12px;
             padding: 12px 24px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: none !important;
             color: white;
             box-shadow: var(--shadow-medium);
         }
@@ -575,7 +575,7 @@ function formatDate($date) {
         }
         
         .table tbody tr {
-            transition: all 0.3s ease;
+            transition: none !important;
             border-bottom: 1px solid var(--line);
         }
         
@@ -644,7 +644,7 @@ function formatDate($date) {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: none !important;
             color: var(--muted);
             box-shadow: var(--shadow-medium);
             backdrop-filter: blur(20px);
