@@ -288,39 +288,45 @@ try {
             position: relative;
         }
         .stylish-search-wrapper {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(15px);
-            border: 2px solid rgba(139, 92, 246, 0.2);
-            border-radius: 20px;
-            padding: 5px 15px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 2px solid #8b5cf6;
+            border-radius: 24px;
+            padding: 8px 25px;
             display: flex;
             align-items: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
         }
         .stylish-search-wrapper:focus-within {
-            border-color: #8b5cf6;
-            box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.4);
+            border-color: #06b6d4;
         }
         .stylish-search-wrapper i {
             color: #8b5cf6;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             margin-right: 15px;
-            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+        .stylish-search-wrapper:focus-within i {
+            color: #06b6d4;
+            transform: rotate(15deg);
         }
         .product-search-input {
             background: transparent !important;
             border: none !important;
             color: white !important;
-            height: 55px;
+            height: 50px;
             width: 100%;
             outline: none !important;
-            font-size: 1.1rem;
-            font-weight: 500;
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         .product-search-input::placeholder {
-            color: rgba(148, 163, 184, 0.4);
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 400;
         }
         
         .no-results {
@@ -463,44 +469,50 @@ try {
             productSearch.addEventListener('input', function() {
                 const query = this.value.toLowerCase().trim();
                 const noResults = document.getElementById('noResults');
+                const modCards = document.querySelectorAll('.mod-card-container'); // Re-select to be safe
                 let totalVisibleMods = 0;
                 
                 modCards.forEach(card => {
-                    // Fix: Ensure we get clean text from the title
                     const modTitleElem = card.querySelector('.mod-title');
-                    const modName = modTitleElem ? modTitleElem.innerText.toLowerCase() : '';
+                    // Get only the text nodes to avoid icon tags interfering
+                    let modName = "";
+                    if (modTitleElem) {
+                        modTitleElem.childNodes.forEach(node => {
+                            if (node.nodeType === Node.TEXT_NODE) modName += node.textContent;
+                        });
+                    }
+                    modName = modName.toLowerCase().trim();
                     
                     const durationItems = card.querySelectorAll('.duration-item-container');
                     let visibleDurationsInCard = 0;
 
                     durationItems.forEach(item => {
                         const durationNameElem = item.querySelector('.duration-name');
-                        const durationName = durationNameElem ? durationNameElem.innerText.toLowerCase() : '';
+                        const durationName = durationNameElem ? durationNameElem.textContent.toLowerCase().trim() : '';
                         
-                        // Also search in price or other small text if needed
                         const smallTextElem = item.querySelector('.small');
-                        const smallText = smallTextElem ? smallTextElem.innerText.toLowerCase() : '';
+                        const smallText = smallTextElem ? smallTextElem.textContent.toLowerCase().trim() : '';
 
                         if (query === '' || modName.includes(query) || durationName.includes(query) || smallText.includes(query)) {
-                            item.style.display = 'block';
+                            item.style.setProperty('display', 'block', 'important');
                             visibleDurationsInCard++;
                         } else {
-                            item.style.display = 'none';
+                            item.style.setProperty('display', 'none', 'important');
                         }
                     });
 
                     if (visibleDurationsInCard > 0) {
-                        card.style.display = 'block';
+                        card.style.setProperty('display', 'block', 'important');
                         totalVisibleMods++;
                     } else {
-                        card.style.display = 'none';
+                        card.style.setProperty('display', 'none', 'important');
                     }
                 });
 
                 if (totalVisibleMods === 0 && query !== '') {
-                    noResults.style.display = 'block';
+                    noResults.style.setProperty('display', 'block', 'important');
                 } else {
-                    noResults.style.display = 'none';
+                    noResults.style.setProperty('display', 'none', 'important');
                 }
             });
         }
