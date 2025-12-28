@@ -283,45 +283,53 @@ try {
             border-color: rgba(139, 92, 246, 0.3);
             transform: translateY(-2px);
         }
-        .search-wrapper {
+        .search-container {
+            margin-bottom: 2.5rem;
             position: relative;
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            border-radius: 16px;
-            padding: 5px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            margin-bottom: 2rem;
+        }
+        .stylish-search-wrapper {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 20px;
+            padding: 5px 15px;
             display: flex;
             align-items: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
-        .search-wrapper:focus-within {
+        .stylish-search-wrapper:focus-within {
             border-color: #8b5cf6;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
             transform: translateY(-2px);
         }
-        .search-wrapper i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
+        .stylish-search-wrapper i {
             color: #8b5cf6;
-            font-size: 1.1rem;
-            z-index: 10;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
         }
-        .search-wrapper .product-search-input {
+        .product-search-input {
             background: transparent !important;
             border: none !important;
-            padding-left: 45px !important;
             color: white !important;
-            height: 50px;
-            box-shadow: none !important;
+            height: 55px;
             width: 100%;
             outline: none !important;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
         }
-        .search-wrapper .product-search-input::placeholder {
-            color: rgba(148, 163, 184, 0.5);
+        .product-search-input::placeholder {
+            color: rgba(148, 163, 184, 0.4);
+        }
+        
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 20px;
+            border: 1px dashed rgba(139, 92, 246, 0.3);
         }
     </style>
 </head>
@@ -367,9 +375,17 @@ try {
             </div>
         </div>
 
-        <div class="search-wrapper">
-            <i class="fas fa-search"></i>
-            <input type="text" id="productSearch" class="product-search-input" placeholder="Search for applications or durations..." autocomplete="off">
+        <div class="search-container">
+            <div class="stylish-search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="productSearch" class="product-search-input" placeholder="Search applications, duration, or price..." autocomplete="off">
+            </div>
+        </div>
+
+        <div id="noResults" class="no-results mb-4">
+            <i class="fas fa-search-minus text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+            <h5 class="text-secondary">We couldn't find any products matching your search.</h5>
+            <p class="text-muted small">Try checking your spelling or using different keywords.</p>
         </div>
 
         <?php if ($error): ?>
@@ -446,36 +462,46 @@ try {
         if (productSearch) {
             productSearch.addEventListener('input', function() {
                 const query = this.value.toLowerCase().trim();
+                const noResults = document.getElementById('noResults');
+                let totalVisibleMods = 0;
                 
                 modCards.forEach(card => {
-                    const modName = card.querySelector('.mod-title').textContent.toLowerCase();
-                    const durations = Array.from(card.querySelectorAll('.duration-name')).map(d => d.textContent.toLowerCase());
+                    // Fix: Ensure we get clean text from the title
+                    const modTitleElem = card.querySelector('.mod-title');
+                    const modName = modTitleElem ? modTitleElem.innerText.toLowerCase() : '';
                     
-                    const matchesMod = modName.includes(query);
-                    const matchesDuration = durations.some(d => d.includes(query));
+                    const durationItems = card.querySelectorAll('.duration-item-container');
+                    let visibleDurationsInCard = 0;
 
-                    if (matchesMod || matchesDuration || query === '') {
-                        card.classList.remove('d-none');
-                        // Filter individual durations within the card
-                        const items = card.querySelectorAll('.duration-item-container');
-                        let visibleItems = 0;
-                        items.forEach(item => {
-                            const itemName = item.querySelector('.duration-name').textContent.toLowerCase();
-                            if (query === '' || matchesMod || itemName.includes(query)) {
-                                item.classList.remove('d-none');
-                                visibleItems++;
-                            } else {
-                                item.classList.add('d-none');
-                            }
-                        });
+                    durationItems.forEach(item => {
+                        const durationNameElem = item.querySelector('.duration-name');
+                        const durationName = durationNameElem ? durationNameElem.innerText.toLowerCase() : '';
                         
-                        if (query !== '' && !matchesMod && visibleItems === 0) {
-                            card.classList.add('d-none');
+                        // Also search in price or other small text if needed
+                        const smallTextElem = item.querySelector('.small');
+                        const smallText = smallTextElem ? smallTextElem.innerText.toLowerCase() : '';
+
+                        if (query === '' || modName.includes(query) || durationName.includes(query) || smallText.includes(query)) {
+                            item.style.display = 'block';
+                            visibleDurationsInCard++;
+                        } else {
+                            item.style.display = 'none';
                         }
+                    });
+
+                    if (visibleDurationsInCard > 0) {
+                        card.style.display = 'block';
+                        totalVisibleMods++;
                     } else {
-                        card.classList.add('d-none');
+                        card.style.display = 'none';
                     }
                 });
+
+                if (totalVisibleMods === 0 && query !== '') {
+                    noResults.style.display = 'block';
+                } else {
+                    noResults.style.display = 'none';
+                }
             });
         }
 
