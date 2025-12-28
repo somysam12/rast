@@ -187,6 +187,7 @@ if ($_POST) {
             margin: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--text-primary);
+            overflow-x: hidden;
         }
         
         .register-container {
@@ -269,7 +270,7 @@ if ($_POST) {
             transition: all 0.3s;
             background: rgba(15, 23, 42, 0.5);
             font-size: 0.95rem;
-            color: white;
+            color: white !important;
             width: 100%;
         }
         
@@ -353,7 +354,7 @@ if ($_POST) {
             transform: scale(1.1);
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 768px) {
             .register-card {
                 border-radius: 0;
                 border: none;
@@ -362,7 +363,7 @@ if ($_POST) {
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                background: transparent;
+                background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
                 box-shadow: none;
             }
             .register-container {
@@ -371,6 +372,10 @@ if ($_POST) {
             .register-header {
                 background: transparent;
                 border: none;
+                padding-top: 4rem;
+            }
+            .register-body {
+                padding: 1.5rem;
             }
         }
     </style>

@@ -71,6 +71,7 @@ if ($_POST) {
             color: var(--text-primary);
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
         
         .login-container {
@@ -153,7 +154,7 @@ if ($_POST) {
             transition: all 0.3s;
             background: rgba(15, 23, 42, 0.5);
             font-size: 0.95rem;
-            color: white;
+            color: white !important;
             width: 100%;
         }
         
@@ -278,7 +279,7 @@ if ($_POST) {
             transform: scale(1.1);
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 768px) {
             .login-card {
                 border-radius: 0;
                 border: none;
@@ -287,7 +288,7 @@ if ($_POST) {
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                background: transparent;
+                background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
                 box-shadow: none;
             }
             .login-container {
@@ -296,6 +297,10 @@ if ($_POST) {
             .login-header {
                 background: transparent;
                 border: none;
+                padding-top: 4rem;
+            }
+            .login-body {
+                padding: 1.5rem;
             }
         }
     </style>
