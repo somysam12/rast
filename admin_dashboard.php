@@ -65,123 +65,45 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - SilentMultiPanel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
-</head>
-<body>
-    <div class="main-layout">
-        <aside class="sidebar">
-            <div class="p-4 border-bottom border-light mb-4">
-                <h4 class="text-gradient mb-0"><i class="fas fa-crown me-2"></i>AdminPanel</h4>
-            </div>
-            <nav class="px-3" style="max-height: calc(100vh - 100px); overflow-y: auto;">
-                <a href="admin_dashboard.php" class="nav-link active py-2 px-4 mb-1 d-block"><i class="fas fa-tachometer-alt me-3"></i>Overview</a>
-                <a href="manage_users.php" class="nav-link py-2 px-4 mb-1 d-block"><i class="fas fa-users me-3"></i>Users</a>
-                <a href="manage_mods.php" class="nav-link py-2 px-4 mb-1 d-block"><i class="fas fa-edit me-3"></i>Mods</a>
-                <a href="licence_key_list.php" class="nav-link py-2 px-4 mb-1 d-block"><i class="fas fa-key me-3"></i>License Keys</a>
-                <a href="transactions.php" class="nav-link py-2 px-4 mb-1 d-block"><i class="fas fa-exchange-alt me-3"></i>Transactions</a>
-                <a href="settings.php" class="nav-link py-2 px-4 mb-1 d-block"><i class="fas fa-cog me-3"></i>Settings</a>
-                <div class="mt-4 border-top border-light pt-3">
-                    <a href="logout.php" class="nav-link py-2 px-4 d-block text-danger"><i class="fas fa-sign-out-alt me-3"></i>Logout</a>
-                </div>
-            </nav>
-        </aside>
-
-        <main class="content-wrapper">
-            <header class="d-flex justify-content-between align-items-center mb-5">
-                <div>
-                    <h1 class="text-gradient mb-1">Admin Overview</h1>
-                    <p class="text-dim mb-0">Comprehensive control over your platform</p>
-                </div>
-                <div class="glass-card py-2 px-4 d-flex align-items-center gap-3">
-                    <div class="avatar-circle bg-accent text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; border-radius: 50%;">
-                        AD
-                    </div>
-                </div>
-            </header>
-
-            <div class="stats-grid mb-5">
-                <div class="glass-card animate-fade">
-                    <span class="text-dim small text-uppercase fw-bold d-block mb-2">Total Mods</span>
-                    <h2 class="mb-0"><?= $stats['total_mods'] ?></h2>
-                </div>
-                <div class="glass-card animate-fade" style="animation-delay: 0.1s">
-                    <span class="text-dim small text-uppercase fw-bold d-block mb-2">License Keys</span>
-                    <h2 class="mb-0"><?= $stats['total_keys'] ?></h2>
-                </div>
-                <div class="glass-card animate-fade" style="animation-delay: 0.2s">
-                    <span class="text-dim small text-uppercase fw-bold d-block mb-2">Total Users</span>
-                    <h2 class="mb-0"><?= $stats['total_users'] ?></h2>
-                </div>
-                <div class="glass-card animate-fade" style="animation-delay: 0.3s">
-                    <span class="text-dim small text-uppercase fw-bold d-block mb-2">Sold Keys</span>
-                    <h2 class="mb-0 text-success"><?= $stats['sold_keys'] ?></h2>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="glass-card h-100 animate-fade" style="animation-delay: 0.4s">
-                        <h4 class="mb-4">Recent Users</h4>
-                        <div class="table-container">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>User</th>
-                                        <th>Balance</th>
-                                        <th>Joined</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($recentUsers as $u): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($u['username']) ?></td>
-                                            <td><?= number_format($u['balance'], 2) ?></td>
-                                            <td class="text-dim small"><?= date('d M', strtotime($u['created_at'])) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="glass-card h-100 animate-fade" style="animation-delay: 0.5s">
-                        <h4 class="mb-4">Recent Mods</h4>
-                        <div class="table-container">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>Mod Name</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($recentMods as $m): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($m['name']) ?></td>
-                                            <td><span class="badge bg-success bg-opacity-10 text-success px-2 py-1 rounded small"><?= $m['status'] ?></span></td>
-                                            <td class="text-dim small"><?= date('d M', strtotime($m['created_at'])) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-    
     <style>
-        .nav-link { color: var(--text-dim); text-decoration: none; border-radius: 12px; transition: all 0.3s var(--transition); font-weight: 500; }
-        .nav-link:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
-        .nav-link.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); }
-    </style>
-</body>
-</html><?php exit(); ?>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --sidebar-bg: #ffffff;
+            --purple: #8b5cf6;
+            --purple-light: #a78bfa;
+            --purple-dark: #7c3aed;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-light: #e2e8f0;
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --sidebar-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-light: #334155;
+        }
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
         
         .sidebar {
             background-color: var(--sidebar-bg);
