@@ -41,7 +41,6 @@ if ($_POST) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SilentMultiPanel</title>
@@ -191,7 +190,7 @@ if ($_POST) {
             font-weight: 900;
             letter-spacing: -0.03em;
             margin-bottom: 8px;
-            background: linear-gradient(135deg, #0a0e27, var(--primary));
+            background: linear-gradient(135deg, #f8fafc, var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -371,34 +370,6 @@ if ($_POST) {
             color: var(--text-main);
         }
 
-        .password-toggle-wrapper {
-            position: relative;
-        }
-
-        .password-toggle-btn {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-            z-index: 10;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .password-toggle-btn:hover {
-            color: var(--primary);
-        }
-
         @media (max-width: 480px) {
             .glass-card {
                 padding: 30px 20px;
@@ -442,12 +413,9 @@ if ($_POST) {
                            value="<?php echo htmlspecialchars($username ?? ''); ?>">
                 </div>
 
-                <div class="form-group password-toggle-wrapper">
+                <div class="form-group">
                     <i class="fas fa-lock field-icon"></i>
                     <input type="password" name="password" class="input-field" placeholder="Password" required>
-                    <button type="button" class="password-toggle-btn">
-                        <i class="fas fa-eye-slash"></i>
-                    </button>
                 </div>
 
                 <div class="form-group">

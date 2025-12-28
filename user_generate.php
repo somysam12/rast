@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
                             showConfirmButton: true,
                             confirmButtonText: 'Great!',
                             confirmButtonColor: '#8b5cf6',
-                            background: 'rgba(15, 23, 42, 0.8)',
+                            background: '#ffffff',
                             iconColor: '#8b5cf6',
                             customClass: {
                                 title: 'text-purple',
@@ -205,7 +205,6 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generate - Mod APK Manager</title>
@@ -229,7 +228,7 @@ try {
         }
         .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        :root { --bg: #0a0e27; --sidebar-bg: rgba(15, 23, 42, 0.8); --purple: #8b5cf6; --text: #f8fafc; --muted: #94a3b8; --border: rgba(148, 163, 184, 0.15); }
+        :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
         
@@ -251,7 +250,7 @@ try {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #f8fafc;
+            background: #1e293b;
             color: white;
             padding: 16px 24px;
             border-radius: 12px;
@@ -331,13 +330,12 @@ try {
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/dark-mode.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">
         <div class="row" style="position: relative;">
             <div class="back-btn-container" style="position: absolute; top: 20px; left: 20px; z-index: 999;">
-                <a href="user_dashboard.php" class="back-button" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: none !important; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <a href="user_dashboard.php" class="back-button" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                     <i class="fas fa-arrow-left" style="font-size: 1rem;"></i><span>Back</span>
                 </a>
             </div>
@@ -460,7 +458,7 @@ try {
                                     <?php foreach ($purchasedKeys as $key): ?>
                                     <tr style="border-bottom: 1px solid var(--border);">
                                         <td><?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?></td>
-                                        <td><code style="background: #0a0e27; padding: 0.5rem; border-radius: 6px;"><?php echo htmlspecialchars($key['license_key']); ?></code></td>
+                                        <td><code style="background: #f8fafc; padding: 0.5rem; border-radius: 6px;"><?php echo htmlspecialchars($key['license_key']); ?></code></td>
                                         <td><span class="badge bg-primary"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span></td>
                                         <td class="text-muted-date"><?php echo formatDate($key['sold_at']); ?></td>
                                         <td><button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')"><i class="fas fa-copy"></i></button></td>

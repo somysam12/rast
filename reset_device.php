@@ -35,7 +35,6 @@ if ($_POST) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Device - SilentMultiPanel</title>
@@ -43,14 +42,14 @@ if ($_POST) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-light: #a78bfa;
             --purple-dark: #7c3aed;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
             --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -71,7 +70,7 @@ if ($_POST) {
             box-shadow: var(--shadow-large);
             border: 1px solid var(--border-light);
             overflow: hidden;
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .reset-card:hover {
@@ -107,7 +106,7 @@ if ($_POST) {
             border-radius: 8px;
             border: 2px solid var(--border-light);
             padding: 12px 16px;
-            transition: none !important;
+            transition: all 0.2s ease;
             background: var(--card-bg);
             font-size: 0.95rem;
             color: var(--text-primary);
@@ -138,7 +137,7 @@ if ($_POST) {
             padding: 12px 24px;
             font-weight: 600;
             font-size: 0.95rem;
-            transition: none !important;
+            transition: all 0.2s ease;
             color: white;
             box-shadow: var(--shadow-medium);
         }
@@ -159,7 +158,7 @@ if ($_POST) {
             color: var(--purple);
             text-decoration: none;
             font-weight: 600;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .login-link:hover {
@@ -213,7 +212,7 @@ if ($_POST) {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: none !important;
+            transition: all 0.2s ease;
             color: var(--text-secondary);
             box-shadow: var(--shadow-medium);
         }
@@ -226,7 +225,7 @@ if ($_POST) {
         /* Dark theme styles */
         [data-theme="dark"] {
             --bg-color: #0f172a;
-            --card-bg: #f8fafc;
+            --card-bg: #1e293b;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --border-light: #334155;
@@ -297,7 +296,6 @@ if ($_POST) {
         }
     </style>
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle -->

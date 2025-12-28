@@ -12,7 +12,6 @@ if ($isLoggedIn) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SilentMultiPanel - Best Multipanel And Instant Support</title>
@@ -22,14 +21,14 @@ if ($isLoggedIn) {
     <link href="assets/css/main.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-light: #a78bfa;
             --purple-dark: #7c3aed;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
             --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -86,7 +85,7 @@ if ($isLoggedIn) {
             border-radius: 16px;
             padding: 2rem;
             box-shadow: var(--shadow-large);
-            transition: none !important;
+            transition: all 0.3s ease;
             border: 1px solid var(--border-light);
             height: 100%;
         }
@@ -119,7 +118,7 @@ if ($isLoggedIn) {
             width: 100%;
             top: 0;
             z-index: 1000;
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .navbar-custom.scrolled {
@@ -166,7 +165,7 @@ if ($isLoggedIn) {
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            transition: none !important;
+            transition: all 0.2s ease;
             box-shadow: var(--shadow-medium);
         }
         
@@ -186,7 +185,7 @@ if ($isLoggedIn) {
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .btn-outline-cta:hover {
@@ -230,7 +229,7 @@ if ($isLoggedIn) {
         
         [data-theme="dark"] {
             --bg-color: #0f172a;
-            --card-bg: #f8fafc;
+            --card-bg: #1e293b;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --border-light: #334155;
@@ -254,7 +253,7 @@ if ($isLoggedIn) {
         .fade-in {
             opacity: 0;
             transform: translateY(20px);
-            transition: none !important;
+            transition: all 0.6s ease;
         }
         
         .fade-in.visible {
@@ -293,7 +292,6 @@ if ($isLoggedIn) {
         }
     </style>
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     
@@ -336,7 +334,7 @@ if ($isLoggedIn) {
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="hero-content">
-                        <h1 class="display-3 fw-bold mb-4 fade-in" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, #e0e7ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 1px; text-shadow: 0 0 30px rgba(251, 191, 36, 0.3); line-height: 1.2;">
+                        <h1 class="display-3 fw-bold mb-4 fade-in" style="background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 1px; text-shadow: 0 0 30px rgba(251, 191, 36, 0.3); line-height: 1.2;">
                             Welcome To <span class="d-block" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.8rem; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 40px rgba(251, 191, 36, 0.5);">SilentMultiPanel</span>
                         </h1>
                         <p class="lead mb-5 fade-in">

@@ -33,7 +33,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Mods - Multi Panel</title>
@@ -43,16 +42,16 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
-            --sidebar-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --sidebar-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-light: #a78bfa;
             --purple-dark: #7c3aed;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
             --text-muted: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --border-light: #e2e8f0;
             --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -60,8 +59,8 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         [data-theme="dark"] {
             --bg-color: #0f172a;
-            --card-bg: #f8fafc;
-            --sidebar-bg: #f8fafc;
+            --card-bg: #1e293b;
+            --sidebar-bg: #1e293b;
             --text-primary: #f1f5f9;
             --text-secondary: #cbd5e1;
             --text-muted: #94a3b8;
@@ -75,7 +74,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .sidebar {
@@ -87,7 +86,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: none !important;
+            transition: transform 0.3s ease;
             box-shadow: var(--shadow-medium);
             transform: translateX(0);
         }
@@ -101,7 +100,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 12px;
-            transition: none !important;
+            transition: all 0.2s ease;
             font-weight: 500;
             font-size: 0.9rem;
         }
@@ -123,7 +122,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: none !important;
+            transition: margin-left 0.3s ease;
         }
         
         .main-content.full-width {
@@ -148,7 +147,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-medium);
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .mobile-toggle:hover {
@@ -162,7 +161,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 2rem;
             box-shadow: var(--shadow-medium);
             border: 1px solid var(--border-light);
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .table-card:hover {
@@ -192,7 +191,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 10px 20px;
             font-weight: 600;
             font-size: 0.9rem;
-            transition: none !important;
+            transition: all 0.2s ease;
             color: white;
             box-shadow: var(--shadow-medium);
         }
@@ -238,7 +237,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         .table tbody tr {
-            transition: none !important;
+            transition: all 0.2s ease;
             background: var(--card-bg);
         }
         
@@ -299,7 +298,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: none !important;
+            transition: all 0.2s ease;
             box-shadow: var(--shadow-medium);
             color: var(--text-secondary);
         }
@@ -360,7 +359,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     </style>
     <link href="assets/css/dark-mode-button.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle -->
@@ -625,7 +623,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             Swal.fire({
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#94a3b8',
+                cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Yes, Delete',
                 cancelButtonText: 'Cancel',
                 customClass: {
@@ -662,7 +660,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         .swal-delete-title {
             font-size: 1.5rem !important;
-            color: #f8fafc !important;
+            color: #1e293b !important;
             font-weight: 700 !important;
         }
         .swal-delete-confirm, .swal-delete-cancel {
@@ -676,8 +674,8 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
         }
         .swal-delete-cancel {
-            background-color: rgba(148, 163, 184, 0.15) !important;
-            color: #f8fafc !important;
+            background-color: #e5e7eb !important;
+            color: #374151 !important;
         }
         .swal-delete-cancel:hover {
             background-color: #d1d5db !important;

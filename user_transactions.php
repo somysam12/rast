@@ -36,7 +36,6 @@ function formatDate($date) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transactions - SilentMultiPanel Panel</title>
@@ -47,14 +46,14 @@ function formatDate($date) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --bg-color: #0a0e27;
-            --sidebar-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --sidebar-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-hover: #7c3aed;
-            --text-dark: #f8fafc;
-            --text-light: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
-            --white: rgba(15, 23, 42, 0.8);
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border-light: #e2e8f0;
+            --white: #ffffff;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
@@ -65,7 +64,7 @@ function formatDate($date) {
             --bg-primary: #1a202c;
             --bg-secondary: #2d3748;
             --text-primary: #f7fafc;
-            --text-secondary: rgba(148, 163, 184, 0.15);
+            --text-secondary: #e2e8f0;
             --text-muted: #a0aec0;
             --border-color: #4a5568;
         }
@@ -89,7 +88,7 @@ function formatDate($date) {
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: none !important;
+            transition: transform 0.3s ease;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: translateX(0);
         }
@@ -104,7 +103,7 @@ function formatDate($date) {
             margin: 2px 16px;
             border-radius: 8px;
             text-decoration: none;
-            transition: none !important;
+            transition: all 0.2s ease;
             font-weight: 500;
         }
         
@@ -128,7 +127,7 @@ function formatDate($date) {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: none !important;
+            transition: margin-left 0.3s ease;
         }
         
         .main-content.full-width {
@@ -152,7 +151,7 @@ function formatDate($date) {
             color: white;
             padding: 0.75rem;
             border-radius: 8px;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .balance-badge {
@@ -168,7 +167,7 @@ function formatDate($date) {
             border: 1px solid var(--border-light);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .card:hover {
@@ -213,11 +212,11 @@ function formatDate($date) {
         
         .table tbody tr {
             background-color: var(--white);
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .table tbody tr:hover {
-            background-color: #0a0e27;
+            background-color: #f8fafc;
         }
         
         .table tbody td {
@@ -248,7 +247,7 @@ function formatDate($date) {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: none !important;
+            transition: all 0.2s ease;
             color: var(--text-dark);
         }
         
@@ -287,7 +286,7 @@ function formatDate($date) {
             border-radius: 12px;
             padding: 1.5rem;
             text-align: center;
-            transition: none !important;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
         }
@@ -437,7 +436,6 @@ function formatDate($date) {
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/dark-mode.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Dark Mode Toggle -->

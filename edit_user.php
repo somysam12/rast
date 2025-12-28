@@ -181,7 +181,6 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit User - SilentMultiPanel</title>
@@ -189,12 +188,12 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-dark: #7c3aed;
-            --text-primary: #f8fafc;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --text-primary: #1e293b;
+            --border-light: #e2e8f0;
         }
         
         body {
@@ -243,7 +242,7 @@ try {
             font-weight: 600;
             cursor: pointer;
             border: none;
-            transition: none !important;
+            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -275,7 +274,7 @@ try {
         }
         
         .btn-secondary:hover {
-            background-color: rgba(148, 163, 184, 0.15);
+            background-color: #e5e7eb;
             border-color: #d1d5db;
         }
         
@@ -325,7 +324,6 @@ try {
             margin: 0;
         }
     </style>
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div style="display: flex; min-height: 100vh;">
@@ -399,8 +397,8 @@ try {
                                 <div class="form-group">
                                     <label class="form-label" style="color: white;">Action</label>
                                     <select name="balance_type" class="form-control" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white;">
-                                        <option value="add" style="background: #f8fafc;">Add Balance</option>
-                                        <option value="deduct" style="background: #f8fafc;">Deduct Balance</option>
+                                        <option value="add" style="background: #1e293b;">Add Balance</option>
+                                        <option value="deduct" style="background: #1e293b;">Deduct Balance</option>
                                     </select>
                                 </div>
                                 <div class="form-group">

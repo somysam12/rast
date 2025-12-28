@@ -62,7 +62,6 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - SilentMultiPanel</title>
@@ -71,29 +70,29 @@ try {
     <link href="assets/css/main.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
-            --sidebar-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --sidebar-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-light: #a78bfa;
             --purple-dark: #7c3aed;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
             --text-muted: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --border-light: #e2e8f0;
             --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
         [data-theme="dark"] {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
-            --sidebar-bg: rgba(15, 23, 42, 0.8);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --sidebar-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
             --text-muted: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --border-light: #334155;
         }
         
         * {
@@ -103,7 +102,7 @@ try {
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .sidebar {
@@ -115,7 +114,7 @@ try {
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: none !important;
+            transition: transform 0.3s ease;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: translateX(0);
             overflow-y: auto;
@@ -131,7 +130,7 @@ try {
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 12px;
-            transition: none !important;
+            transition: all 0.2s ease;
             font-weight: 500;
             font-size: 0.9rem;
         }
@@ -153,7 +152,7 @@ try {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: none !important;
+            transition: margin-left 0.3s ease;
             overflow-y: auto;
             
         }
@@ -180,7 +179,7 @@ try {
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-medium);
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .mobile-toggle:hover {
@@ -194,7 +193,7 @@ try {
             padding: 2rem;
             box-shadow: var(--shadow-medium);
             border: 1px solid var(--border-light);
-            transition: none !important;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
             margin-bottom: 1.5rem;
@@ -243,7 +242,7 @@ try {
             box-shadow: var(--shadow-medium);
             margin-top: 1rem;
             border: 1px solid var(--border-light);
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .table-card:hover {
@@ -295,7 +294,7 @@ try {
         }
         
         .table tbody tr {
-            transition: none !important;
+            transition: all 0.2s ease;
             background: var(--card-bg);
         }
         
@@ -323,7 +322,7 @@ try {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: none !important;
+            transition: all 0.2s ease;
             box-shadow: var(--shadow-medium);
             color: var(--text-secondary);
         }
@@ -351,7 +350,7 @@ try {
         .fade-in {
             opacity: 0;
             transform: translateY(20px);
-            transition: none !important;
+            transition: all 0.6s ease;
         }
         
         .fade-in.visible {
@@ -519,7 +518,6 @@ try {
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
     <script src="assets/js/menu-logic.js"></script>
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle -->
@@ -702,7 +700,7 @@ try {
             $roleDisplay = $userItem['role'] === 'user' ? 'User Account' : 'Administrator';
 ?>
                         <div class="col-md-4 col-lg-3 mb-3">
-                            <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light); text-align: center; transition: none !important; position: relative; overflow: hidden;">
+                            <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;">
                                 <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--purple);"></div>
                                 <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem; margin: 0 auto 1rem; box-shadow: var(--shadow-medium);">
                                     <?php echo $initials; ?>

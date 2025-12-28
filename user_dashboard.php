@@ -78,7 +78,6 @@ function formatDate($date) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>User Dashboard - Mod APK Manager</title>
@@ -88,11 +87,11 @@ function formatDate($date) {
     <style>
         /* Modern Dashboard Design */
         :root {
-            --bg: #0a0e27;
-            --card: rgba(15, 23, 42, 0.8);
-            --text: #f8fafc;
-            --muted: #94a3b8;
-            --line: rgba(148, 163, 184, 0.15);
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --text: #374151;
+            --muted: #6b7280;
+            --line: #e5e7eb;
             --accent: #7c3aed;
             --accent-600: #6d28d9;
             --accent-100: #f3e8ff;
@@ -106,11 +105,11 @@ function formatDate($date) {
         }
         
         [data-theme="dark"] {
-            --bg: #0a0e27;
-            --card: rgba(15, 23, 42, 0.8);
-            --text: #f8fafc;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
             --muted: #94a3b8;
-            --line: rgba(148, 163, 184, 0.15);
+            --line: #334155;
         }
         
         * {
@@ -121,13 +120,13 @@ function formatDate($date) {
             background: var(--bg);
             overflow-x: hidden;
             color: var(--text);
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         /* Modern Header */
         .modern-header {
-            background: rgba(15, 23, 42, 0.9) !important;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.15) !important;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
             padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
@@ -148,7 +147,7 @@ function formatDate($date) {
             font-size: 1.2rem;
             cursor: pointer;
             padding: 8px;
-            transition: none !important;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -176,7 +175,7 @@ function formatDate($date) {
             font-weight: 700;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: none !important;
+            transition: all 0.3s ease;
             position: relative;
         }
         
@@ -187,7 +186,7 @@ function formatDate($date) {
         .dropdown-arrow {
             color: #7c3aed;
             font-size: 0.7rem;
-            transition: none !important;
+            transition: transform 0.3s ease;
             margin-left: 4px;
             cursor: pointer;
         }
@@ -196,8 +195,8 @@ function formatDate($date) {
             position: absolute;
             top: 100%;
             right: 0;
-            background: var(--card) !important;
-            border: 1px solid var(--line) !important;
+            background: var(--card);
+            border: 1px solid var(--line);
             border-radius: 12px;
             box-shadow: var(--shadow-large);
             min-width: 200px;
@@ -206,7 +205,7 @@ function formatDate($date) {
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
-            transition: none !important;
+            transition: all 0.3s ease;
             z-index: 1003;
         }
         
@@ -223,7 +222,7 @@ function formatDate($date) {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            transition: none !important;
+            transition: all 0.3s ease;
             border: none;
             background: none;
             width: 100%;
@@ -242,9 +241,9 @@ function formatDate($date) {
         
         /* Sidebar */
         .sidebar {
-            background: rgba(15, 23, 42, 0.8);
-            color: #f8fafc;
-            border-right: 1px solid rgba(148, 163, 184, 0.15);
+            background: #ffffff;
+            color: #374151;
+            border-right: 1px solid #e5e7eb;
             position: fixed;
             width: 280px;
             left: 0;
@@ -264,10 +263,10 @@ function formatDate($date) {
         }
         
         .sidebar .nav-link {
-            color: #94a3b8;
+            color: #6b7280;
             padding: 12px 20px;
             margin: 8px 16px;
-            transition: none !important;
+            transition: all 0.3s ease;
             position: relative;
             z-index: 1003;
             pointer-events: auto;
@@ -281,18 +280,18 @@ function formatDate($date) {
         
         .sidebar .nav-link:hover {
             background: #f3f4f6;
-            color: #f8fafc;
-            border-color: rgba(148, 163, 184, 0.15);
+            color: #374151;
+            border-color: #e5e7eb;
             transform: translateX(5px);
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         .sidebar .nav-link i {
-            color: #94a3b8;
+            color: #6b7280;
             width: 20px;
             margin-right: 12px;
             font-size: 1.1em;
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .sidebar .nav-link:hover i {
@@ -314,14 +313,14 @@ function formatDate($date) {
             margin-top: auto;
             padding: 20px;
             text-align: center;
-            border-top: 1px solid rgba(148, 163, 184, 0.15);
-            background: #0a0e27;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
         }
 
         .signature-text {
             font-size: 0.85rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: #6b7280;
             margin: 0;
             font-family: 'Inter', sans-serif;
         }
@@ -338,7 +337,7 @@ function formatDate($date) {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: none !important;
+            transition: margin-left 0.3s ease;
         overflow-y: auto;
         
         }
@@ -407,7 +406,7 @@ function formatDate($date) {
             font-weight: 700;
             font-size: 1.2em;
             box-shadow: var(--shadow-medium);
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .user-avatar:hover {
@@ -422,7 +421,7 @@ function formatDate($date) {
             padding: 2rem;
             border: 1px solid var(--line);
             box-shadow: var(--shadow-light);
-            transition: none !important;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
@@ -470,7 +469,7 @@ function formatDate($date) {
             border: 1px solid var(--line);
             box-shadow: var(--shadow-light);
             margin-bottom: 2rem;
-            transition: none !important;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
@@ -512,7 +511,7 @@ function formatDate($date) {
             border: 1px solid var(--line);
             box-shadow: var(--shadow-light);
             margin-bottom: 1rem;
-            transition: none !important;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
@@ -539,7 +538,7 @@ function formatDate($date) {
             border-radius: 12px;
             padding: 12px 24px;
             font-weight: 600;
-            transition: none !important;
+            transition: all 0.3s ease;
             color: white;
             box-shadow: var(--shadow-medium);
         }
@@ -575,7 +574,7 @@ function formatDate($date) {
         }
         
         .table tbody tr {
-            transition: none !important;
+            transition: all 0.3s ease;
             border-bottom: 1px solid var(--line);
         }
         
@@ -644,7 +643,7 @@ function formatDate($date) {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: none !important;
+            transition: all 0.3s ease;
             color: var(--muted);
             box-shadow: var(--shadow-medium);
             backdrop-filter: blur(20px);
@@ -691,9 +690,9 @@ function formatDate($date) {
                 left: 0;
                 right: 0;
                 transform: translateX(-100%);
-                background: rgba(15, 23, 42, 0.8);
+                background: #ffffff;
                 border-right: none;
-                border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+                border-bottom: 1px solid #e5e7eb;
                 z-index: 1002;
                 pointer-events: none;
             }
@@ -756,7 +755,6 @@ function formatDate($date) {
     </style>
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Modern Header -->
@@ -806,8 +804,8 @@ function formatDate($date) {
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
                 <div class="p-3">
-                    <h4 style="color: #f8fafc; font-weight: 700; margin-bottom: 0;">
-                        <i class="fas fa-user" style="color: #94a3b8; margin-right: 8px;"></i>User Panel
+                    <h4 style="color: #374151; font-weight: 700; margin-bottom: 0;">
+                        <i class="fas fa-user" style="color: #6b7280; margin-right: 8px;"></i>User Panel
                     </h4>
                 </div>
                 <nav class="nav flex-column">

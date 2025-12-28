@@ -94,7 +94,6 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - SilentMultiPanel</title>
@@ -104,19 +103,18 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-dark: #7c3aed;
-            --text-primary: #f8fafc;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --text-primary: #1e293b;
+            --border-light: #e2e8f0;
         }
     </style>
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid" style="display: flex; min-height: 100vh;">
-        <div style="background: rgba(15, 23, 42, 0.8); border-right: 1px solid rgba(148, 163, 184, 0.15); width: 280px; padding: 20px;">
+        <div style="background: #fff; border-right: 1px solid #e0e0e0; width: 280px; padding: 20px;">
             <h5 style="margin-bottom: 30px;"><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
             <nav class="nav flex-column gap-2">
                 <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
@@ -137,25 +135,25 @@ try {
             <?php endif; ?>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Users</div>
                     <h3><?php echo (int)($userStats['total_users'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Balance</div>
                     <h3><?php echo formatCurrency($userStats['total_balance'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Active Wallets</div>
                     <h3><?php echo (int)($userStats['users_with_balance'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Avg Balance</div>
                     <h3><?php echo formatCurrency($userStats['avg_balance'] ?? 0); ?></h3>
                 </div>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                 <h4 style="margin-bottom: 20px;">Manage User Accounts</h4>
 
                 <?php if (!empty($users)): ?>
@@ -176,7 +174,7 @@ try {
                             </thead>
                             <tbody>
                                 <?php foreach ($users as $user): ?>
-                                    <tr style="border-bottom: 1px solid rgba(148, 163, 184, 0.15);">
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($user['id'] ?? ''); ?></td>
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($user['username'] ?? ''); ?></td>
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($user['email'] ?? ''); ?></td>
@@ -186,10 +184,10 @@ try {
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($user['logout_limit'] ?? 0); ?></td>
                                         <td style="padding: 12px; font-weight: 600; color: #ef4444;"><?php echo htmlspecialchars($user['force_logout_count'] ?? 0); ?>/<?php echo htmlspecialchars($user['logout_limit'] ?? 0); ?></td>
                                         <td style="padding: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-                                            <a href="edit_user.php?id=<?php echo $user['id']; ?>" style="display: inline-flex; align-items: center; gap: 6px; background: #8b5cf6; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: none !important;" onmouseover="this.style.background='#7c3aed'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#8b5cf6'; this.style.transform='translateY(0)';"><i class="fas fa-edit"></i>Edit</a>
-                                            <a href="edit_user.php?id=<?php echo $user['id']; ?>#balance" style="display: inline-flex; align-items: center; gap: 6px; background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: none !important;" onmouseover="this.style.background='#059669'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#10b981'; this.style.transform='translateY(0)';"><i class="fas fa-wallet"></i>Balance</a>
-                                            <a href="force_logout.php?id=<?php echo $user['id']; ?>" onclick="confirmAction('logout', this.href); return false;" style="display: inline-flex; align-items: center; gap: 6px; background: #f59e0b; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: none !important;" onmouseover="this.style.background='#d97706'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#f59e0b'; this.style.transform='translateY(0)';"><i class="fas fa-sign-out-alt"></i>Logout</a>
-                                            <a href="?delete=<?php echo $user['id']; ?>" onclick="confirmAction('delete', this.href); return false;" style="display: inline-flex; align-items: center; gap: 6px; background: #ef4444; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: none !important;" onmouseover="this.style.background='#dc2626'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#ef4444'; this.style.transform='translateY(0)';"><i class="fas fa-trash"></i>Delete</a>
+                                            <a href="edit_user.php?id=<?php echo $user['id']; ?>" style="display: inline-flex; align-items: center; gap: 6px; background: #8b5cf6; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#7c3aed'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#8b5cf6'; this.style.transform='translateY(0)';"><i class="fas fa-edit"></i>Edit</a>
+                                            <a href="edit_user.php?id=<?php echo $user['id']; ?>#balance" style="display: inline-flex; align-items: center; gap: 6px; background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#059669'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#10b981'; this.style.transform='translateY(0)';"><i class="fas fa-wallet"></i>Balance</a>
+                                            <a href="force_logout.php?id=<?php echo $user['id']; ?>" onclick="confirmAction('logout', this.href); return false;" style="display: inline-flex; align-items: center; gap: 6px; background: #f59e0b; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#d97706'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#f59e0b'; this.style.transform='translateY(0)';"><i class="fas fa-sign-out-alt"></i>Logout</a>
+                                            <a href="?delete=<?php echo $user['id']; ?>" onclick="confirmAction('delete', this.href); return false;" style="display: inline-flex; align-items: center; gap: 6px; background: #ef4444; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;" onmouseover="this.style.background='#dc2626'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#ef4444'; this.style.transform='translateY(0)';"><i class="fas fa-trash"></i>Delete</a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -211,7 +209,7 @@ try {
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#94a3b8',
+                    cancelButtonColor: '#6b7280',
                     confirmButtonText: 'Yes, Delete',
                     cancelButtonText: 'Cancel',
                     customClass: {
@@ -231,7 +229,7 @@ try {
                     icon: 'info',
                     showCancelButton: true,
                     confirmButtonColor: '#f59e0b',
-                    cancelButtonColor: '#94a3b8',
+                    cancelButtonColor: '#6b7280',
                     confirmButtonText: 'Yes, Logout',
                     cancelButtonText: 'Cancel',
                     customClass: {

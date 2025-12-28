@@ -80,7 +80,6 @@ foreach ($notifications as $notif) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications - Mod APK Manager</title>
@@ -88,7 +87,7 @@ foreach ($notifications as $notif) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        :root { --bg: #0a0e27; --sidebar-bg: rgba(15, 23, 42, 0.8); --purple: #8b5cf6; --text: #f8fafc; --muted: #94a3b8; --border: rgba(148, 163, 184, 0.15); }
+        :root { --bg: #f8fafc; --sidebar-bg: #fff; --purple: #8b5cf6; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
         * { font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); }
         .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; width: 280px; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; }
@@ -125,7 +124,7 @@ foreach ($notifications as $notif) {
             margin-bottom: 1.5rem;
         }
         .back-btn-anim:hover { transform: translateX(-5px) scale(1.1); background: var(--purple); color: white; border-color: var(--purple); }
-        .mark-all-btn { transition: none !important; }
+        .mark-all-btn { transition: all 0.3s ease; }
         .mark-all-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
         @media (max-width: 991.98px) {
             .sidebar { display: none; }
@@ -135,7 +134,6 @@ foreach ($notifications as $notif) {
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/dark-mode.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">

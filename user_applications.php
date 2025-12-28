@@ -20,7 +20,6 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Applications - SilentMultiPanel Panel</title>
@@ -46,14 +45,14 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --bg-color: #0a0e27;
-            --sidebar-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --sidebar-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-hover: #7c3aed;
-            --text-dark: #f8fafc;
-            --text-light: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
-            --white: rgba(15, 23, 42, 0.8);
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border-light: #e2e8f0;
+            --white: #ffffff;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
@@ -79,7 +78,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: none !important;
+            transition: transform 0.3s ease;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: translateX(0);
         }
@@ -94,7 +93,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin: 2px 16px;
             border-radius: 8px;
             text-decoration: none;
-            transition: none !important;
+            transition: all 0.2s ease;
             font-weight: 500;
         }
         
@@ -118,7 +117,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: none !important;
+            transition: margin-left 0.3s ease;
         }
         
         .main-content.full-width {
@@ -142,7 +141,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: white;
             padding: 0.75rem;
             border-radius: 8px;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .balance-badge {
@@ -158,7 +157,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border: 1px solid var(--border-light);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .card:hover {
@@ -194,7 +193,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: none !important;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
         }
@@ -217,7 +216,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .license-key {
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
-            background-color: #0a0e27;
+            background-color: #f8fafc;
             padding: 0.75rem;
             border-radius: 8px;
             border: 1px solid var(--border-light);
@@ -231,7 +230,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 8px;
             padding: 0.5rem 1rem;
             font-weight: 500;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .btn-primary:hover {
@@ -245,7 +244,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 8px;
             padding: 0.5rem 1rem;
             font-weight: 500;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .btn-outline-primary:hover {
@@ -332,7 +331,6 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/dark-mode.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Mobile Overlay -->

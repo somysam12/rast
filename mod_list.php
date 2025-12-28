@@ -16,7 +16,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mod APK List - Multi Panel</title>
@@ -26,21 +25,21 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
         :root {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-light: #a78bfa;
             --purple-dark: #7c3aed;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
             --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
         [data-theme="dark"] {
             --bg-color: #0f172a;
-            --card-bg: #f8fafc;
+            --card-bg: #1e293b;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --border-light: #334155;
@@ -54,7 +53,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: none !important;
+            transition: all 0.3s ease;
         }
         
         .sidebar {
@@ -80,7 +79,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 12px 20px;
             border-radius: 8px;
             margin: 2px 16px;
-            transition: none !important;
+            transition: all 0.2s ease;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -106,7 +105,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: none !important;
+            transition: margin-left 0.3s ease;
         }
         
         .main-content.full-width {
@@ -136,7 +135,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 0.75rem;
             border-radius: 8px;
             box-shadow: var(--shadow-light);
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .mobile-toggle:hover {
@@ -243,7 +242,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: none !important;
+            transition: all 0.2s ease;
             box-shadow: var(--shadow-light);
         }
         
@@ -333,7 +332,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 padding: 0.75rem;
                 border-radius: 12px;
                 box-shadow: var(--shadow-light);
-                transition: none !important;
+                transition: all 0.3s ease;
                 font-size: 1.1rem;
                 min-width: 48px;
                 min-height: 48px;
@@ -409,7 +408,6 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             display: none;
         }
     </style>
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <!-- Theme Toggle Button -->

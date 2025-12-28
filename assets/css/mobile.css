@@ -1,9 +1,9 @@
 :root {
-    --bg: #0a0e27;
-    --card: rgba(15, 23, 42, 0.8);
-    --text: #f8fafc;
+    --bg: #f9fafb;
+    --card: #ffffff;
+    --text: #374151;
     --muted: #6b7280;
-    --line: rgba(148, 163, 184, 0.15);
+    --line: #e5e7eb;
     --accent: #7c3aed;
     --accent-600: #6d28d9;
     --accent-100: #f3e8ff;
@@ -18,7 +18,7 @@
 
 [data-theme="dark"] {
     --bg: #0f172a;
-    --card: #f8fafc;
+    --card: #1e293b;
     --text: #f1f5f9;
     --muted: #94a3b8;
     --line: #334155;
@@ -100,7 +100,7 @@ body {
     display: flex;
     align-items: center;
     font-weight: 500;
-    transition: none !important;
+    transition: all 0.2s ease;
     min-height: 48px;
 }
 
@@ -183,7 +183,7 @@ body {
     margin-bottom: 1.5rem;
     position: relative;
     overflow: hidden;
-    transition: none !important;
+    transition: all 0.2s ease;
 }
 
 .card::before, .table-card::before, .key-card::before, .filter-card::before {
@@ -200,7 +200,7 @@ body {
     border-radius: 10px;
     padding: 10px 20px;
     font-weight: 600;
-    transition: none !important;
+    transition: all 0.2s ease;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
@@ -256,7 +256,7 @@ body {
     min-height: 48px;
     background: var(--card);
     color: var(--text);
-    transition: none !important;
+    transition: all 0.2s ease;
 }
 
 .form-control:focus, .form-select:focus {
@@ -558,7 +558,7 @@ body {
     border-radius: 16px;
     padding: 1.5rem;
     text-align: center;
-    transition: none !important;
+    transition: all 0.2s ease;
 }
 
 .stat-card:hover {

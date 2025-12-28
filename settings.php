@@ -87,7 +87,6 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Multi Panel</title>
@@ -111,7 +110,7 @@ try {
             --shadow-dark: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
             --border-radius: 12px;
-            --transition: none !important;
+            --transition: all 0.3s ease;
         }
 
         * {
@@ -422,7 +421,6 @@ try {
             }
         }
     </style>
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">

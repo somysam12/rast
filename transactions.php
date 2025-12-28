@@ -82,7 +82,6 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Transactions - SilentMultiPanel</title>
@@ -90,19 +89,18 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-dark: #7c3aed;
-            --text-primary: #f8fafc;
-            --border-light: rgba(148, 163, 184, 0.15);
+            --text-primary: #1e293b;
+            --border-light: #e2e8f0;
         }
     </style>
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid" style="display: flex; min-height: 100vh;">
-        <div style="background: rgba(15, 23, 42, 0.8); border-right: 1px solid rgba(148, 163, 184, 0.15); width: 280px; padding: 20px;">
+        <div style="background: #fff; border-right: 1px solid #e0e0e0; width: 280px; padding: 20px;">
             <h5 style="margin-bottom: 30px;"><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
             <nav class="nav flex-column gap-2">
                 <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
@@ -116,25 +114,25 @@ try {
             <h2 style="margin-bottom: 30px;">Transaction History</h2>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Transactions</div>
                     <h3><?php echo (int)($transactionStats['total_transactions'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Income</div>
                     <h3><?php echo formatCurrency($transactionStats['total_income'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Expenses</div>
                     <h3><?php echo formatCurrency($transactionStats['total_expenses'] ?? 0); ?></h3>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Completed</div>
                     <h3><?php echo (int)($transactionStats['completed_transactions'] ?? 0); ?></h3>
                 </div>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);">
+            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                 <h4 style="margin-bottom: 20px;">Transaction Filters</h4>
                 <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
                     <input type="text" name="search" placeholder="Search username or reference..." value="<?php echo htmlspecialchars($filters['search'] ?? ''); ?>" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
@@ -172,7 +170,7 @@ try {
                         <tbody>
                             <?php if (!empty($transactions)): ?>
                                 <?php foreach ($transactions as $transaction): ?>
-                                    <tr style="border-bottom: 1px solid rgba(148, 163, 184, 0.15);">
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
                                         <td style="padding: 12px;"><?php echo formatDate($transaction['created_at'] ?? ''); ?></td>
                                         <td style="padding: 12px;"><?php echo htmlspecialchars($transaction['username'] ?? 'N/A'); ?></td>
                                         <td style="padding: 12px; font-weight: 500; <?php echo $transaction['amount'] < 0 ? 'color: #ef4444;' : 'color: #10b981;'; ?>">

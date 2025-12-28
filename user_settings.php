@@ -84,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - SilentMultiPanel Panel</title>
@@ -110,14 +109,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --bg-color: #0a0e27;
-            --sidebar-bg: rgba(15, 23, 42, 0.8);
+            --bg-color: #f8fafc;
+            --sidebar-bg: #ffffff;
             --purple: #8b5cf6;
             --purple-hover: #7c3aed;
-            --text-dark: #f8fafc;
-            --text-light: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.15);
-            --white: rgba(15, 23, 42, 0.8);
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border-light: #e2e8f0;
+            --white: #ffffff;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
@@ -143,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             left: 0;
             top: 0;
             z-index: 1000;
-            transition: none !important;
+            transition: transform 0.3s ease;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: translateX(0);
         }
@@ -158,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             margin: 2px 16px;
             border-radius: 8px;
             text-decoration: none;
-            transition: none !important;
+            transition: all 0.2s ease;
             font-weight: 500;
         }
         
@@ -182,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: none !important;
+            transition: margin-left 0.3s ease;
         }
         
         .main-content.full-width {
@@ -206,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             color: white;
             padding: 0.75rem;
             border-radius: 8px;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .balance-badge {
@@ -222,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             border: 1px solid var(--border-light);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .card:hover {
@@ -282,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             border: 1px solid var(--border-light);
             border-radius: 8px;
             padding: 0.75rem 1rem;
-            transition: none !important;
+            transition: all 0.2s ease;
             background-color: var(--white);
         }
         
@@ -292,7 +291,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         }
         
         .form-control[readonly] {
-            background-color: #0a0e27;
+            background-color: #f8fafc;
             color: var(--text-light);
         }
         
@@ -302,7 +301,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             border-radius: 8px;
             padding: 0.75rem 1.5rem;
             font-weight: 500;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .btn-primary:hover {
@@ -314,7 +313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
             border: 1px solid var(--border-light);
             color: var(--text-light);
             border-radius: 8px;
-            transition: none !important;
+            transition: all 0.2s ease;
         }
         
         .btn-outline-secondary:hover {
@@ -340,7 +339,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
         }
         
         .referral-info {
-            background-color: #0a0e27;
+            background-color: #f8fafc;
             border: 1px solid var(--border-light);
             border-radius: 8px;
             padding: 1rem;
@@ -418,7 +417,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     <link href="assets/css/mobile-fixes.css" rel="stylesheet">
     <link href="assets/css/dark-mode.css" rel="stylesheet">
     <link href="assets/css/hamburger-fix.css" rel="stylesheet">
-    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body>
     <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
