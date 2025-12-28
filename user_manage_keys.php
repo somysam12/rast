@@ -37,6 +37,63 @@ if(!$user){
     exit;
 }
 
+// Handle direct block/reset request submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_block_reset_request'])) {
+    $requestType = $_POST['request_type'] ?? '';
+    $licenseKey = $_POST['license_key'] ?? '';
+    $reason = $_POST['reason'] ?? '';
+    
+    if ($requestType && $licenseKey && $reason && in_array($requestType, ['block', 'reset'])) {
+        try {
+            // Get key details
+            $stmt = $pdo->prepare('SELECT id, mod_id FROM license_keys WHERE license_key = ? AND sold_to = ? LIMIT 1');
+            $stmt->execute([$licenseKey, $user['id']]);
+            $keyDetails = $stmt->fetch();
+            
+            if ($keyDetails) {
+                $pdo->beginTransaction();
+                
+                // Get mod name
+                $modName = 'Unknown';
+                if ($keyDetails['mod_id']) {
+                    $stmt = $pdo->prepare('SELECT name FROM mods WHERE id = ? LIMIT 1');
+                    $stmt->execute([$keyDetails['mod_id']]);
+                    $modResult = $stmt->fetch();
+                    if ($modResult) $modName = $modResult['name'];
+                }
+                
+                // Insert request
+                $stmt = $pdo->prepare('INSERT INTO key_requests (user_id, key_id, request_type, mod_name, reason, status, created_at) VALUES (?, ?, ?, ?, ?, "pending", NOW())');
+                $stmt->execute([$user['id'], $keyDetails['id'], $requestType, $modName, $reason]);
+                
+                $pdo->commit();
+                echo "<script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        Swal.fire({
+                            title: 'Request Submitted!',
+                            text: 'Your " . ucfirst($requestType) . " request has been submitted to admin and will be processed soon.',
+                            icon: 'success',
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            color: '#fff',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            backdrop: `rgba(139, 92, 246, 0.1)`,
+                            customClass: {
+                                popup: 'cyber-swal'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
+                    });
+                </script>";
+            }
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
+        }
+    }
+}
+
 // Get filter parameters
 $modFilter = $_GET['mod_id'] ?? '';
 $searchQuery = $_GET['search'] ?? '';
@@ -219,6 +276,24 @@ try {
         .dropdown-item-cyber:hover { background:rgba(139, 92, 246, 0.1); color:#fff; transform:translateX(5px); }
         .dropdown-item-cyber i { width:20px; text-align:center; color:var(--primary); }
         .dropdown-divider { height:1px; background:rgba(255, 255, 255, 0.05); margin:8px 0; }
+        
+        .action-btn-with-hover { position: relative; }
+        .action-btn-with-hover .btn { transition: all 0.3s ease; }
+        .action-btn-with-hover .btn:hover { transform: scale(1.1); }
+        
+        .cyber-swal {
+            border: 2px solid rgba(139, 92, 246, 0.5) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.2) !important;
+        }
+        
+        @keyframes popInDown {
+            0% { opacity: 0; transform: scale(0.8) translateY(-30px); }
+            70% { transform: scale(1.05) translateY(5px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .swal2-popup { animation: popInDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
     </style>
 </head>
 <body>
@@ -372,12 +447,12 @@ try {
                                             <button class="btn btn-sm btn-outline-primary rounded-2" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')" title="Copy Key">
                                                 <i class="fas fa-copy"></i>
                                             </button>
-                                            <a href="user_block_request.php?key=<?php echo urlencode($key['license_key']); ?>&action=reset" class="btn btn-sm btn-outline-info rounded-2" title="Reset HWID">
+                                            <button class="btn btn-sm btn-outline-info rounded-2" onclick="showRequestModal('reset', '<?php echo htmlspecialchars($key['license_key']); ?>', '<?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?>')" title="Reset HWID">
                                                 <i class="fas fa-sync-alt"></i>
-                                            </a>
-                                            <a href="user_block_request.php?key=<?php echo urlencode($key['license_key']); ?>&action=block" class="btn btn-sm btn-outline-danger rounded-2" title="Block Key">
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger rounded-2" onclick="showRequestModal('block', '<?php echo htmlspecialchars($key['license_key']); ?>', '<?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?>')" title="Block Key">
                                                 <i class="fas fa-ban"></i>
-                                            </a>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -435,6 +510,93 @@ try {
                         popup: 'cyber-swal'
                     }
                 });
+            });
+        }
+        
+        function showRequestModal(requestType, licenseKey, modName) {
+            const typeLabel = requestType === 'reset' ? 'Reset HWID' : 'Block Key';
+            const typeIcon = requestType === 'reset' ? 'fa-sync-alt' : 'fa-ban';
+            const typeColor = requestType === 'reset' ? '#06b6d4' : '#ef4444';
+            
+            Swal.fire({
+                title: typeLabel,
+                html: `
+                    <div style="text-align: left; margin: 20px 0;">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 8px; font-weight: 600;">KEY DETAILS</label>
+                            <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); padding: 12px; border-radius: 8px; font-size: 0.85rem;">
+                                <div style="color: rgba(255,255,255,0.7); margin-bottom: 5px;"><strong>Mod:</strong> ${modName}</div>
+                                <div style="color: rgba(255,255,255,0.7);"><strong>Key:</strong> ${licenseKey}</div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 8px; font-weight: 600;">REASON FOR REQUEST</label>
+                            <textarea id="requestReason" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.5); border: 1.5px solid rgba(148, 163, 184, 0.1); color: white; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; resize: vertical;" rows="3" placeholder="Explain your reason..."></textarea>
+                        </div>
+                    </div>
+                `,
+                icon: 'question',
+                background: 'rgba(15, 23, 42, 0.95)',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonText: 'Send Request',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: typeColor,
+                cancelButtonColor: '#6b7280',
+                customClass: {
+                    popup: 'cyber-swal'
+                },
+                didOpen: (modal) => {
+                    const reasonInput = document.getElementById('requestReason');
+                    reasonInput.focus();
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const reason = document.getElementById('requestReason').value.trim();
+                    if (reason.length < 5) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Please provide a reason (at least 5 characters)',
+                            icon: 'error',
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            color: '#fff',
+                            customClass: { popup: 'cyber-swal' }
+                        });
+                        return;
+                    }
+                    
+                    // Create a hidden form and submit it
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.style.display = 'none';
+                    
+                    const typeInput = document.createElement('input');
+                    typeInput.type = 'hidden';
+                    typeInput.name = 'request_type';
+                    typeInput.value = requestType;
+                    
+                    const keyInput = document.createElement('input');
+                    keyInput.type = 'hidden';
+                    keyInput.name = 'license_key';
+                    keyInput.value = licenseKey;
+                    
+                    const reasonInput2 = document.createElement('input');
+                    reasonInput2.type = 'hidden';
+                    reasonInput2.name = 'reason';
+                    reasonInput2.value = reason;
+                    
+                    const submitInput = document.createElement('input');
+                    submitInput.type = 'hidden';
+                    submitInput.name = 'submit_block_reset_request';
+                    submitInput.value = '1';
+                    
+                    form.appendChild(typeInput);
+                    form.appendChild(keyInput);
+                    form.appendChild(reasonInput2);
+                    form.appendChild(submitInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
             });
         }
     </script>
