@@ -80,12 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     }
 }
 
-function formatCurrency($amount){
+function formatCurrencyLocal($amount){
     return '₹' . number_format((float)$amount, 2, '.', ',');
 }
 
-if (!function_exists('formatDate')) {
-    function formatDate($dt){
+if (!function_exists('formatDateLocal')) {
+    function formatDateLocal($dt){
         if(!$dt){ return '-'; }
         $date = new DateTime($dt, new DateTimeZone('UTC'));
         $date->setTimezone(new DateTimeZone('Asia/Kolkata'));
@@ -166,7 +166,7 @@ if (!function_exists('formatDate')) {
         <div class="d-flex align-items-center gap-3">
             <div class="text-end d-none d-sm-block">
                 <div class="small fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
-                <div class="text-secondary small">Balance: <?php echo formatCurrency($user['balance']); ?></div>
+                <div class="text-secondary small">Balance: <?php echo formatCurrencyLocal($user['balance']); ?></div>
             </div>
             <div class="user-avatar-header" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
                 <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
@@ -217,8 +217,8 @@ if (!function_exists('formatDate')) {
                             <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label text-secondary small fw-bold">ACCOUNT TYPE</label>
-                            <input type="text" class="form-control" value="<?php echo ucfirst($user['role']); ?>" readonly>
+                            <label class="form-label text-secondary small fw-bold">JOIN DATE</label>
+                            <input type="text" class="form-control" value="<?php echo formatDateLocal($user['created_at']); ?>" readonly>
                         </div>
                         <button type="submit" class="settings-btn w-100">Update Profile</button>
                     </form>

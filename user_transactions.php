@@ -36,12 +36,12 @@ $stmt->execute([$userId]);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Helper functions
-function formatCurrency($amount) {
+function formatCurrencyLocal($amount) {
     return '₹' . number_format((float)$amount, 2, '.', ',');
 }
 
-if (!function_exists('formatDate')) {
-    function formatDate($dt) {
+if (!function_exists('formatDateLocal')) {
+    function formatDateLocal($dt) {
         if (!$dt) { return '-'; }
         $date = new DateTime($dt, new DateTimeZone('UTC'));
         $date->setTimezone(new DateTimeZone('Asia/Kolkata'));
@@ -163,7 +163,7 @@ foreach ($transactions as $tx) {
         <div class="d-flex align-items-center gap-3">
             <div class="text-end d-none d-sm-block">
                 <div class="small fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
-                <div class="text-secondary small">Balance: <?php echo formatCurrency($user['balance']); ?></div>
+                <div class="text-secondary small">Balance: <?php echo formatCurrencyLocal($user['balance']); ?></div>
             </div>
             <div class="user-avatar-header" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
                 <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
@@ -201,12 +201,12 @@ foreach ($transactions as $tx) {
             <div class="stat-mini-card">
                 <i class="fas fa-arrow-up text-success"></i>
                 <div class="small text-secondary fw-bold">TOTAL ADDED</div>
-                <div class="h5 text-success mb-0"><?php echo formatCurrency($totalAdded); ?></div>
+                <div class="h5 text-success mb-0"><?php echo formatCurrencyLocal($totalAdded); ?></div>
             </div>
             <div class="stat-mini-card">
                 <i class="fas fa-arrow-down text-danger"></i>
                 <div class="small text-secondary fw-bold">TOTAL SPENT</div>
-                <div class="h5 text-danger mb-0"><?php echo formatCurrency($totalSpent); ?></div>
+                <div class="h5 text-danger mb-0"><?php echo formatCurrencyLocal($totalSpent); ?></div>
             </div>
         </div>
 
@@ -231,10 +231,10 @@ foreach ($transactions as $tx) {
                             </div>
                             <div class="tx-details">
                                 <div class="fw-bold text-white"><?php echo htmlspecialchars($tx['description'] ?: ucfirst($txType)); ?></div>
-                                <div class="small text-secondary"><?php echo formatDate($tx['created_at']); ?></div>
+                                <div class="small text-secondary"><?php echo formatDateLocal($tx['created_at']); ?></div>
                             </div>
                             <div class="tx-amount <?php echo $isDebit ? 'negative' : 'positive'; ?>">
-                                <?php echo ($isDebit ? '-' : '+') . formatCurrency(abs($tx['amount'])); ?>
+                                <?php echo ($isDebit ? '-' : '+') . formatCurrencyLocal(abs($tx['amount'])); ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
