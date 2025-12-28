@@ -124,14 +124,52 @@ try {
         .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: rgba(148, 163, 184, 0.5); }
 
         .license-key-box {
-            font-family: 'Monaco', 'Consolas', monospace;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #8b5cf6;
-            font-size: 0.9rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: rgba(139, 92, 246, 0.1);
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            font-size: 0.95rem;
             word-break: break-all;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .license-key-box:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+            transform: scale(1.02);
+            color: white;
+        }
+
+        .license-key-box:active {
+            transform: scale(0.98);
+        }
+
+        .license-key-box::after {
+            content: '\f0c5';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
+
+        .status-purchased {
+            background: rgba(16, 185, 129, 0.1) !important;
+            color: #10b981 !important;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .table thead th {
@@ -250,7 +288,9 @@ try {
                                         <div class="small text-secondary">₹<?php echo number_format($key['price'], 2); ?></div>
                                     </td>
                                     <td>
-                                        <div class="license-key-box"><?php echo htmlspecialchars($key['license_key']); ?></div>
+                                        <div class="license-key-box" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>', this)">
+                                            <?php echo htmlspecialchars($key['license_key']); ?>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="badge bg-secondary bg-opacity-25 text-white">
@@ -258,8 +298,8 @@ try {
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge <?php echo $key['status'] == 'sold' ? 'bg-success' : 'bg-danger'; ?> bg-opacity-10 text-<?php echo $key['status'] == 'sold' ? 'success' : 'danger'; ?>">
-                                            <?php echo strtoupper($key['status']); ?>
+                                        <span class="status-purchased">
+                                            PURCHASED
                                         </span>
                                     </td>
                                     <td class="small text-secondary"><?php echo formatDate($key['sold_at']); ?></td>
@@ -288,8 +328,19 @@ try {
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
         
-        function copyToClipboard(text) {
+        function copyToClipboard(text, element) {
             navigator.clipboard.writeText(text).then(() => {
+                // Flash animation on the element
+                if (element) {
+                    const originalColor = element.style.borderColor;
+                    element.style.borderColor = '#8b5cf6';
+                    element.style.background = 'rgba(139, 92, 246, 0.3)';
+                    setTimeout(() => {
+                        element.style.borderColor = originalColor;
+                        element.style.background = '';
+                    }, 300);
+                }
+
                 Swal.fire({
                     title: 'Copied!',
                     text: 'Key copied to clipboard',
@@ -299,7 +350,10 @@ try {
                     showConfirmButton: false,
                     timer: 1500,
                     toast: true,
-                    position: 'top-end'
+                    position: 'top-end',
+                    customClass: {
+                        popup: 'cyber-swal'
+                    }
                 });
             });
         }
