@@ -286,25 +286,60 @@ try {
         }
 
         .page-header {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1.5px solid;
+            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 
+                0 0 60px rgba(139, 92, 246, 0.15),
+                0 0 20px rgba(6, 182, 212, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
             margin-bottom: 2rem;
             animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        .page-header > * {
+            position: relative;
+            z-index: 2;
         }
 
         .page-header h1 {
             font-size: 2.5rem;
             font-weight: 900;
             letter-spacing: -0.03em;
-            background: linear-gradient(135deg, var(--text-main), var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-main);
             margin-bottom: 0.5rem;
+        }
+
+        .page-header h1 i {
+            color: var(--primary);
         }
 
         .page-header p {
             color: var(--text-dim);
             font-size: 1rem;
             margin-bottom: 0;
+        }
+
+        .page-header p strong {
+            color: var(--primary);
+            font-weight: 600;
         }
 
         .stats-container {
@@ -1361,12 +1396,12 @@ try {
                                                     <i class="fas fa-mobile-alt text-white"></i>
                                                 </div>
                                                 <div>
-                                                    <div style="font-weight: 600;"><?php echo htmlspecialchars($mod['name']); ?></div>
-                                                    <small style="color: var(--text-dim); display: none;" class="d-sm-none"><?php echo formatDate($mod['created_at']); ?></small>
+                                                    <div style="font-weight: 600; color: var(--text-main);"><?php echo htmlspecialchars($mod['name']); ?></div>
+                                                    <small style="color: var(--primary); font-weight: 500; display: none;" class="d-sm-none"><?php echo formatDate($mod['created_at']); ?></small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="d-none d-sm-table-cell"><?php echo formatDate($mod['created_at']); ?></td>
+                                        <td class="d-none d-sm-table-cell" style="color: var(--primary); font-weight: 500;"><?php echo formatDate($mod['created_at']); ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
