@@ -50,228 +50,196 @@ if ($_POST) {
     <link href="assets/css/main.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
             --purple: #8b5cf6;
             --purple-light: #a78bfa;
             --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-light: #e2e8f0;
-            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.1);
+            --shadow-large: 0 0 20px rgba(139, 92, 246, 0.3);
+            --glow-color: rgba(139, 92, 246, 0.5);
         }
 
         body {
-            background-color: var(--bg-color);
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
             min-height: 100vh;
             display: flex;
             align-items: center;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
         }
         
         .login-container {
             width: 100%;
+            padding: 2rem 0;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .login-card {
             background: var(--card-bg);
-            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
             box-shadow: var(--shadow-large);
-            border: 1px solid var(--border-light);
+            border: 2px solid var(--border-light);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--purple), transparent, var(--purple-dark));
+            z-index: -1;
+            opacity: 0.3;
+            transition: opacity 0.4s;
         }
         
         .login-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-5px) scale(1.01);
+            border-color: var(--purple-light);
+            box-shadow: 0 0 30px var(--glow-color);
+        }
+
+        .login-card:hover::before {
+            opacity: 0.6;
         }
         
         .login-header {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
             color: white;
-            padding: 2.5rem 2rem;
+            padding: 3rem 2rem;
             text-align: center;
-            border-top: 4px solid var(--purple-light);
-        }
-        
-        .login-header .logo {
-            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-light);
         }
         
         .login-header h3 {
-            font-weight: 700;
-            font-size: 1.5rem;
+            font-weight: 800;
+            font-size: 1.75rem;
+            letter-spacing: -0.025em;
             margin-bottom: 0.5rem;
-        }
-        
-        .login-header p {
-            opacity: 0.9;
-            font-size: 0.9rem;
-            margin-bottom: 0;
+            background: linear-gradient(to right, #fff, var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .login-body {
-            padding: 2.5rem 2rem;
-            background: var(--card-bg);
+            padding: 3rem 2.5rem;
         }
         
         .form-control {
-            border-radius: 8px;
+            border-radius: 12px;
             border: 2px solid var(--border-light);
-            padding: 12px 16px;
-            transition: all 0.2s ease;
-            background: var(--card-bg);
-            font-size: 0.95rem;
-            color: var(--text-primary);
+            padding: 14px 18px;
+            transition: all 0.3s;
+            background: rgba(15, 23, 42, 0.5);
+            font-size: 1rem;
+            color: white;
         }
         
         .form-control:focus {
             border-color: var(--purple);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-            background: var(--card-bg);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+            background: rgba(15, 23, 42, 0.8);
             outline: none;
-        }
-        
-        .form-control::placeholder {
-            color: var(--text-secondary);
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
         }
         
         .btn-login {
             background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
             border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s;
             color: white;
-            box-shadow: var(--shadow-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 1rem;
         }
         
         .btn-login:hover {
-            background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 100%);
-            box-shadow: var(--shadow-large);
-            transform: translateY(-1px);
-            color: white;
-        }
-        
-        .btn-login:active {
-            transform: translateY(0);
-            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.4);
+            filter: brightness(1.1);
         }
         
         .register-link {
-            color: var(--purple);
+            color: var(--purple-light);
             text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            font-weight: 700;
+            transition: all 0.2s;
         }
         
         .register-link:hover {
-            color: var(--purple-dark);
-            text-decoration: underline;
+            color: white;
+            text-shadow: 0 0 10px var(--purple-light);
         }
-        
-        .alert {
-            border-radius: 8px;
-            border: none;
-            padding: 12px 16px;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .alert-danger {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-        }
-        
-        .info-card {
-            background-color: #f1f5f9;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-top: 1rem;
-            border: 1px solid var(--border-light);
-        }
-        
-        .info-card small {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-        }
-        
-        .info-card strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-        
-        .form-check {
-            text-align: left;
-        }
-        
-        .form-check-input {
-            margin-top: 0.25rem;
-        }
-        
-        .form-check-label {
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            cursor: pointer;
-        }
-        
-        .form-text {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        
+
         .input-group {
             position: relative;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
         }
-        
+
         .input-icon {
             position: absolute;
-            left: 16px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-secondary);
-            z-index: 10;
-            transition: all 0.2s ease;
+            pointer-events: none;
+            transition: color 0.3s;
         }
-        
+
         .form-control.with-icon {
-            padding-left: 44px;
+            padding-left: 50px;
         }
-        
-        .form-control.with-icon:focus + .input-icon {
-            color: var(--purple);
+
+        .form-control:focus + .input-icon {
+            color: var(--purple-light);
         }
-        
+
         .password-toggle {
             position: absolute;
-            right: 16px;
+            right: 18px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             color: var(--text-secondary);
             cursor: pointer;
-            z-index: 10;
-            transition: all 0.2s ease;
-            padding: 4px;
+            padding: 5px;
+            transition: color 0.3s;
         }
-        
+
         .password-toggle:hover {
-            color: var(--purple);
+            color: var(--purple-light);
         }
+
+        .form-check-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .info-card {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            margin-top: 2rem;
+        }
+    </style>
         
         .theme-toggle {
             position: fixed;
