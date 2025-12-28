@@ -147,17 +147,40 @@ if ($_POST) {
             font-size: 28px;
             color: white;
             box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .input-field {
             width: 100%;
             background: rgba(15, 23, 42, 0.8);
-            border: 1px solid var(--border-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             padding: 12px 16px 12px 44px;
             color: white;
             font-size: 15px;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+        }
+        
+        .input-field:focus {
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            outline: none;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            cursor: pointer;
+            z-index: 10;
+            transition: color 0.2s;
+        }
+        
+        .password-toggle:hover {
+            color: var(--primary);
         }
 
         .btn-submit {
@@ -313,7 +336,8 @@ if ($_POST) {
 
                 <div class="form-group">
                     <i class="fas fa-lock field-icon"></i>
-                    <input type="password" name="password" class="input-field" placeholder="Password" required>
+                    <input type="password" name="password" id="password" class="input-field" placeholder="Password" required>
+                    <i class="fas fa-eye password-toggle" id="togglePassword"></i>
                 </div>
 
                 <div class="form-group">
@@ -331,5 +355,15 @@ if ($_POST) {
             </div>
         </div>
     </div>
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
 </body>
 </html>

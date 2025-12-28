@@ -181,17 +181,40 @@ if ($_POST) {
             font-size: 28px;
             color: white;
             box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .input-field {
             width: 100%;
             background: rgba(15, 23, 42, 0.8);
-            border: 1px solid var(--border-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             padding: 12px 16px 12px 44px;
             color: white;
             font-size: 14px;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+        }
+        
+        .input-field:focus {
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            outline: none;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            cursor: pointer;
+            z-index: 10;
+            transition: color 0.2s;
+        }
+        
+        .password-toggle:hover {
+            color: var(--primary);
         }
 
         .btn-submit {
@@ -347,13 +370,15 @@ if ($_POST) {
                     <div class="col-md-6">
                         <div class="form-group">
                             <i class="fas fa-lock field-icon"></i>
-                            <input type="password" name="password" class="input-field" placeholder="Password" required>
+                            <input type="password" name="password" id="password" class="input-field" placeholder="Password" required>
+                            <i class="fas fa-eye password-toggle toggle-password" data-target="password"></i>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <i class="fas fa-shield field-icon"></i>
-                            <input type="password" name="confirm_password" class="input-field" placeholder="Confirm" required>
+                            <input type="password" name="confirm_password" id="confirm_password" class="input-field" placeholder="Confirm" required>
+                            <i class="fas fa-eye password-toggle toggle-password" data-target="confirm_password"></i>
                         </div>
                     </div>
                 </div>
@@ -372,5 +397,16 @@ if ($_POST) {
             </div>
         </div>
     </div>
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                this.classList.toggle('fa-eye-slash');
+            });
+        });
+    </script>
 </body>
 </html>
