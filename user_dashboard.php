@@ -78,6 +78,7 @@ function formatDate($date) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link href="assets/css/global.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>User Dashboard - Mod APK Manager</title>

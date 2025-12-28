@@ -1,0 +1,595 @@
+/* ==================== GLOBAL STYLES ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #8b5cf6;
+    --primary-dark: #7c3aed;
+    --secondary: #06b6d4;
+    --accent: #ec4899;
+    --bg: #0a0e27;
+    --card-bg: rgba(15, 23, 42, 0.7);
+    --text-main: #f8fafc;
+    --text-dim: #94a3b8;
+    --border: rgba(148, 163, 184, 0.1);
+    --shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+html, body {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%) !important;
+    background-attachment: fixed !important;
+    color: var(--text-main) !important;
+    line-height: 1.6 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    overflow-x: hidden !important;
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes borderGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.5); }
+}
+
+/* ==================== TYPOGRAPHY ==================== */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-main) !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+    word-wrap: break-word !important;
+}
+
+p, span, div, a, li {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* ==================== CONTAINERS & LAYOUTS ==================== */
+.container, .container-fluid {
+    animation: slideUp 0.6s ease-out !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+/* ==================== BUTTONS ==================== */
+button, .btn, a.btn, input[type="submit"] {
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3) !important;
+    display: inline-block !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+button:hover, .btn:hover, a.btn:hover, input[type="submit"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5) !important;
+    filter: brightness(1.1) !important;
+}
+
+button:active, .btn:active, a.btn:active, input[type="submit"]:active {
+    transform: translateY(0) !important;
+}
+
+button:disabled, .btn:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+    border: none !important;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    border: none !important;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border: none !important;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    border: none !important;
+}
+
+/* ==================== INPUTS & FORMS ==================== */
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], 
+input[type="date"], input[type="time"], select, textarea {
+    background: rgba(15, 23, 42, 0.5) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 12px !important;
+    padding: 10px 12px !important;
+    color: var(--text-main) !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    transition: all 0.3s !important;
+    font-family: inherit !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: rgba(148, 163, 184, 0.6) !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none !important;
+    background: rgba(139, 92, 246, 0.05) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15) !important;
+}
+
+label {
+    color: var(--text-main) !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+    display: block !important;
+}
+
+/* ==================== TABLES ==================== */
+table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+thead {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+th {
+    padding: 12px !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    color: var(--text-main) !important;
+    border-bottom: 2px solid var(--border) !important;
+}
+
+td {
+    padding: 12px !important;
+    border-bottom: 1px solid var(--border) !important;
+    word-wrap: break-word !important;
+}
+
+tbody tr {
+    transition: all 0.3s !important;
+}
+
+tbody tr:hover {
+    background: rgba(139, 92, 246, 0.05) !important;
+}
+
+/* ==================== CARDS & PANELS ==================== */
+.card, .panel, .glass-card {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(30px) !important;
+    border: 2px solid !important;
+    border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1 !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    box-shadow: 0 0 60px rgba(139, 92, 246, 0.15), 0 0 20px rgba(6, 182, 212, 0.05) !important;
+    animation: slideIn 0.6s ease-out !important;
+    transition: all 0.3s ease !important;
+}
+
+.card:hover, .panel:hover, .glass-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 0 80px rgba(139, 92, 246, 0.2) !important;
+}
+
+.card-body, .panel-body {
+    padding: 20px !important;
+}
+
+.card-header, .panel-heading {
+    background: rgba(139, 92, 246, 0.1) !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 15px 20px !important;
+    font-weight: 600 !important;
+    color: var(--text-main) !important;
+}
+
+/* ==================== SIDEBAR STYLES ==================== */
+.sidebar {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(30px) !important;
+    border-right: 2px solid var(--border) !important;
+    padding: 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+.sidebar .nav-link {
+    color: var(--text-dim) !important;
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
+    margin: 5px 0 !important;
+    transition: all 0.3s !important;
+    font-weight: 500 !important;
+    word-wrap: break-word !important;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+    color: white !important;
+    transform: translateX(4px) !important;
+}
+
+.sidebar .nav-link i {
+    margin-right: 10px !important;
+}
+
+/* ==================== ALERTS & MESSAGES ==================== */
+.alert {
+    border: 1.5px solid !important;
+    border-radius: 12px !important;
+    padding: 14px 16px !important;
+    animation: slideDown 0.4s !important;
+    word-wrap: break-word !important;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    color: #6ee7b7 !important;
+}
+
+.alert-danger, .alert-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)) !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+    color: #fde68a !important;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(6, 182, 212, 0.05)) !important;
+    border-color: rgba(6, 182, 212, 0.3) !important;
+    color: #a5f3fc !important;
+}
+
+/* ==================== BADGES & LABELS ==================== */
+.badge, .label {
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+    color: white !important;
+    padding: 4px 12px !important;
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+}
+
+/* ==================== LISTS ==================== */
+ul, ol {
+    margin-left: 1.5rem !important;
+}
+
+li {
+    margin-bottom: 0.5rem !important;
+    word-wrap: break-word !important;
+}
+
+/* ==================== MODALS & OVERLAYS ==================== */
+.modal {
+    animation: fadeIn 0.3s !important;
+}
+
+.modal-content {
+    background: var(--card-bg) !important;
+    border: 2px solid var(--border) !important;
+    border-radius: 16px !important;
+    color: var(--text-main) !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border) !important;
+}
+
+.modal-body {
+    color: var(--text-main) !important;
+}
+
+/* ==================== SCROLLBAR ==================== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary);
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 1200px) {
+    body {
+        font-size: 15px !important;
+    }
+    
+    h1 { font-size: 28px !important; }
+    h2 { font-size: 24px !important; }
+    h3 { font-size: 20px !important; }
+    h4 { font-size: 18px !important; }
+    
+    .card, .panel, .glass-card {
+        padding: 16px !important;
+    }
+    
+    button, .btn, input[type="submit"] {
+        padding: 8px 16px !important;
+        font-size: 13px !important;
+    }
+}
+
+@media (max-width: 992px) {
+    body {
+        font-size: 14px !important;
+    }
+    
+    h1 { font-size: 24px !important; }
+    h2 { font-size: 20px !important; }
+    h3 { font-size: 18px !important; }
+    h4 { font-size: 16px !important; }
+    
+    .container-fluid {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+    
+    .sidebar {
+        position: relative !important;
+        margin-bottom: 20px !important;
+    }
+    
+    table {
+        font-size: 13px !important;
+    }
+    
+    th, td {
+        padding: 10px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 13px !important;
+    }
+    
+    h1 { font-size: 20px !important; }
+    h2 { font-size: 18px !important; }
+    h3 { font-size: 16px !important; }
+    h4 { font-size: 14px !important; }
+    
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    .card, .panel, .glass-card {
+        padding: 12px !important;
+    }
+    
+    .card-body, .panel-body {
+        padding: 12px !important;
+    }
+    
+    button, .btn, input[type="submit"] {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        min-height: 44px !important;
+    }
+    
+    input[type="text"], input[type="email"], input[type="password"], 
+    input[type="number"], select, textarea {
+        padding: 10px 10px !important;
+        font-size: 16px !important;
+        min-height: 44px !important;
+    }
+    
+    table {
+        font-size: 12px !important;
+    }
+    
+    th, td {
+        padding: 8px !important;
+    }
+    
+    .sidebar {
+        margin-bottom: 15px !important;
+        padding: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 12px !important;
+    }
+    
+    h1 { font-size: 18px !important; }
+    h2 { font-size: 16px !important; }
+    h3 { font-size: 14px !important; }
+    h4 { font-size: 12px !important; }
+    
+    .container-fluid {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+    
+    .card, .panel, .glass-card {
+        padding: 10px !important;
+        border-radius: 12px !important;
+    }
+    
+    .card-body, .panel-body {
+        padding: 10px !important;
+    }
+    
+    button, .btn, input[type="submit"] {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        width: 100% !important;
+        margin-top: 8px !important;
+    }
+    
+    input[type="text"], input[type="email"], input[type="password"], 
+    input[type="number"], select, textarea {
+        padding: 10px 10px !important;
+        font-size: 16px !important;
+        min-height: 44px !important;
+        width: 100% !important;
+        margin-bottom: 8px !important;
+    }
+    
+    table {
+        font-size: 11px !important;
+        display: block !important;
+        overflow-x: auto !important;
+    }
+    
+    th, td {
+        padding: 6px !important;
+    }
+    
+    .sidebar {
+        width: 100% !important;
+        margin-bottom: 15px !important;
+        padding: 10px !important;
+    }
+    
+    .sidebar .nav-link {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+.text-center { text-align: center !important; }
+.text-left { text-align: left !important; }
+.text-right { text-align: right !important; }
+
+.mt-1 { margin-top: 0.5rem !important; }
+.mt-2 { margin-top: 1rem !important; }
+.mt-3 { margin-top: 1.5rem !important; }
+
+.mb-1 { margin-bottom: 0.5rem !important; }
+.mb-2 { margin-bottom: 1rem !important; }
+.mb-3 { margin-bottom: 1.5rem !important; }
+
+.p-1 { padding: 0.5rem !important; }
+.p-2 { padding: 1rem !important; }
+.p-3 { padding: 1.5rem !important; }
+
+/* ==================== DROPDOWN & MENUS ==================== */
+.dropdown-menu {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+}
+
+.dropdown-item {
+    color: var(--text-main) !important;
+    transition: all 0.3s !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: var(--primary) !important;
+}
+
+/* ==================== NAV BARS ==================== */
+nav {
+    transition: all 0.3s ease !important;
+}
+
+.navbar {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(30px) !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+.navbar-brand {
+    color: var(--text-main) !important;
+    font-weight: 700 !important;
+}
+
+.nav-tabs {
+    border-bottom: 2px solid var(--border) !important;
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-dim) !important;
+    transition: all 0.3s !important;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--primary) !important;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary) !important;
+    border-bottom-color: var(--primary) !important;
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+/* Apply smooth transitions globally */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Remove transition from performance-heavy properties on mobile */
+@media (max-width: 768px) {
+    * {
+        transition: none !important;
+    }
+}
