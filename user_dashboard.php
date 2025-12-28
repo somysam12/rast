@@ -58,6 +58,68 @@ function formatDate($date) { return $date ? date('d M Y H:i', strtotime($date)) 
             .sidebar.show { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 1rem; }
         }
+
+        /* Activity List Styling */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .activity-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateX(5px);
+        }
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        .activity-icon.debit {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        .activity-icon.credit {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+        .activity-details h6 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .activity-details p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .activity-amount {
+            text-align: right;
+        }
+        .activity-amount .amount {
+            display: block;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .activity-amount .date {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -122,32 +184,38 @@ function formatDate($date) { return $date ? date('d M Y H:i', strtotime($date)) 
         <div class="row g-4">
             <div class="col-12 col-lg-8">
                 <div class="cyber-card h-100">
-                    <h5 class="mb-4"><i class="fas fa-history text-primary me-2"></i> Recent Activity</h5>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Type</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($recentTransactions)): ?>
-                                    <tr><td colspan="3" class="text-center py-4 text-secondary">No recent transactions</td></tr>
-                                <?php else: ?>
-                                    <?php foreach ($recentTransactions as $tx): ?>
-                                        <tr>
-                                            <td class="small fw-bold"><?php echo ucfirst($tx['type']); ?></td>
-                                            <td class="fw-bold <?php echo $tx['type'] == 'add' ? 'text-success' : 'text-danger'; ?>">
-                                                <?php echo ($tx['type'] == 'add' ? '+' : '-') . formatCurrency($tx['amount']); ?>
-                                            </td>
-                                            <td class="small text-secondary"><?php echo formatDate($tx['created_at']); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="m-0"><i class="fas fa-history text-primary me-2"></i> Recent Activity</h5>
+                        <a href="user_transactions.php" class="small text-primary text-decoration-none">View All</a>
+                    </div>
+                    
+                    <div class="activity-list">
+                        <?php if (empty($recentTransactions)): ?>
+                            <div class="text-center py-5">
+                                <i class="fas fa-receipt text-secondary mb-3" style="font-size: 2rem; opacity: 0.2;"></i>
+                                <p class="text-secondary m-0">No recent transactions to show.</p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($recentTransactions as $tx): ?>
+                                <div class="activity-item">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="activity-icon <?php echo $tx['type'] == 'add' || $tx['type'] == 'credit' ? 'credit' : 'debit'; ?>">
+                                            <i class="fas <?php echo $tx['type'] == 'add' || $tx['type'] == 'credit' ? 'fa-arrow-down' : 'fa-shopping-cart'; ?>"></i>
+                                        </div>
+                                        <div class="activity-details">
+                                            <h6><?php echo htmlspecialchars($tx['description'] ?: ucfirst($tx['type'])); ?></h6>
+                                            <p><?php echo htmlspecialchars($tx['reference'] ?: 'No reference'); ?></p>
+                                        </div>
+                                    </div>
+                                    <div class="activity-amount">
+                                        <span class="amount <?php echo $tx['type'] == 'add' || $tx['type'] == 'credit' ? 'text-success' : 'text-danger'; ?>">
+                                            <?php echo ($tx['type'] == 'add' || $tx['type'] == 'credit' ? '+' : '-') . formatCurrency(abs($tx['amount'])); ?>
+                                        </span>
+                                        <span class="date"><?php echo date('d M, h:i A', strtotime($tx['created_at'])); ?></span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
