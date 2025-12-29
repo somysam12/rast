@@ -89,696 +89,457 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Multi Panel</title>
+    <title>Admin Settings - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-purple: #8B5CF6;
-            --primary-dark: #7C3AED;
-            --secondary-purple: #A855F7;
-            --success-green: #10B981;
-            --warning-orange: #F59E0B;
-            --danger-red: #EF4444;
-            --info-blue: #3B82F6;
-            --bg-dark: #1A202C;
-            --card-dark: #2D3748;
-            --card-darker: #1E2A3A;
-            --text-light: #F7FAFC;
-            --text-muted: #A0AEC0;
-            --border-dark: #4A5568;
-            --shadow-dark: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            --border-radius: 12px;
-            --transition: all 0.3s ease;
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --accent: #ec4899;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(139, 92, 246, 0.2);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-light);
-            line-height: 1.6;
-        }
-
-        .sidebar {
-            background: var(--card-dark);
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
+            background-attachment: fixed;
             min-height: 100vh;
-            box-shadow: var(--shadow-dark);
-            border-right: 1px solid var(--border-dark);
-        }
-
-        .sidebar .brand {
-            padding: 1.5rem 1rem;
-            color: var(--text-light);
-            border-bottom: 1px solid var(--border-dark);
-        }
-
-        .sidebar .brand h4 {
-            font-weight: 700;
-            font-size: 1.25rem;
-            margin: 0;
-        }
-
-        .sidebar .nav-link {
-            color: var(--text-muted);
-            padding: 0.75rem 1rem;
-            margin: 0.25rem 0;
-            border-radius: var(--border-radius);
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .sidebar .nav-link:hover {
-            background-color: rgba(139, 92, 246, 0.1);
-            color: var(--primary-purple);
-            transform: translateX(4px);
-        }
-
-        .sidebar .nav-link.active {
-            background: var(--primary-purple);
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-        }
-
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 12px;
-            text-align: center;
-            font-size: 1rem;
-        }
-
-        .main-content {
-            padding: 2rem;
-            background: var(--bg-dark);
-        }
-
-        .header {
-            background: var(--card-dark);
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-dark);
-            margin-bottom: 2rem;
-            border: 1px solid var(--border-dark);
-        }
-
-        .header h2 {
-            color: var(--text-light);
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .stats-container {
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--card-dark);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            border: 1px solid var(--border-dark);
-            transition: var(--transition);
-            height: 100%;
-            text-align: center;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-purple);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
-            color: white;
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
         }
 
-        .stat-icon.purple { background: var(--primary-purple); }
-        .stat-icon.green { background: var(--success-green); }
-        .stat-icon.blue { background: var(--info-blue); }
-        .stat-icon.orange { background: var(--warning-orange); }
-
-        .stat-value {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-light);
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .form-card {
-            background: var(--card-dark);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            border: 1px solid var(--border-dark);
-            margin-bottom: 1.5rem;
-            transition: var(--transition);
-        }
-
-        .form-card:hover {
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-purple);
-        }
-
-        .form-card h5 {
-            color: var(--text-light);
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .form-card h5 i {
-            color: var(--primary-purple);
-        }
-
-        .form-control {
-            border: 1px solid var(--border-dark);
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1rem;
-            transition: var(--transition);
-            background-color: var(--card-darker);
-            color: var(--text-light);
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-purple);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-            background-color: var(--card-darker);
-            color: var(--text-light);
-        }
-
-        .form-control::placeholder {
-            color: var(--text-muted);
-        }
-
-        .form-control[readonly] {
-            background-color: rgba(139, 92, 246, 0.1);
-            border-color: var(--primary-purple);
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--text-light);
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .input-group-text {
-            background-color: var(--card-darker);
-            border: 1px solid var(--border-dark);
-            color: var(--primary-purple);
-        }
-
-        .btn {
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            transition: var(--transition);
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--primary-purple);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
-        }
-
-        .btn-outline-secondary {
-            border: 1px solid var(--border-dark);
-            color: var(--text-muted);
-            background: transparent;
-        }
-
-        .btn-outline-secondary:hover {
-            background: var(--primary-purple);
-            border-color: var(--primary-purple);
-            color: white;
-        }
-
-        .alert {
-            border-radius: var(--border-radius);
-            border: none;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .alert-success {
-            background: var(--success-green);
-            color: white;
-        }
-
-        .alert-danger {
-            background: var(--danger-red);
-            color: white;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                top: 0;
-                width: 280px;
-                z-index: 1050;
-                transition: var(--transition);
-            }
-
-            .sidebar.show {
-                left: 0;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-
-            .stat-card {
-                margin-bottom: 1rem;
-            }
-        }
-
-        .password-strength {
-            height: 4px;
-            border-radius: 2px;
-            transition: var(--transition);
-            margin-top: 0.5rem;
-            background: var(--border-dark);
-        }
-
-        .strength-weak { background: var(--danger-red); width: 25%; }
-        .strength-fair { background: var(--warning-orange); width: 50%; }
-        .strength-good { background: var(--info-blue); width: 75%; }
-        .strength-strong { background: var(--success-green); width: 100%; }
-
-        .sidebar-overlay {
+        body::before {
+            content: '';
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .settings-wrapper {
+            width: 100%;
+            max-width: 600px;
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(40px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2);
+            }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border-radius: 32px;
+            padding: 45px;
+            box-shadow: 
+                0 0 60px rgba(139, 92, 246, 0.15),
+                0 0 20px rgba(6, 182, 212, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: borderGlow 4s ease-in-out infinite;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        .glass-card > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-section {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .brand-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: white;
+            box-shadow: 
+                0 15px 35px rgba(139, 92, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset -2px -2px 5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .brand-section h1 {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f8fafc, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-section p {
+            color: var(--text-dim);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1.5px solid var(--border-light);
+            border-radius: 14px;
+            padding: 14px 16px;
+            color: white;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .input-field::placeholder {
+            color: rgba(148, 163, 184, 0.6);
+        }
+
+        .input-field:focus {
+            outline: none;
+            background: rgba(139, 92, 246, 0.05);
+            border-color: var(--primary);
+            box-shadow: 
+                0 0 0 4px rgba(139, 92, 246, 0.15),
+                inset 0 1px 2px rgba(255, 255, 255, 0.05);
+        }
+
+        .form-label {
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1040;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5);
+            filter: brightness(1.15);
+        }
+
+        .btn-submit:active {
+            transform: translateY(-1px);
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border: 1.5px solid rgba(16, 185, 129, 0.3);
+            color: #86efac;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 1px;
+        }
+
+        .tab-content {
             display: none;
         }
 
-        @media (max-width: 768px) {
-            .sidebar.show ~ .sidebar-overlay {
-                display: block;
+        .tab-content.active {
+            display: block;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .footer-text a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 30px 20px;
+                border-radius: 20px;
+                border: 1.5px solid var(--border-light);
+            }
+            
+            .brand-section h1 {
+                font-size: 24px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 p-0">
-                <div class="sidebar" id="sidebar">
-                    <div class="brand">
-                        <h4><i class="fas fa-crown me-2"></i>Multi Panel</h4>
-                        <small class="text-muted">Admin Dashboard</small>
-                    </div>
-                    <nav class="nav flex-column px-3">
-                        <a class="nav-link" href="admin_dashboard.php">
-                            <i class="fas fa-tachometer-alt"></i>Dashboard
-                        </a>
-                        <a class="nav-link" href="add_mod.php">
-                            <i class="fas fa-plus"></i>Add Mod Name
-                        </a>
-                        <a class="nav-link" href="manage_mods.php">
-                            <i class="fas fa-edit"></i>Manage Mods
-                        </a>
-                        <a class="nav-link" href="upload_mod.php">
-                            <i class="fas fa-upload"></i>Upload Mod APK
-                        </a>
-                        <a class="nav-link" href="mod_list.php">
-                            <i class="fas fa-list"></i>Mod APK List
-                        </a>
-                        <a class="nav-link" href="add_license.php">
-                            <i class="fas fa-key"></i>Add License Key
-                        </a>
-                        <a class="nav-link" href="licence_key_list.php">
-                            <i class="fas fa-key"></i>License Key List
-                        </a>
-                        <a class="nav-link" href="available_keys.php">
-                            <i class="fas fa-key"></i>Available Keys
-                        </a>
-                        <a class="nav-link" href="manage_users.php">
-                            <i class="fas fa-users"></i>Manage Users
-                        </a>
-                        <a class="nav-link" href="add_balance.php">
-                            <i class="fas fa-wallet"></i>Add Balance
-                        </a>
-                        <a class="nav-link" href="transactions.php">
-                            <i class="fas fa-exchange-alt"></i>Transaction
-                        </a>
-                        <a class="nav-link" href="referral_codes.php">
-                            <i class="fas fa-tag"></i>Referral Code
-                        </a>
-                        <a class="nav-link active" href="settings.php">
-                            <i class="fas fa-cog"></i>Settings
-                        </a>
-                        <a class="nav-link" href="logout.php">
-                            <i class="fas fa-sign-out-alt"></i>Logout
-                        </a>
-                    </nav>
+    <div class="settings-wrapper">
+        <div class="glass-card">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-cog"></i>
                 </div>
+                <h1>Settings</h1>
+                <p>Manage your admin account</p>
             </div>
-            
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content">
-                <!-- Header -->
-                <div class="header">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap">
-                        <div class="d-flex align-items-center">
-                            <button class="btn btn-outline-secondary mobile-menu-btn me-3" type="button" onclick="toggleSidebar(event)">
-                                <i class="fas fa-bars"></i>
-                            </button>
-                            <div>
-                                <h2 class="mb-0"><i class="fas fa-cog me-2 text-primary"></i>Account Settings</h2>
-                                <p class="text-muted mb-0">Manage your account information and security settings</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3 text-end">
-                                    <div class="fw-bold text-light"><?php echo htmlspecialchars($_SESSION['username']); ?></div>
-                                    <small class="text-muted">Administrator</small>
-                                </div>
-                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                    <span class="text-white fw-bold"><?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
+            <?php if ($success): ?>
+                <div class="alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <?php echo htmlspecialchars($success); ?>
                 </div>
-                <!-- Account Statistics -->
-                <div class="stats-container">
-                    <div class="row">
-                        <div class="col-lg-3 col-md-6 mb-4">
-                            <div class="stat-card">
-                                <div class="stat-icon purple">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </div>
-                                <div class="stat-value"><?php echo date('d M Y', strtotime($user['created_at'])); ?></div>
-                                <div class="stat-label">Member Since</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-md-6 mb-4">
-                            <div class="stat-card">
-                                <div class="stat-icon blue">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="stat-value"><?php echo $last_login ? date('d M Y', strtotime($last_login)) : 'Never'; ?></div>
-                                <div class="stat-label">Last Login</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-md-6 mb-4">
-                            <div class="stat-card">
-                                <div class="stat-icon orange">
-                                    <i class="fas fa-user-tag"></i>
-                                </div>
-                                <div class="stat-value"><?php echo ucfirst($user['role']); ?></div>
-                                <div class="stat-label">Account Type</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-md-6 mb-4">
-                            <div class="stat-card">
-                                <div class="stat-icon green">
-                                    <i class="fas fa-shield-check"></i>
-                                </div>
-                                <div class="stat-value">Active</div>
-                                <div class="stat-label">Account Status</div>
-                            </div>
-                        </div>
-                    </div>
+            <?php endif; ?>
+
+            <?php if ($error): ?>
+                <div class="alert-error">
+                    <i class="fas fa-circle-exclamation"></i>
+                    <?php echo htmlspecialchars($error); ?>
                 </div>
-                
-                <!-- Alerts -->
-                <?php if ($success): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <?php echo htmlspecialchars($success); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if ($error): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        <?php echo htmlspecialchars($error); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-                
-                <div class="row">
-                    <!-- Account Information -->
-                    <div class="col-lg-6 mb-4">
-                        <div class="form-card">
-                            <h5><i class="fas fa-user me-2"></i>Account Information</h5>
-                            <form method="POST" id="profileForm">
-                                <input type="hidden" name="update_profile" value="1">
-                                
-                                <div class="mb-3">
-                                    <label for="username" class="form-label">Username</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                        <input type="text" class="form-control" id="username" name="username" 
-                                               value="<?php echo htmlspecialchars($user['username']); ?>" required>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email Address</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                        <input type="email" class="form-control" id="email" name="email" 
-                                               value="<?php echo htmlspecialchars($user['email']); ?>" required>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Role</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-shield-alt"></i></span>
-                                        <input type="text" class="form-control" value="<?php echo ucfirst($user['role']); ?>" readonly>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="form-label">Join Date</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                                        <input type="text" class="form-control" value="<?php echo formatDate($user['created_at']); ?>" readonly>
-                                    </div>
-                                </div>
-                                
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-save me-2"></i>Update Profile
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+            <?php endif; ?>
+
+            <div class="tabs-container">
+                <button class="tab-btn active" onclick="switchTab(event, 'profile')">Profile</button>
+                <button class="tab-btn" onclick="switchTab(event, 'password')">Password</button>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profile" class="tab-content active">
+                <form method="POST">
+                    <input type="hidden" name="update_profile" value="1">
                     
-                    <!-- Change Password -->
-                    <div class="col-lg-6 mb-4">
-                        <div class="form-card">
-                            <h5><i class="fas fa-shield-alt me-2"></i>Change Password</h5>
-                            <form method="POST" id="passwordForm">
-                                <input type="hidden" name="change_password" value="1">
-                                
-                                <div class="mb-3">
-                                    <label for="current_password" class="form-label">Current Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                        <input type="password" class="form-control" id="current_password" name="current_password" required>
-                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('current_password')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="new_password" class="form-label">New Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-key"></i></span>
-                                        <input type="password" class="form-control" id="new_password" name="new_password" required>
-                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('new_password')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                    <div class="password-strength mt-2" id="passwordStrength"></div>
-                                    <small class="text-muted">Password must be at least 6 characters long</small>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label for="confirm_password" class="form-label">Confirm New Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-check"></i></span>
-                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirm_password')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-key me-2"></i>Update Password
-                                </button>
-                            </form>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="input-field" placeholder="Enter your username" 
+                               value="<?php echo htmlspecialchars($user['username']); ?>" required>
                     </div>
-                </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="input-field" placeholder="Enter your email" 
+                               value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Update Profile</button>
+                </form>
+            </div>
+
+            <!-- Password Tab -->
+            <div id="password" class="tab-content">
+                <form method="POST">
+                    <input type="hidden" name="change_password" value="1">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" name="current_password" class="input-field" placeholder="Enter current password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" name="new_password" class="input-field" placeholder="Enter new password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" name="confirm_password" class="input-field" placeholder="Confirm new password" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Change Password</button>
+                </form>
+            </div>
+
+            <div class="footer-text">
+                <a href="admin_dashboard.php">← Back to Dashboard</a>
             </div>
         </div>
     </div>
-    
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay d-md-none" onclick="toggleSidebar(event)"></div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Mobile sidebar toggle
-
-        // Password visibility toggle
-        function togglePassword(fieldId) {
-            const field = document.getElementById(fieldId);
-            const icon = field.nextElementSibling.querySelector('i');
+        function switchTab(e, tabName) {
+            e.preventDefault();
             
-            if (field.type === 'password') {
-                field.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                field.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            e.target.classList.add('active');
         }
-
-        // Password strength indicator
-        document.getElementById('new_password').addEventListener('input', function() {
-            const password = this.value;
-            const strengthBar = document.getElementById('passwordStrength');
-            
-            let strength = 0;
-            if (password.length >= 6) strength++;
-            if (password.match(/[a-z]/)) strength++;
-            if (password.match(/[A-Z]/)) strength++;
-            if (password.match(/[0-9]/)) strength++;
-            if (password.match(/[^a-zA-Z0-9]/)) strength++;
-            
-            strengthBar.className = 'password-strength';
-            if (strength === 1) strengthBar.classList.add('strength-weak');
-            else if (strength === 2) strengthBar.classList.add('strength-fair');
-            else if (strength === 3) strengthBar.classList.add('strength-good');
-            else if (strength >= 4) strengthBar.classList.add('strength-strong');
-        });
-
-        // Password confirmation validation
-        document.getElementById('confirm_password').addEventListener('input', function() {
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = this.value;
-            
-            if (newPassword !== confirmPassword) {
-                this.setCustomValidity('Passwords do not match');
-            } else {
-                this.setCustomValidity('');
-            }
-        });
-
-        // Form validation
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            
-            if (!username || !email) {
-                e.preventDefault();
-                alert('Please fill in all required fields.');
-            }
-        });
-
-        document.getElementById('passwordForm').addEventListener('submit', function(e) {
-            const currentPassword = document.getElementById('current_password').value;
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-            
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                e.preventDefault();
-                alert('Please fill in all password fields.');
-                return;
-            }
-            
-            if (newPassword.length < 6) {
-                e.preventDefault();
-                alert('New password must be at least 6 characters long.');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                e.preventDefault();
-                alert('New passwords do not match.');
-                return;
-            }
-        });
-
-        // Enhanced interactions
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add loading states to buttons
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function() {
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    if (submitBtn) {
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-                        submitBtn.disabled = true;
-                    }
-                });
-            });
-
-            // Add smooth hover effects
-            const cards = document.querySelectorAll('.stat-card, .form-card');
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-4px)';
-                });
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
-        });
     </script>
-<script src="assets/js/menu-logic.js"></script></body>
+</body>
 </html>

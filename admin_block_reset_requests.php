@@ -60,8 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 // Get pending requests with key details
 $pendingRequests = [];
 try {
-    // We use a clean query to only fetch what is currently in the database
-    // This ensures that if a row is deleted, it stops appearing immediately
     $stmt = $pdo->query("SELECT 
                             kr.id, 
                             kr.user_id, 
@@ -93,301 +91,429 @@ try {
     <title>Block And Reset Requests - Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f9fafb;
-            --card: #ffffff;
-            --text: #374151;
-            --muted: #6b7280;
-            --line: #e5e7eb;
-            --purple: #8b5cf6;
-            --purple-600: #7c3aed;
-            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --accent: #ec4899;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(139, 92, 246, 0.2);
         }
-        
-        [data-theme="dark"] {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --muted: #94a3b8;
-            --line: #334155;
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        
+
         body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
         }
-        
-        .navbar-custom {
-            background: var(--card);
-            border-bottom: 1px solid var(--line);
-            padding: 1rem 1.5rem;
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
-        
-        .container-custom {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
+
+        .requests-wrapper {
+            width: 100%;
+            max-width: 700px;
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 1;
         }
-        
-        .card-custom {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-light);
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(40px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
         }
-        
-        .request-card {
-            background: var(--bg);
-            border-left: 4px solid var(--purple);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
+
+        @keyframes borderGlow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2);
+            }
         }
-        
-        .request-card.block {
-            border-left-color: #ef4444;
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border-radius: 32px;
+            padding: 45px;
+            box-shadow: 
+                0 0 60px rgba(139, 92, 246, 0.15),
+                0 0 20px rgba(6, 182, 212, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: borderGlow 4s ease-in-out infinite;
         }
-        
-        .request-card.reset {
-            border-left-color: #f59e0b;
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+            pointer-events: none;
         }
-        
-        .btn-back {
-            margin-bottom: 2rem;
+
+        .glass-card > * {
+            position: relative;
+            z-index: 2;
         }
-        
-        .btn-back a {
-            color: var(--purple);
-            text-decoration: none;
-            font-weight: 600;
+
+        .brand-section {
+            text-align: center;
+            margin-bottom: 36px;
         }
-        
-        .btn-back a:hover {
-            text-decoration: underline;
+
+        .brand-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: white;
+            box-shadow: 
+                0 15px 35px rgba(139, 92, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset -2px -2px 5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: float 3s ease-in-out infinite;
         }
-        
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .brand-section h1 {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f8fafc, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-section p {
+            color: var(--text-dim);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border: 1.5px solid rgba(16, 185, 129, 0.3);
+            color: #86efac;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .requests-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .requests-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .requests-list::-webkit-scrollbar-track {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 10px;
+        }
+
+        .requests-list::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+        }
+
+        .request-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+
+        .request-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--primary);
+        }
+
         .request-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+            margin-bottom: 12px;
         }
-        
+
         .request-user {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 14px;
         }
-        
-        .request-type-badge {
-            padding: 0.35rem 0.75rem;
+
+        .request-type {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 10px;
             border-radius: 6px;
-            font-size: 0.85em;
-            font-weight: 600;
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--secondary);
         }
-        
-        .request-type-badge.block {
-            background: #fee2e2;
-            color: #991b1b;
+
+        .request-type.block {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
         }
-        
-        .request-type-badge.reset {
-            background: #fef3c7;
-            color: #92400e;
+
+        .request-details {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
         }
-        
-        .key-details {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .key-detail-row {
+
+        .request-actions {
             display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--line);
+            gap: 8px;
         }
-        
-        .key-detail-row:last-child {
-            border-bottom: none;
-        }
-        
-        .key-detail-label {
-            font-weight: 600;
-            color: var(--muted);
-        }
-        
-        .key-detail-value {
-            color: var(--text);
-            font-family: 'Courier New', monospace;
-        }
-        
-        .reason-box {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        
-        .btn-approve {
-            background: #10b981;
-            color: white;
+
+        .btn-approve, .btn-reject {
+            flex: 1;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        
-        .btn-approve:hover {
-            background: #059669;
-        }
-        
-        .btn-reject {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        
-        .btn-reject:hover {
-            background: #dc2626;
-        }
-        
-        .total-pending {
-            background: var(--purple);
-            color: white;
-            padding: 1.5rem;
             border-radius: 8px;
-            margin-bottom: 2rem;
-            text-align: center;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        
-        .total-pending-number {
-            font-size: 2.5rem;
+
+        .btn-approve {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: white;
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, #ef4444, #ec4899);
+            color: white;
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            opacity: 0.5;
+            display: block;
+        }
+
+        .empty-state p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .footer-text a {
+            color: var(--primary);
+            text-decoration: none;
             font-weight: 700;
         }
+
+        .pending-count {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 15px;
+        }
+
+        .pending-count strong {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 30px 20px;
+                border-radius: 20px;
+                border: 1.5px solid var(--border-light);
+            }
+            
+            .brand-section h1 {
+                font-size: 24px;
+            }
+
+            .request-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
     </style>
-    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
-    <link href="assets/css/dark-mode.css" rel="stylesheet">
-    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
 </head>
 <body>
-    <div class="navbar-custom">
-        <div class="container-custom">
-            <h1 style="color: var(--purple); margin: 0; font-weight: 700;">Block And Reset Requests</h1>
-        </div>
-    </div>
-    
-    <div class="container-custom">
-        <div class="btn-back">
-            <a href="admin_dashboard.php">← Back to Dashboard</a>
-        </div>
-        
-        <?php if ($message): ?>
-            <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($message); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="requests-wrapper">
+        <div class="glass-card">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <h1>Requests</h1>
+                <p>Block & Reset Management</p>
             </div>
-        <?php endif; ?>
-        
-        <div class="total-pending">
-            <div>Total Pending Requests:</div>
-            <div class="total-pending-number"><?php echo count($pendingRequests); ?></div>
-        </div>
-        
-        <?php if (empty($pendingRequests)): ?>
-            <div class="card-custom text-center">
-                <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--purple); margin-bottom: 1rem; display: block;"></i>
-                <p style="color: var(--muted);">No pending requests at this moment.</p>
+
+            <?php if ($message): ?>
+                <div class="alert-<?php echo $messageType; ?>">
+                    <i class="fas fa-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
+                    <?php echo htmlspecialchars($message); ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="pending-count">
+                Total Pending: <strong><?php echo count($pendingRequests); ?></strong>
             </div>
-        <?php else: ?>
-            <?php foreach ($pendingRequests as $request): ?>
-                <div class="request-card <?php echo htmlspecialchars($request['request_type']); ?>">
-                    <div class="request-header">
-                        <div class="request-user">
-                            <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
-                            <div>
-                                <div><?php echo htmlspecialchars($request['username']); ?></div>
-                                <div style="font-size: 0.85em; color: var(--muted); font-weight: 400;">
-                                    Request Date: <?php echo formatDate($request['created_at']); ?>
+
+            <?php if (empty($pendingRequests)): ?>
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>No pending requests at this moment.</p>
+                </div>
+            <?php else: ?>
+                <div class="requests-list">
+                    <?php foreach ($pendingRequests as $request): ?>
+                        <div class="request-item">
+                            <div class="request-header">
+                                <span class="request-user">
+                                    <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($request['username']); ?>
+                                </span>
+                                <span class="request-type <?php echo htmlspecialchars($request['request_type']); ?>">
+                                    <?php echo strtoupper($request['request_type']); ?>
+                                </span>
+                            </div>
+                            
+                            <div class="request-details">
+                                <div><strong><?php echo htmlspecialchars($request['mod_name']); ?></strong></div>
+                                <div style="font-size: 11px; opacity: 0.7;">
+                                    <?php echo htmlspecialchars($request['duration'] . ' ' . ucfirst($request['duration_type'])); ?> • 
+                                    <?php echo formatDate($request['created_at']); ?>
                                 </div>
                             </div>
+                            
+                            <div class="request-actions">
+                                <form method="POST" style="flex: 1;">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                    <button type="submit" name="action" value="approve" class="btn-approve" style="width: 100%;">
+                                        <i class="fas fa-check me-1"></i>Approve
+                                    </button>
+                                </form>
+                                <form method="POST" style="flex: 1;">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                    <button type="submit" name="action" value="reject" class="btn-reject" style="width: 100%;">
+                                        <i class="fas fa-times me-1"></i>Reject
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        <span class="request-type-badge <?php echo htmlspecialchars($request['request_type']); ?>">
-                            <?php echo strtoupper($request['request_type']); ?>
-                        </span>
-                    </div>
-                    
-                    <!-- Key Details -->
-                    <div class="key-details">
-                        <div class="key-detail-row">
-                            <span class="key-detail-label">Product:</span>
-                            <span class="key-detail-value"><?php echo htmlspecialchars($request['mod_name']); ?></span>
-                        </div>
-                        <div class="key-detail-row">
-                            <span class="key-detail-label">Duration:</span>
-                            <span class="key-detail-value"><?php echo htmlspecialchars($request['duration'] . ' ' . ucfirst($request['duration_type'])); ?></span>
-                        </div>
-                        <div class="key-detail-row">
-                            <span class="key-detail-label">License Key:</span>
-                            <span class="key-detail-value"><?php echo htmlspecialchars(substr($request['license_key'], 0, 30)) . (strlen($request['license_key']) > 30 ? '...' : ''); ?></span>
-                        </div>
-                    </div>
-                    
-                    <!-- Reason -->
-                    <div>
-                        <strong style="color: var(--muted);">Reason:</strong>
-                        <div class="reason-box">
-                            <?php echo htmlspecialchars($request['reason']); ?>
-                        </div>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="action-buttons">
-                        <form method="POST" style="display: inline;">
-                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                            <button type="submit" name="action" value="approve" class="btn-approve">
-                                <i class="fas fa-check me-2"></i>Approve
-                            </button>
-                        </form>
-                        <form method="POST" style="display: inline;">
-                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                            <button type="submit" name="action" value="reject" class="btn-reject">
-                                <i class="fas fa-times me-2"></i>Reject
-                            </button>
-                        </form>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+            <?php endif; ?>
+
+            <div class="footer-text">
+                <a href="admin_dashboard.php">← Back to Dashboard</a>
+            </div>
+        </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/dark-mode.js"></script>
-    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>
