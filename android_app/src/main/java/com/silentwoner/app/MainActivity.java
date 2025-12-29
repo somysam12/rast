@@ -1,4 +1,4 @@
-package com.SilentMultiPanel.app;
+package com.silentwoner.app;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -49,7 +49,6 @@ public class MainActivity extends Activity {
         splashLayout = (RelativeLayout) findViewById(R.id.splash_layout);
         btnRefresh = (ImageButton) findViewById(R.id.btn_refresh);
 
-        // Core WebView Settings
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
@@ -109,7 +108,6 @@ public class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
                 
-                // Reveal the webview after the splash
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -117,7 +115,7 @@ public class MainActivity extends Activity {
                         if (webView != null) webView.setVisibility(View.VISIBLE);
                         if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
                     }
-                }, 3000); // 3 second splash display
+                }, 3000);
             }
 
             @Override
