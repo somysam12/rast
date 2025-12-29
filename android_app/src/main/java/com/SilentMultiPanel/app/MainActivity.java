@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -43,12 +44,12 @@ public class MainActivity extends Activity {
             window.setNavigationBarColor(android.graphics.Color.parseColor("#0a0e27"));
         }
 
-        webView = (WebView) findViewById(R.id.webView);
+        webView = (WebView) findViewById(R.id.webview);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        splashLayout = (RelativeLayout) findViewById(R.id.splashLayout);
-        btnRefresh = (ImageButton) findViewById(R.id.refreshButton);
+        splashLayout = (RelativeLayout) findViewById(R.id.splash_layout);
+        btnRefresh = (ImageButton) findViewById(R.id.btn_refresh);
 
-        // Core WebView Settings for smooth response and single tap
+        // Core WebView Settings
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
@@ -77,7 +78,7 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (uploadMessage != null) {
                     uploadMessage.onReceiveValue(null);
                     uploadMessage = null;
@@ -108,15 +109,15 @@ public class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
                 
-                // Final reveal of the webview after the splash
-                new Handler().postDelayed(new Runnable() {
+                // Reveal the webview after the splash
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (splashLayout != null) splashLayout.setVisibility(View.GONE);
                         if (webView != null) webView.setVisibility(View.VISIBLE);
                         if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
                     }
-                }, 3000); // 3 second display for the logo
+                }, 3000); // 3 second splash display
             }
 
             @Override
