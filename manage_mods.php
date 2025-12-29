@@ -280,9 +280,13 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
                     <a class="nav-link active" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
                     <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload APK</a>
-                    <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i>Mod List</a>
                     <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
+                    <a class="nav-link" href="licence_key_list.php"><i class="fas fa-list"></i>License Key List</a>
+                    <a class="nav-link" href="available_keys.php"><i class="fas fa-check-circle"></i>Available Keys</a>
                     <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+                    <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
+                    <a class="nav-link" href="transactions.php"><i class="fas fa-exchange-alt"></i>Transactions</a>
+                    <a class="nav-link" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
                     <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
                     <hr style="border-color: var(--border-light); margin: 1rem 16px;">
                     <a class="nav-link" href="logout.php" style="color: #fca5a5;"><i class="fas fa-sign-out"></i>Logout</a>
