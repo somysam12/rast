@@ -35,460 +35,313 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Mods - Multi Panel</title>
+    <title>Manage Mods - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --sidebar-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-light: #a78bfa;
-            --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border-light: #e2e8f0;
-            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --accent: #ec4899;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.1);
         }
-        
-        [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --sidebar-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-light: #334155;
-        }
-        
+
         * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
         }
-        
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .sidebar {
-            background-color: var(--sidebar-bg);
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border-right: 1px solid var(--border-light);
             min-height: 100vh;
             position: fixed;
             width: 280px;
-            left: 0;
-            top: 0;
+            padding: 2rem 0;
             z-index: 1000;
             transition: transform 0.3s ease;
-            box-shadow: var(--shadow-medium);
+        }
+
+        .sidebar.active {
             transform: translateX(0);
         }
-        
-        .sidebar.hidden {
-            transform: translateX(-100%);
+
+        .sidebar h4 {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #f8fafc, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            padding: 0 20px;
         }
-        
+
         .sidebar .nav-link {
-            color: var(--text-secondary);
+            color: var(--text-dim);
             padding: 12px 20px;
-            border-radius: 8px;
-            margin: 2px 12px;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            font-size: 0.9rem;
+            margin: 4px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
         }
-        
-        .sidebar .nav-link:hover,
+
+        .sidebar .nav-link:hover {
+            color: var(--text-main);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
         .sidebar .nav-link.active {
-            background-color: var(--purple);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            transform: translateX(2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
         }
-        
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 12px;
-            font-size: 1rem;
-        }
-        
+
         .main-content {
             margin-left: 280px;
-            padding: 2rem;
-            min-height: 100vh;
+            padding: 2.5rem;
+            position: relative;
+            z-index: 1;
             transition: margin-left 0.3s ease;
         }
-        
-        .main-content.full-width {
-            margin-left: 0;
-        }
-        
-        .mobile-header {
+
+        .hamburger {
             display: none;
-            background: var(--card-bg);
-            padding: 1rem;
-            box-shadow: var(--shadow-medium);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            border-bottom: 1px solid var(--border-light);
-        }
-        
-        .mobile-toggle {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            border: none;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow-medium);
-            transition: all 0.2s ease;
-        }
-        
-        .mobile-toggle:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-large);
-        }
-        
-        .table-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: var(--shadow-medium);
-            border: 1px solid var(--border-light);
-            transition: all 0.3s ease;
-        }
-        
-        .table-card:hover {
-            box-shadow: var(--shadow-large);
-        }
-        
-        .table-card h5 {
-            color: var(--purple);
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        
-        .page-header {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-medium);
-            border: 1px solid var(--border-light);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            color: white;
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 100%);
-            box-shadow: var(--shadow-large);
-            transform: translateY(-1px);
-            color: white;
-        }
-        
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .user-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .table {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: var(--shadow-light);
-        }
-        
-        .table thead th {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            color: white;
-            border: none;
-            font-weight: 600;
-            padding: 1rem;
-        }
-        
-        .table tbody tr {
-            transition: all 0.2s ease;
-            background: var(--card-bg);
-        }
-        
-        .table tbody tr:hover {
-            background-color: rgba(139, 92, 246, 0.05);
-        }
-        
-        .table tbody td {
-            padding: 1rem;
-            border: none;
-            border-bottom: 1px solid var(--border-light);
-            color: var(--text-primary);
-        }
-        
-        .badge {
-            font-size: 0.8rem;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-        
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.8rem;
-            border-radius: 6px;
-        }
-        
-        .alert {
-            border-radius: 8px;
-            border: none;
-            padding: 12px 16px;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .alert-success {
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
-        }
-        
-        .alert-danger {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-        }
-        
             position: fixed;
             top: 20px;
-            right: 20px;
-            z-index: 1001;
+            left: 20px;
+            z-index: 1100;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .glass-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-light);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 2.5rem;
+            border-radius: 24px;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-card h2 {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: white;
+        }
+
+        .table {
+            color: var(--text-main);
+            border-color: var(--border-light);
+        }
+
+        .table thead th {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+            border-bottom: 2px solid var(--border-light);
+            padding: 15px;
+        }
+
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .table-hover tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            padding: 6px 12px;
             border-radius: 8px;
-            width: 44px;
-            height: 44px;
-            display: flex;
+            font-weight: 600;
+        }
+
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-medium);
-            color: var(--text-secondary);
+            border-radius: 10px;
+            transition: all 0.3s;
+            border: none;
+            color: white;
         }
-        
-            color: var(--purple);
-            box-shadow: var(--shadow-large);
-            transform: translateY(-1px);
+
+        .btn-action:hover {
+            transform: translateY(-2px);
         }
-        
-        /* Mobile Responsive Design */
-        @media (max-width: 768px) {
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 700;
+            color: white;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            color: white;
+        }
+
+        @media (max-width: 992px) {
             .sidebar {
-                width: 100%;
                 transform: translateX(-100%);
-                background: var(--sidebar-bg);
-                border-right: none;
-                box-shadow: var(--shadow-large);
+                width: 250px;
             }
-            
-            .sidebar.show {
+            .sidebar.active {
                 transform: translateX(0);
             }
-            
             .main-content {
                 margin-left: 0;
-                padding: 1rem;
+                padding: 5rem 1.5rem 1.5rem;
             }
-            
-            .mobile-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            
-            .page-header {
-                padding: 1.5rem;
-                margin-bottom: 1rem;
-            }
-            
-            .table-card {
-                padding: 1rem;
-            }
-            
-                top: 15px;
-                right: 15px;
-                width: 40px;
-                height: 40px;
-            }
-            
-            .table-responsive {
-                font-size: 0.9rem;
-            }
-            
-            .table thead th,
-            .table tbody td {
-                padding: 0.75rem 0.5rem;
+            .hamburger {
+                display: block;
             }
         }
     </style>
-    <link href="assets/css/dark-mode-button.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Theme Toggle -->
-        <i class="fas fa-moon" id="darkModeIcon"></i>
+    <button class="hamburger" id="hamburgerBtn">
+        <i class="fas fa-bars"></i>
     </button>
-    
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
-        </div>
-        <div class="d-flex align-items-center">
-            <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
-                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
-            </div>
-        </div>
-    </div>
-    
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-                <div class="p-3">
-                    <h4><i class="fas fa-crown me-2"></i>Multi Panel</h4>
-                    <p class="small mb-0" style="opacity: 0.7;">Admin Dashboard</p>
-                </div>
+            <div class="col-md-3 sidebar" id="sidebar">
+                <h4>
+                    <i class="fas fa-bolt me-2"></i>Multi Panel
+                </h4>
                 <nav class="nav flex-column">
-                    <a class="nav-link" href="admin_dashboard.php">
-                        <i class="fas fa-tachometer-alt"></i>Dashboard
-                    </a>
-                    <a class="nav-link" href="add_mod.php">
-                        <i class="fas fa-plus"></i>Add Mod Name
-                    </a>
-                    <a class="nav-link active" href="manage_mods.php">
-                        <i class="fas fa-edit"></i>Manage Mods
-                    </a>
-                    <a class="nav-link" href="upload_mod.php">
-                        <i class="fas fa-upload"></i>Upload Mod APK
-                    </a>
-                    <a class="nav-link" href="mod_list.php">
-                        <i class="fas fa-list"></i>Mod APK List
-                    </a>
-                    <a class="nav-link" href="add_license.php">
-                        <i class="fas fa-key"></i>Add License Key
-                    </a>
-                    <a class="nav-link" href="licence_key_list.php">
-                        <i class="fas fa-key"></i>License Key List
-                    </a>
-                    <a class="nav-link" href="available_keys.php">
-                        <i class="fas fa-key"></i>Available Keys
-                    </a>
-                    <a class="nav-link" href="manage_users.php">
-                        <i class="fas fa-users"></i>Manage Users
-                    </a>
-                    <a class="nav-link" href="add_balance.php">
-                        <i class="fas fa-wallet"></i>Add Balance
-                    </a>
-                    <a class="nav-link" href="transactions.php">
-                        <i class="fas fa-exchange-alt"></i>Transaction
-                    </a>
-                    <a class="nav-link" href="referral_codes.php">
-                        <i class="fas fa-tag"></i>Referral Code
-                    </a>
-                    <a class="nav-link" href="settings.php">
-                        <i class="fas fa-cog"></i>Settings
-                    </a>
-                    <a class="nav-link" href="logout.php">
-                        <i class="fas fa-sign-out-alt"></i>Logout
-                    </a>
+                    <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
+                    <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
+                    <a class="nav-link active" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
+                    <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload APK</a>
+                    <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i>Mod List</a>
+                    <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
+                    <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+                    <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
+                    <hr style="border-color: var(--border-light); margin: 1rem 16px;">
+                    <a class="nav-link" href="logout.php" style="color: #fca5a5;"><i class="fas fa-sign-out"></i>Logout</a>
                 </nav>
             </div>
             
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content" id="mainContent">
-                <div class="page-header">
+            <div class="col-md-9 main-content">
+                <div class="header-card">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-2"><i class="fas fa-edit me-2"></i>Manage Mods</h2>
-                            <p class="text-muted mb-0">View and manage all mod entries in the system</p>
+                            <h2><i class="fas fa-edit me-3"></i>Manage Mods</h2>
+                            <p class="mb-0 opacity-75 text-white">View and manage all mod entries in the system</p>
                         </div>
-                        <div class="d-none d-md-flex align-items-center">
-                            <div class="text-end me-3">
-                                <div class="fw-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></div>
-                                <small class="text-muted">Administrator</small>
-                            </div>
-                            <div class="user-avatar">
-                                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
-                            </div>
+                        <div>
+                            <a href="add_mod.php" class="btn-primary-custom">
+                                <i class="fas fa-plus me-2"></i>Add New Mod
+                            </a>
                         </div>
                     </div>
-                </div>
-                
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h5 class="text-muted mb-0">Total Mods: <span class="text-primary fw-bold"><?php echo count($mods); ?></span></h5>
-                    </div>
-                    <a href="add_mod.php" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Add New Mod
-                    </a>
                 </div>
                 
                 <?php if (isset($success)): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <?php echo htmlspecialchars($success); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                    <script>
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: '<?php echo $success; ?>',
+                            background: '#1e293b',
+                            color: '#fff',
+                            confirmButtonColor: '#8b5cf6'
+                        });
+                    </script>
                 <?php endif; ?>
                 
                 <?php if (isset($error)): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        <?php echo htmlspecialchars($error); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                    <script>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: '<?php echo $error; ?>',
+                            background: '#1e293b',
+                            color: '#fff',
+                            confirmButtonColor: '#8b5cf6'
+                        });
+                    </script>
                 <?php endif; ?>
                 
-                
-                <div class="table-card">
-                    <h5><i class="fas fa-list me-2"></i>Mod List</h5>
+                <div class="glass-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0"><i class="fas fa-list me-2" style="color: var(--primary);"></i>Mod List</h5>
+                        <span class="badge bg-primary"><?php echo count($mods); ?> Total Mods</span>
+                    </div>
+                    
                     <?php if (empty($mods)): ?>
                         <div class="text-center py-5">
-                            <i class="fas fa-box fa-3x text-muted mb-3"></i>
-                            <h6 class="text-muted">No mods found</h6>
-                            <p class="text-muted mb-3">Get started by adding your first mod</p>
-                            <a href="add_mod.php" class="btn btn-primary">
+                            <i class="fas fa-box fa-3x mb-3 opacity-25"></i>
+                            <h6 class="text-dim">No mods found</h6>
+                            <a href="add_mod.php" class="btn-primary-custom mt-3">
                                 <i class="fas fa-plus me-2"></i>Add First Mod
                             </a>
                         </div>
@@ -497,32 +350,19 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th style="width: 80px;">ID</th>
+                                        <th>ID</th>
                                         <th>Name</th>
-                                        <th class="d-none d-md-table-cell">Description</th>
-                                        <th style="width: 120px;">Status</th>
-                                        <th style="width: 140px;">Actions</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($mods as $mod): ?>
                                     <tr>
-                                        <td>
-                                            <span class="fw-bold text-primary">#<?php echo $mod['id']; ?></span>
-                                        </td>
-                                        <td>
-                                            <div class="fw-semibold"><?php echo htmlspecialchars($mod['name']); ?></div>
-                                            <div class="d-md-none">
-                                                <small class="text-muted">
-                                                    <?php echo htmlspecialchars($mod['description'] ?: 'No description'); ?>
-                                                </small>
-                                            </div>
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
-                                            <span class="text-muted">
-                                                <?php echo htmlspecialchars($mod['description'] ?: 'No description provided'); ?>
-                                            </span>
-                                        </td>
+                                        <td><span class="fw-bold text-primary">#<?php echo $mod['id']; ?></span></td>
+                                        <td><strong><?php echo htmlspecialchars($mod['name']); ?></strong></td>
+                                        <td class="text-dim"><?php echo htmlspecialchars($mod['description'] ?: 'No description'); ?></td>
                                         <td>
                                             <span class="badge bg-<?php echo $mod['status'] === 'active' ? 'success' : 'secondary'; ?>">
                                                 <i class="fas fa-<?php echo $mod['status'] === 'active' ? 'check' : 'pause'; ?> me-1"></i>
@@ -530,16 +370,14 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="group">
+                                            <div class="d-flex gap-2">
                                                 <a href="?toggle_status=<?php echo $mod['id']; ?>" 
-                                                   class="btn btn-<?php echo $mod['status'] === 'active' ? 'warning' : 'success'; ?>"
-                                                   onclick="return confirm('Are you sure you want to change the status?')"
+                                                   class="btn-action bg-<?php echo $mod['status'] === 'active' ? 'warning' : 'success'; ?>"
                                                    title="<?php echo $mod['status'] === 'active' ? 'Deactivate' : 'Activate'; ?>">
                                                     <i class="fas fa-<?php echo $mod['status'] === 'active' ? 'pause' : 'play'; ?>"></i>
                                                 </a>
-                                                <a href="?delete=<?php echo $mod['id']; ?>" 
-                                                   class="btn btn-danger"
-                                                   onclick="confirmDeleteMod(this); return false; this mod? This action cannot be undone.')"
+                                                <a href="#" class="btn-action bg-danger" 
+                                                   onclick="confirmDelete(<?php echo $mod['id']; ?>)"
                                                    title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
@@ -558,128 +396,37 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Mobile sidebar toggle
-                if (sidebar) sidebar.classList.toggle('show');
-            }
-        }
-        
-        // Dark mode functionality
-            const body = document.body;
-            const icon = document.getElementById('darkModeIcon');
-            
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                icon.className = 'fas fa-sun';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-        
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            document.getElementById('darkModeIcon').className = 'fas fa-sun';
-        }
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            
-            if (window.innerWidth > 768) {
-                sidebar.classList.remove('show');
-                if (!sidebar.classList.contains('hidden')) {
-                    mainContent.classList.remove('full-width');
-                }
-            } else {
-                sidebar.classList.remove('show');
-                mainContent.classList.remove('full-width');
-            }
-        });
-        
-        // Auto-hide alerts
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    alert.style.opacity = '0';
-                    alert.style.transform = 'translateY(-10px)';
-                    setTimeout(() => {
-                        alert.style.display = 'none';
-                    }, 300);
-                }, 5000);
-            });
-        });
-    </script>
-    <script src="assets/js/scroll-restore.js"></script>
-<script src="assets/js/menu-logic.js"></script></body>
-    <script>
-        function confirmDeleteMod(element) {
-            const href = element.getAttribute('href');
+        function confirmDelete(id) {
             Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, Delete',
-                cancelButtonText: 'Cancel',
-                customClass: {
-                    popup: 'swal-delete-popup',
-                    title: 'swal-delete-title',
-                    confirmButton: 'swal-delete-confirm',
-                    cancelButton: 'swal-delete-cancel'
-                },
-                didOpen: (modal) => {
-                    modal.style.animation = 'slideInDelete 0.4s ease-out';
-                }
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#1e293b',
+                color: '#fff'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = href;
+                    window.location.href = '?delete=' + id;
                 }
-            });
+            })
         }
+
+        document.getElementById('hamburgerBtn').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburgerBtn');
+            if (window.innerWidth <= 992) {
+                if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
     </script>
-    <style>
-        @keyframes slideInDelete {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .swal-delete-popup {
-            border-radius: 12px !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-            backdrop-filter: blur(10px) !important;
-        }
-        .swal-delete-title {
-            font-size: 1.5rem !important;
-            color: #1e293b !important;
-            font-weight: 700 !important;
-        }
-        .swal-delete-confirm, .swal-delete-cancel {
-            border-radius: 6px !important;
-            font-weight: 600 !important;
-            padding: 10px 24px !important;
-            transition: all 0.2s ease !important;
-        }
-        .swal-delete-confirm:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
-        }
-        .swal-delete-cancel {
-            background-color: #e5e7eb !important;
-            color: #374151 !important;
-        }
-        .swal-delete-cancel:hover {
-            background-color: #d1d5db !important;
-            transform: translateY(-2px) !important;
-        }
-    </style>
+</body>
 </html>
