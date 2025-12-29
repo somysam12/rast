@@ -44,22 +44,31 @@ if ($_POST && isset($_FILES['apk_file'])) {
         if ($ext !== 'apk') {
             $error = 'Only .apk files allowed';
         } else {
-            @mkdir('uploads/apks', 0777, true);
+            @mkdir('uploads/apks', 0755, true);
             $name = uniqid() . '_' . preg_replace("/[^a-zA-Z0-9.]/", "_", $file['name']);
             $path = 'uploads/apks/' . $name;
             
             if (move_uploaded_file($file['tmp_name'], $path)) {
                 @chmod($path, 0644);
                 try {
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS mod_apks (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        mod_id INT NOT NULL,
+                        file_name VARCHAR(255) NOT NULL,
+                        file_path VARCHAR(500) NOT NULL,
+                        file_size BIGINT NOT NULL,
+                        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB");
+                    
                     $stmt = $pdo->prepare("INSERT INTO mod_apks (mod_id, file_name, file_path, file_size) VALUES (?, ?, ?, ?)");
                     $stmt->execute([$mod_id, $file['name'], $path, $file['size']]);
                     $success = '✓ Upload successful!';
                 } catch (Exception $e) {
                     @unlink($path);
-                    $error = 'Database error';
+                    $error = 'Database error: ' . $e->getMessage();
                 }
             } else {
-                $error = 'File move failed';
+                $error = 'File move failed. Check permissions on "uploads/apks".';
             }
         }
     }
