@@ -18,7 +18,8 @@ if (isset($_POST['bulk_delete']) && isset($_POST['selected_keys'])) {
     $ids = $_POST['selected_keys'];
     if (!empty($ids)) {
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $stmt = $pdo->prepare("DELETE FROM keys_table WHERE id IN ($placeholders)");
+        // Corrected table name: license_keys (based on read of licence_key_list.php)
+        $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id IN ($placeholders)");
         if ($stmt->execute($ids)) {
             $success_msg = count($ids) . ' keys deleted successfully!';
         }
@@ -27,22 +28,35 @@ if (isset($_POST['bulk_delete']) && isset($_POST['selected_keys'])) {
 
 // Handle single delete
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
-    $stmt = $pdo->prepare("DELETE FROM keys_table WHERE id = ?");
+    $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id = ?");
     if ($stmt->execute([$_GET['delete_id']])) {
         $success_msg = 'Key deleted successfully!';
     }
 }
 
-// Initial data load
-$stmt = $pdo->query("SELECT * FROM keys_table ORDER BY created_at DESC LIMIT 100");
-$keys = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get filter parameters
+$mod_id = $_GET['mod_id'] ?? '';
+$status = $_GET['status'] ?? '';
+
+// Build query
+$sql = "SELECT lk.*, m.name as mod_name FROM license_keys lk LEFT JOIN mods m ON lk.mod_id = m.id WHERE 1=1";
+$params = [];
+if ($mod_id) { $sql .= " AND lk.mod_id = ?"; $params[] = $mod_id; }
+if ($status) { $sql .= " AND lk.status = ?"; $params[] = $status; }
+$sql .= " ORDER BY lk.created_at DESC";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$licenseKeys = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$mods = $pdo->query("SELECT id, name FROM mods ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
 // Key Statistics
 $stmt = $pdo->query("SELECT 
     COUNT(*) as total_keys,
-    COUNT(CASE WHEN is_used = 0 THEN 1 END) as unused_keys,
-    COUNT(CASE WHEN is_used = 1 THEN 1 END) as used_keys
-    FROM keys_table");
+    COUNT(CASE WHEN status = 'available' THEN 1 END) as unused_keys,
+    COUNT(CASE WHEN status = 'sold' THEN 1 END) as used_keys
+    FROM license_keys");
 $keyStats = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -122,8 +136,8 @@ $keyStats = $stmt->fetch(PDO::FETCH_ASSOC);
         .table tbody td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; }
         
         .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .status-unused { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .status-used { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .status-available { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-sold { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 
         .key-code { font-family: 'Courier New', Courier, monospace; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; color: var(--secondary); font-weight: 600; letter-spacing: 1px; }
 
@@ -135,6 +149,11 @@ $keyStats = $stmt->fetch(PDO::FETCH_ASSOC);
         
         .bulk-actions { margin-bottom: 1rem; display: none; }
         .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
+        
+        .form-select, .form-control { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); color: white; border-radius: 12px; }
+        .form-select option { background: #0f172a; color: white; }
+
+        .btn-primary-custom { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; padding: 10px 20px; font-weight: 700; color: white; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 
         @media (max-width: 576px) {
             .header-card { padding: 1rem; }
@@ -196,6 +215,33 @@ $keyStats = $stmt->fetch(PDO::FETCH_ASSOC);
             </div>
         </div>
 
+        <div class="glass-card mb-4">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Mod</label>
+                    <select name="mod_id" class="form-select">
+                        <option value="">All Mods</option>
+                        <?php foreach ($mods as $mod): ?>
+                        <option value="<?php echo $mod['id']; ?>" <?php echo $mod_id == $mod['id'] ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($mod['name']); ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="available" <?php echo $status === 'available' ? 'selected' : ''; ?>>Available</option>
+                        <option value="sold" <?php echo $status === 'sold' ? 'selected' : ''; ?>>Sold</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn-primary-custom w-100"><i class="fas fa-filter"></i>Apply Filters</button>
+                </div>
+            </form>
+        </div>
+
         <div class="glass-card">
             <form method="POST" id="bulkDeleteForm">
                 <input type="hidden" name="bulk_delete" value="1">
@@ -209,38 +255,40 @@ $keyStats = $stmt->fetch(PDO::FETCH_ASSOC);
                         <thead>
                             <tr>
                                 <th><input type="checkbox" class="form-check-input" id="selectAll"></th>
+                                <th>Mod Name</th>
                                 <th>License Key</th>
                                 <th>Duration</th>
+                                <th>Price</th>
                                 <th>Status</th>
-                                <th>Created By</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($keys as $key): ?>
+                            <?php foreach ($licenseKeys as $key): ?>
                             <tr>
                                 <td><input type="checkbox" name="selected_keys[]" value="<?php echo $key['id']; ?>" class="form-check-input key-checkbox"></td>
+                                <td><strong><?php echo htmlspecialchars($key['mod_name'] ?? 'General'); ?></strong></td>
                                 <td>
                                     <span class="key-code"><?php echo htmlspecialchars($key['license_key']); ?></span>
                                     <button type="button" class="btn-copy" onclick="copyToClipboard('<?php echo $key['license_key']; ?>')" title="Copy Key">
                                         <i class="fas fa-copy"></i>
                                     </button>
                                 </td>
-                                <td><span class="fw-bold text-primary"><?php echo htmlspecialchars($key['duration']); ?> Days</span></td>
+                                <td><span class="fw-bold text-primary"><?php echo htmlspecialchars($key['duration']); ?> <?php echo htmlspecialchars($key['duration_type'] ?? 'Days'); ?></span></td>
+                                <td><span class="text-success fw-bold">₹<?php echo number_format($key['price'] ?? 0, 2); ?></span></td>
                                 <td>
-                                    <span class="status-badge <?php echo $key['is_used'] ? 'status-used' : 'status-unused'; ?>">
-                                        <?php echo $key['is_used'] ? 'Used' : 'Available'; ?>
+                                    <span class="status-badge status-<?php echo $key['status']; ?>">
+                                        <?php echo ucfirst($key['status']); ?>
                                     </span>
                                 </td>
-                                <td><span class="text-dim"><?php echo htmlspecialchars($key['created_by'] ?? 'System'); ?></span></td>
                                 <td>
-                                    <button type="button" onclick="confirmDelete(<?php echo $key['id']; ?>)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                    <button type="button" onclick="confirmDelete(<?php echo $key['id']; ?>)" class="btn btn-danger btn-sm btn-action"><i class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
-                            <?php if (empty($keys)): ?>
+                            <?php if (empty($licenseKeys)): ?>
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-dim">No license keys found.</td>
+                                <td colspan="7" class="text-center py-4 text-dim">No license keys found.</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
