@@ -53,9 +53,28 @@ if ($_POST) {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     
                     $pdo->beginTransaction();
+                    
+                    // Insert the user
                     $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by) VALUES (?, ?, ?, ?, ?)");
                     $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy]);
                     $userId = $pdo->lastInsertId();
+                    
+                    // Add bonus amount if applicable
+                    if ($refData && isset($refData['bonus_amount']) && $refData['bonus_amount'] > 0) {
+                        $bonus = $refData['bonus_amount'];
+                        
+                        // Update user balance
+                        $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+                        $stmt->execute([$bonus, $userId]);
+                        
+                        // Log transaction for the user
+                        $stmt = $pdo->prepare("INSERT INTO transactions (user_id, amount, type, description, status, reference) VALUES (?, ?, 'credit', ?, 'completed', ?)");
+                        $stmt->execute([$userId, $bonus, "Referral Bonus (Code: $referralCode)", "REF-$referralCode"]);
+                        
+                        // Update usage count for the referral code
+                        $stmt = $pdo->prepare("UPDATE referral_codes SET usage_count = usage_count + 1 WHERE code = ?");
+                        $stmt->execute([$referralCode]);
+                    }
                     
                     $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, 1)");
                     $stmt->execute([$userId, 1]);

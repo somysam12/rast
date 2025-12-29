@@ -1,4 +1,5 @@
 <?php
+require_once "includes/optimization.php";
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -7,27 +8,13 @@ require_once 'includes/functions.php';
 
 requireAdmin();
 
-if (!isset($_SESSION)) {
-    session_start();
-}
-
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit();
-}
+$pdo = getDBConnection();
 
 $success = '';
 $error = '';
 
-try {
-    $pdo = getDBConnection();
-} catch (Exception $e) {
-    $error = 'Database connection failed: ' . $e->getMessage();
-    $pdo = null;
-}
-
 // Handle generate referral code
-if ($_POST && isset($_POST['generate_code']) && $pdo) {
+if ($_POST && isset($_POST['generate_code'])) {
     try {
         $expiryDays = (int)$_POST['expiry_days'];
         $bonusAmount = (float)($_POST['bonus_amount'] ?? 50.00);
@@ -55,628 +42,183 @@ if ($_POST && isset($_POST['generate_code']) && $pdo) {
     }
 }
 
-// Handle deactivate code
-if (isset($_GET['deactivate']) && is_numeric($_GET['deactivate']) && $pdo) {
-    try {
-        $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE id = ?");
-        if ($stmt->execute([$_GET['deactivate']])) {
-            $success = 'Referral code deactivated successfully!';
-        } else {
-            $error = 'Failed to deactivate referral code';
-        }
-    } catch (Exception $e) {
-        $error = 'Error deactivating referral code: ' . $e->getMessage();
-    }
+// Handle deactivate/delete
+if (isset($_GET['deactivate']) && is_numeric($_GET['deactivate'])) {
+    $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE id = ?");
+    $stmt->execute([$_GET['deactivate']]);
+    header("Location: referral_codes.php");
+    exit();
+}
+if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+    $stmt = $pdo->prepare("DELETE FROM referral_codes WHERE id = ?");
+    $stmt->execute([$_GET['delete']]);
+    header("Location: referral_codes.php");
+    exit();
 }
 
-// Handle delete code
-if (isset($_GET['delete']) && is_numeric($_GET['delete']) && $pdo) {
-    try {
-        $stmt = $pdo->prepare("DELETE FROM referral_codes WHERE id = ?");
-        if ($stmt->execute([$_GET['delete']])) {
-            $success = 'Referral code deleted successfully!';
-        } else {
-            $error = 'Failed to delete referral code';
-        }
-    } catch (Exception $e) {
-        $error = 'Error deleting referral code: ' . $e->getMessage();
-    }
-}
+// Initial data load
+$stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
+$referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Get all referral codes
-try {
-    if ($pdo) {
-        $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name 
-                            FROM referral_codes rc 
-                            LEFT JOIN users u ON rc.created_by = u.id 
-                            ORDER BY rc.created_at DESC");
-        $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } else {
-        $referralCodes = [];
-    }
-} catch (Exception $e) {
-    $referralCodes = [];
-    $error = 'Failed to fetch referral codes: ' . $e->getMessage();
-}
-
-// Get referral code statistics
-try {
-    if ($pdo) {
-        $stmt = $pdo->query("SELECT 
-            COUNT(*) as total_codes,
-            COUNT(CASE WHEN status = 'active' THEN 1 END) as active_codes,
-            COUNT(CASE WHEN status = 'inactive' THEN 1 END) as inactive_codes,
-            COUNT(CASE WHEN expires_at > NOW() THEN 1 END) as valid_codes,
-            COUNT(CASE WHEN expires_at <= NOW() THEN 1 END) as expired_codes
-            FROM referral_codes");
-        $codeStats = $stmt->fetch(PDO::FETCH_ASSOC);
-    } else {
-        $codeStats = [
-            'total_codes' => 0,
-            'active_codes' => 0,
-            'inactive_codes' => 0,
-            'valid_codes' => 0,
-            'expired_codes' => 0
-        ];
-    }
-} catch (Exception $e) {
-    $codeStats = [
-        'total_codes' => 0,
-        'active_codes' => 0,
-        'inactive_codes' => 0,
-        'valid_codes' => 0,
-        'expired_codes' => 0
-    ];
-}
+// Statistics
+$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND expires_at > NOW() THEN 1 END) as active FROM referral_codes");
+$stats = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Referral Codes - Multi Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referral Management - Silent Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-light: #a78bfa;
-            --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-light: #e2e8f0;
-            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #06b6d4;
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.1);
         }
-        
-        [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border-light: #334155;
-        }
-        
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
+            background-attachment: fixed;
             min-height: 100vh;
-            transition: all 0.3s ease;
+            color: var(--text-main);
+            overflow-x: hidden;
         }
-        
+
         .sidebar {
-            background-color: var(--card-bg);
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border-right: 1px solid var(--border-light);
             min-height: 100vh;
             position: fixed;
             width: 280px;
-            left: 0;
-            top: 0;
+            padding: 2rem 0;
             z-index: 1000;
-            box-shadow: var(--shadow-light);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(0);
+            transition: transform 0.3s ease;
+            left: -280px;
         }
-        
-        .sidebar.hidden {
-            transform: translateX(-100%);
+
+        .sidebar.active { transform: translateX(280px); }
+        .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; }
+        .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
+        .sidebar .nav-link.active { background: var(--primary); color: white; }
+
+        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; max-width: 1400px; margin: 0 auto; }
+
+        @media (min-width: 993px) {
+            .sidebar { left: 0; }
+            .main-content { margin-left: 280px; }
         }
+
+        .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
+        @media (max-width: 992px) { .hamburger { display: block; } }
+
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--border-light); border-radius: 24px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); margin-bottom: 2rem; }
+
+        .header-card { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); padding: 1.5rem; border-radius: 24px; margin-bottom: 2rem; position: relative; overflow: hidden; }
+
+        .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); border-radius: 18px; padding: 12px 8px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 80px; }
+        .stat-card h3 { color: var(--secondary); font-weight: 800; margin-bottom: 2px; font-size: 1.2rem; }
+        .stat-card p { color: var(--text-dim); font-size: 0.7rem; margin-bottom: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .form-control, .form-select { background: rgba(15, 23, 42, 0.5); border: 1.5px solid var(--border-light); border-radius: 12px; padding: 12px; color: white; }
+        .form-control:focus, .form-select:focus { outline: none; border-color: var(--primary); background: rgba(15, 23, 42, 0.7); color: white; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+
+        .btn-submit { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; padding: 12px 24px; color: white; font-weight: 700; transition: all 0.3s; width: 100%; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3); }
+
+        .table { color: var(--text-main); vertical-align: middle; }
+        .table thead th { background: rgba(139, 92, 246, 0.1); color: var(--primary); border: none; padding: 12px; font-size: 0.9rem; }
+        .table tbody td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.85rem; }
         
-        .sidebar .nav-link {
-            color: var(--text-secondary);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin: 2px 16px;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-        }
-        
-        .sidebar .nav-link:hover {
-            background-color: var(--purple);
-            color: white;
-        }
-        
-        .sidebar .nav-link.active {
-            background-color: var(--purple);
-            color: white;
-        }
-        
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 12px;
-            font-size: 1em;
-        }
-        
-        .main-content {
-            margin-left: 280px;
-            padding: 2rem;
-            min-height: 100vh;
-            transition: margin-left 0.3s ease;
-        }
-        
-        .main-content.full-width {
-            margin-left: 0;
-        }
-        
-        .mobile-header {
-            display: none;
-            background: var(--card-bg);
-            padding: 1rem;
-            box-shadow: var(--shadow-light);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1001;
-            border-bottom: 1px solid var(--border-light);
-            backdrop-filter: blur(20px);
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .mobile-toggle {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            border: none;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow-light);
-            transition: all 0.2s ease;
-        }
-        
-        .mobile-toggle:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .page-header {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--shadow-light);
-        }
-        
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--purple);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-        
-        .stats-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-light);
-            border-left: 4px solid;
-            margin-bottom: 1.5rem;
-            transition: transform 0.2s ease;
-        }
-        
-        .stats-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .stats-card.total-codes { border-left-color: var(--purple); }
-        .stats-card.active-codes { border-left-color: var(--success); }
-        .stats-card.valid-codes { border-left-color: var(--info); }
-        .stats-card.expired-codes { border-left-color: var(--danger); }
-        
-        .form-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-light);
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-header {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .codes-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-light);
-        }
-        
-        .codes-header {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .table {
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border-light);
-        }
-        
-        .table thead th {
-            background-color: var(--purple);
-            color: white;
-            border: none;
-            font-weight: 600;
-            padding: 12px;
-        }
-        
-        .table tbody tr {
-            transition: background-color 0.2s ease;
-        }
-        
-        .table tbody tr:hover {
-            background-color: rgba(139, 92, 246, 0.05);
-        }
-        
-        .table tbody td {
-            padding: 12px;
-            border: none;
-            border-bottom: 1px solid var(--border-light);
-            color: var(--text-primary);
-            vertical-align: middle;
-        }
-        
-        .form-control {
-            border-radius: 8px;
-            border: 1px solid var(--border-light);
-            padding: 0.75rem;
-            transition: all 0.2s ease;
-            color: var(--text-primary);
-            background-color: var(--card-bg);
-        }
-        
-        .form-control:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
-            background-color: var(--card-bg);
-            color: var(--text-primary);
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .btn {
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            padding: 0.75rem 1.5rem;
-        }
-        
-        .btn-primary {
-            background-color: var(--purple);
-            border-color: var(--purple);
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--purple-dark);
-            border-color: var(--purple-dark);
-            transform: translateY(-1px);
-        }
-        
-        .btn-warning {
-            background-color: var(--warning);
-            border-color: var(--warning);
-        }
-        
-        .btn-danger {
-            background-color: var(--danger);
-            border-color: var(--danger);
-        }
-        
-        .badge {
-            font-size: 0.75rem;
-            padding: 0.375rem 0.75rem;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-        
-        .alert {
-            border-radius: 8px;
-            border: 1px solid;
-            padding: 1rem;
-        }
-        
-        .alert-success {
-            background-color: rgba(16, 185, 129, 0.1);
-            border-color: var(--success);
-            color: var(--success);
-        }
-        
-        .alert-danger {
-            background-color: rgba(239, 68, 68, 0.1);
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: var(--text-secondary);
-        }
-        
-        .code-display {
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-            font-weight: 700;
-            font-size: 1.1em;
-            color: var(--purple);
-            background-color: rgba(139, 92, 246, 0.1);
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .code-display:hover {
-            background-color: rgba(139, 92, 246, 0.15);
-            transform: scale(1.05);
-        }
-        
-        .status-active {
-            color: var(--success);
-        }
-        
-        .status-inactive {
-            color: var(--danger);
-        }
-        
-        .status-expired {
-            color: var(--warning);
-        }
-        
-        @media screen and (max-width: 768px) {
-            .mobile-header {
-                display: flex !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                z-index: 1001 !important;
-                background: var(--card-bg) !important;
-                padding: 1rem !important;
-                box-shadow: var(--shadow-light) !important;
-                border-bottom: 1px solid var(--border-light) !important;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                transform: translateX(-100%);
-                background: var(--card-bg);
-                border-right: none;
-                box-shadow: var(--shadow-medium);
-                backdrop-filter: blur(20px);
-                z-index: 1002;
-                pointer-events: none;
-            }
-            
-            .sidebar.show {
-                transform: translateX(0);
-                pointer-events: auto;
-            }
-            
-            .sidebar .nav-link {
-                pointer-events: auto;
-                position: relative;
-                z-index: 1003;
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-                padding-top: 80px;
-            }
-            
-            .mobile-header {
-                display: flex !important;
-                justify-content: space-between;
-                align-items: center;
-                backdrop-filter: blur(20px);
-            }
-        }
-        
-        .bg-purple {
-            background-color: var(--purple) !important;
-            color: white !important;
-        }
+        .code-badge { font-family: 'Courier New', monospace; background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; letter-spacing: 1px; border: 1px solid rgba(139, 92, 246, 0.2); }
+        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .status-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-inactive { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+        .overlay.active { display: block; }
     </style>
-    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
-    <script src="assets/js/menu-logic.js"></script>
 </head>
 <body>
-    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
-    <div class="mobile-header">
-        <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
-        </div>
-        <div class="d-flex align-items-center">
-            <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
-                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
-            </div>
-        </div>
+    <div class="overlay" id="overlay"></div>
+    <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+    <div class="sidebar" id="sidebar">
+        <h4>SILENT PANEL</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
+            <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+            <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
+            <a class="nav-link active" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
+            <a class="nav-link" href="transactions.php"><i class="fas fa-exchange-alt"></i>Transactions</a>
+            <hr style="border-color: var(--border-light); margin: 1.5rem 16px;">
+            <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
+        </nav>
     </div>
-    
-    <div class="container-fluid">
+
+    <div class="main-content">
+        <div class="header-card">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <h2 class="text-white mb-1" style="font-weight: 800;">Referral Management</h2>
+                    <p class="text-white opacity-75 mb-0">Create and track bonus referral codes</p>
+                </div>
+                <div class="col-md-5 mt-3 mt-md-0">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <h3><?php echo (int)$stats['total']; ?></h3>
+                                <p>Total Codes</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <h3><?php echo (int)$stats['active']; ?></h3>
+                                <p>Active Now</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
-            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-                <div class="position-sticky">
-                    <h4 class="text-center py-3 border-bottom" style="border-color: var(--border-light) !important; color: var(--purple); font-weight: 600;">
-                        <i class="fas fa-shield-alt me-2"></i>Multi Panel
-                    </h4>
-                <nav class="nav flex-column p-3">
-                    <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
-                    <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod Name</a>
-                    <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
-                    <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload Mod APK</a>
-                    <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i>Mod APK List</a>
-                    <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License Key</a>
-                    <a class="nav-link" href="licence_key_list.php"><i class="fas fa-key"></i>License Key List</a>
-                    <a class="nav-link" href="available_keys.php"><i class="fas fa-key"></i>Available Keys</a>
-                    <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
-                    <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
-                    <a class="nav-link" href="transactions.php"><i class="fas fa-exchange-alt"></i>Transaction</a>
-                    <a class="nav-link active" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Code</a>
-                    <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt"></i>Logout</a>
-                </nav>
-                </div>
-            </div>
-
-            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
-                <div class="page-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1">Referral Code Management</h2>
-                            <p class="text-muted mb-0">Create and manage customized referral codes</p>
+            <div class="col-lg-4">
+                <div class="glass-card">
+                    <h5 class="mb-4 fw-bold"><i class="fas fa-plus-circle me-2 text-primary"></i>New Referral</h5>
+                    <form method="POST">
+                        <input type="hidden" name="generate_code" value="1">
+                        <div class="mb-3">
+                            <label class="form-label small text-dim">Bonus Amount (₹)</label>
+                            <input type="number" name="bonus_amount" class="form-control" value="50" step="0.01" required>
                         </div>
-                        <div class="user-avatar">
-                            <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+                        <div class="mb-3">
+                            <label class="form-label small text-dim">Expiry (Days)</label>
+                            <input type="number" name="expiry_days" class="form-control" value="30" required>
                         </div>
-                    </div>
-                </div>
-
-                <?php if ($success): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i><?php echo $success; ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
-
-                <?php if ($error): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i><?php echo $error; ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
-
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="stats-card total-codes">
-                            <div class="text-secondary small fw-bold text-uppercase mb-1">Total Codes</div>
-                            <div class="h3 mb-0"><?php echo $codeStats['total_codes']; ?></div>
+                        <div class="mb-4">
+                            <label class="form-label small text-dim">Usage Limit</label>
+                            <input type="number" name="usage_limit" class="form-control" value="10" required>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card active-codes">
-                            <div class="text-secondary small fw-bold text-uppercase mb-1">Active</div>
-                            <div class="h3 mb-0"><?php echo $codeStats['active_codes']; ?></div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card valid-codes">
-                            <div class="text-secondary small fw-bold text-uppercase mb-1">Valid</div>
-                            <div class="h3 mb-0"><?php echo $codeStats['valid_codes']; ?></div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card expired-codes">
-                            <div class="text-secondary small fw-bold text-uppercase mb-1">Expired</div>
-                            <div class="h3 mb-0"><?php echo $codeStats['expired_codes']; ?></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <div class="form-header">
-                        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Generate New Referral Code</h5>
-                    </div>
-                    <form method="POST" class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Expiry Period</label>
-                            <select class="form-control" name="expiry_days" required>
-                                <option value="7">7 Days</option>
-                                <option value="15">15 Days</option>
-                                <option value="30" selected>30 Days (Recommended)</option>
-                                <option value="90">90 Days</option>
-                                <option value="365">1 Year</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Bonus Balance</label>
-                            <input type="number" class="form-control" name="bonus_amount" value="50" min="0" step="1" required>
-                            <small class="text-muted">Balance user gets</small>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Usage Limit</label>
-                            <input type="number" class="form-control" name="usage_limit" value="1" min="1" step="1" required>
-                            <small class="text-muted">Max users allowed</small>
-                        </div>
-                        <div class="col-12 mt-4 text-end">
-                            <button type="submit" name="generate_code" class="btn btn-primary px-5">
-                                <i class="fas fa-magic me-2"></i>Generate Code
-                            </button>
-                        </div>
+                        <button type="submit" class="btn-submit">Generate Code</button>
                     </form>
                 </div>
-
-                <div class="codes-card">
-                    <div class="codes-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-list-ul me-2"></i>Existing Referral Codes</h5>
-                        <span class="badge bg-white text-primary"><?php echo count($referralCodes); ?> Codes</span>
-                    </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="glass-card">
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -684,306 +226,63 @@ try {
                                     <th>Code</th>
                                     <th>Bonus</th>
                                     <th>Usage</th>
-                                    <th>Created By</th>
-                                    <th>Expires At</th>
-                                    <th>Status</th>
+                                    <th>Expires</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($referralCodes)): ?>
-                                    <tr>
-                                        <td colspan="7" class="empty-state">No referral codes found.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($referralCodes as $code): 
-                                        $isExpired = strtotime($code['expires_at']) < time();
-                                        $isLimitReached = ($code['usage_limit'] > 0 && $code['usage_count'] >= $code['usage_limit']);
-                                    ?>
-                                        <tr>
-                                            <td><span class="code-display" onclick="copyToClipboard('<?php echo $code['code']; ?>')"><?php echo $code['code']; ?></span></td>
-                                            <td><span class="badge bg-purple"><?php echo (int)($code['bonus_amount'] ?? 50); ?> Balance</span></td>
-                                            <td>
-                                                <div class="small fw-bold"><?php echo $code['usage_count']; ?> / <?php echo $code['usage_limit']; ?></div>
-                                                <div class="progress" style="height: 4px; width: 60px;">
-                                                    <?php $percent = min(100, ($code['usage_count'] / $code['usage_limit']) * 100); ?>
-                                                    <div class="progress-bar bg-purple" style="width: <?php echo $percent; ?>%"></div>
-                                                </div>
-                                            </td>
-                                            <td><span class="badge bg-light text-dark"><?php echo htmlspecialchars($code['created_by_name']); ?></span></td>
-                                            <td><small class="text-muted"><?php echo date('d M Y H:i', strtotime($code['expires_at'])); ?></small></td>
-                                            <td>
-                                                <?php if ($code['status'] === 'inactive' || $isLimitReached): ?>
-                                                    <span class="badge bg-danger">Inactive</span>
-                                                <?php elseif ($isExpired): ?>
-                                                    <span class="badge bg-warning">Expired</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-success">Active</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <?php if ($code['status'] === 'active' && !$isExpired && !$isLimitReached): ?>
-                                                        <a href="?deactivate=<?php echo $code['id']; ?>" class="btn btn-sm btn-outline-warning" onclick="confirmDelete('deactivate', this.href); return false;">
-                                                            <i class="fas fa-ban"></i>
-                                                        </a>
-                                                    <?php endif; ?>
-                                                    <a href="?delete=<?php echo $code['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="confirmDelete('delete', this.href); return false;">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                                <?php foreach ($referralCodes as $code): ?>
+                                <tr>
+                                    <td><span class="code-badge"><?php echo $code['code']; ?></span></td>
+                                    <td><span class="text-success fw-bold">₹<?php echo number_format($code['bonus_amount'], 2); ?></span></td>
+                                    <td><span class="text-dim"><?php echo $code['usage_count']; ?> / <?php echo $code['usage_limit']; ?></span></td>
+                                    <td><span class="text-dim small"><?php echo date('M d', strtotime($code['expires_at'])); ?></span></td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <?php if ($code['status'] === 'active'): ?>
+                                                <a href="?deactivate=<?php echo $code['id']; ?>" class="btn btn-warning btn-sm" title="Deactivate"><i class="fas fa-ban"></i></a>
+                                            <?php endif; ?>
+                                            <button onclick="confirmDelete(<?php echo $code['id']; ?>)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function toggleSidebar(e) {
-            e.stopPropagation();
-            document.getElementById('sidebar').classList.toggle('show');
-            document.getElementById('overlay').classList.toggle('show');
-        }
+        const sidebar = document.getElementById('sidebar');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const overlay = document.getElementById('overlay');
 
-        function confirmDelete(type, url) {
-            const titles = {
-                delete: 'Delete Referral Code?',
-                deactivate: 'Deactivate Referral Code?'
-            };
-            const messages = {
-                delete: 'This referral code will be permanently deleted and cannot be recovered.',
-                deactivate: 'This referral code will be deactivated. Existing users can still use it, but it won\'t be available for new registrations.'
-            };
-            const confirmTexts = {
-                delete: 'Yes, Delete',
-                deactivate: 'Yes, Deactivate'
-            };
-            const colors = {
-                delete: '#ef4444',
-                deactivate: '#f59e0b'
-            };
-            
+        hamburgerBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
+        overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
+
+        function confirmDelete(id) {
             Swal.fire({
-                title: titles[type],
-                html: `<p style="font-size: 0.95rem; color: #666; margin-top: 10px;">${messages[type]}</p>`,
+                title: 'Delete Code?',
+                text: "This code will no longer work!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: colors[type],
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: confirmTexts[type],
-                cancelButtonText: 'Cancel',
-                customClass: {
-                    popup: 'swal-modern-popup',
-                    title: 'swal-modern-title',
-                    confirmButton: 'swal-modern-btn swal-modern-btn-confirm',
-                    cancelButton: 'swal-modern-btn swal-modern-btn-cancel'
-                },
-                didOpen: (modal) => {
-                    modal.style.animation = 'slideIn 0.3s ease-out';
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = url;
-                }
-            });
-        }
-        
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 2000,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    }
-                });
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Copied to clipboard!'
-                });
-            });
-        }
-    </script>
-    <style>
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .swal-modern-popup {
-            border-radius: 12px !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-            backdrop-filter: blur(10px) !important;
-        }
-        .swal-modern-title {
-            font-size: 1.4rem !important;
-            color: #1e293b !important;
-            font-weight: 700 !important;
-        }
-        .swal-modern-btn {
-            border-radius: 6px !important;
-            font-weight: 600 !important;
-            padding: 10px 24px !important;
-            transition: all 0.2s ease !important;
-        }
-        .swal-modern-btn-confirm:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
-        }
-        .swal-modern-btn-cancel {
-            background-color: #e5e7eb !important;
-            color: #374151 !important;
-        }
-        .swal-modern-btn-cancel:hover {
-            background-color: #d1d5db !important;
-            transform: translateY(-2px) !important;
-        }
-        
-        /* Auto-copy code animations */
-        @keyframes slideInTitle {
-            from {
-                opacity: 0;
-                transform: translateY(-15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes slideInCode {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeInCheck {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        @keyframes popupGlow {
-            0% {
-                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
-            }
-            50% {
-                box-shadow: 0 0 0 10px rgba(139, 92, 246, 0.2);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
-            }
-        }
-        
-        /* Pulse effect for code display */
-        @media (hover: hover) {
-            .swal-popup {
-                animation: none;
-            }
+                confirmButtonColor: '#7c3aed',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, delete!',
+                background: '#111827',
+                color: '#ffffff'
+            }).then((result) => { if (result.isConfirmed) window.location.href = '?delete=' + id; })
         }
 
-        // Show success animation if code was generated
-        <?php if (isset($success) && strpos($success, 'Referral code generated successfully') !== false): 
-            $generatedCode = substr($success, strrpos($success, ': ') + 2);
-        ?>
-            document.addEventListener('DOMContentLoaded', function() {
-                const code = '<?php echo htmlspecialchars($generatedCode); ?>';
-                
-                // Auto copy to clipboard with animation
-                navigator.clipboard.writeText(code).then(() => {
-                    Swal.fire({
-                        title: '<span style="animation: slideInTitle 0.6s ease-out;">🎉 Code Generated!</span>',
-                        html: `
-                            <div style="padding: 20px 0;">
-                                <div style="
-                                    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-                                    padding: 20px 30px;
-                                    border-radius: 12px;
-                                    margin: 15px 0;
-                                    animation: slideInCode 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
-                                    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
-                                ">
-                                    <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 8px;">Your Referral Code</div>
-                                    <div style="
-                                        color: white;
-                                        font-size: 1.8rem;
-                                        font-weight: 700;
-                                        letter-spacing: 3px;
-                                        font-family: 'Courier New', monospace;
-                                        text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                                    ">${code}</div>
-                                </div>
-                                <div style="
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    gap: 8px;
-                                    color: #10b981;
-                                    font-weight: 600;
-                                    margin-top: 15px;
-                                    animation: fadeInCheck 0.8s ease-out 0.4s both;
-                                ">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Copied to clipboard!</span>
-                                </div>
-                            </div>
-                        `,
-                        icon: false,
-                        confirmButtonColor: '#8b5cf6',
-                        confirmButtonText: '✓ Got it!',
-                        timer: 5000,
-                        timerProgressBar: true,
-                        didOpen: (modal) => {
-                            // Add glow effect
-                            modal.style.animation = 'popupGlow 0.6s ease-out';
-                        },
-                        showClass: {
-                            popup: 'animate__animated animate__zoomIn'
-                        },
-                        hideClass: {
-                            popup: 'animate__animated animate__zoomOut'
-                        }
-                    });
-                }).catch(() => {
-                    // Fallback if copy fails
-                    Swal.fire({
-                        title: 'Code Generated!',
-                        html: `Referral Code: <b style="color:#8b5cf6; font-size:1.5rem; letter-spacing:2px;">${code}</b><br><br><small>Please copy manually</small>`,
-                        icon: 'success',
-                        confirmButtonColor: '#8b5cf6',
-                        timer: 5000,
-                        timerProgressBar: true
-                    });
-                });
-            });
+        <?php if ($success): ?>
+        Swal.fire({ icon: 'success', title: 'Success!', text: '<?php echo $success; ?>', background: '#111827', color: '#ffffff' });
+        <?php endif; ?>
+        <?php if ($error): ?>
+        Swal.fire({ icon: 'error', title: 'Error!', text: '<?php echo $error; ?>', background: '#111827', color: '#ffffff' });
         <?php endif; ?>
     </script>
-    <script src="assets/js/scroll-restore.js"></script>
 </body>
 </html>
