@@ -38,14 +38,14 @@ public class MainActivity extends Activity {
 
         uiHandler = new Handler(Looper.getMainLooper());
 
-        // Full screen
+        // Full screen and no title
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        // Status bar color
+        // Status bar color for immersive look
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(0xFF05070a); // Matching website bg
         }
@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
 
     private void setupWebView() {
         try {
-            // Enable hardware acceleration for animations
+            // Enable hardware acceleration for smooth website animations
             webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             
             WebSettings webSettings = webView.getSettings();
@@ -74,17 +74,13 @@ public class MainActivity extends Activity {
             webSettings.setJavaScriptEnabled(true);
             webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
             
-            // File access for uploads
+            // Enable file access for APK uploads
             webSettings.setAllowFileAccess(true);
             webSettings.setAllowContentAccess(true);
 
-            webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
             webSettings.setDomStorageEnabled(true);
             webSettings.setDatabaseEnabled(true);
-            
-            // Deprecated but often needed in older Android versions for compatibility
-            webSettings.setAppCacheEnabled(true);
-            webSettings.setAppCachePath(getCacheDir().getAbsolutePath());
+            webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
             webSettings.setLoadsImagesAutomatically(true);
             webSettings.setUseWideViewPort(true);
@@ -117,8 +113,8 @@ public class MainActivity extends Activity {
 
     private void loadWebsite() {
         try {
-            // Replace with your actual domain
-            String websiteUrl = "http://0.0.0.0:5000"; 
+            // Updated to the URL from your working code
+            String websiteUrl = "https://79de34c8-fff8-4ccf-9f46-36beeea3b515-00-23zygehn5l9uv.pike.replit.dev/"; 
             webView.loadUrl(websiteUrl);
         } catch (Exception e) {
             Toast.makeText(this, "Error loading website: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -230,7 +226,7 @@ public class MainActivity extends Activity {
             }
         }
 
-        // Java 7 compatible File Chooser (Android 5.0+)
+        // Java 7 / AIDE compatible File Chooser (Android 5.0+)
         @Override
         public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
             if (mUploadMessage != null) {
