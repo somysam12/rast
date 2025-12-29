@@ -36,26 +36,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user_id) {
             $stmt->execute([$hashed, $user_id]);
         }
 
-        // Update logout limit
-        $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) 
-                              VALUES (?, ?, ?) 
-                              ON DUPLICATE KEY UPDATE logout_limit = VALUES(logout_limit)");
-        $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
+        // Check if user exists in force_logouts
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM force_logouts WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+        $exists = $stmt->fetchColumn();
+
+        if ($exists) {
+            $stmt = $pdo->prepare("UPDATE force_logouts SET logged_out_by = ?, logout_limit = ? WHERE user_id = ?");
+            $stmt->execute([$_SESSION['user_id'], $logout_limit, $user_id]);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, ?)");
+            $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
+        }
 
         // Update balance
         if ($balance_amount > 0) {
             $op = ($balance_type === 'add') ? '+' : '-';
+            // Securely apply balance update using parameters for the amount
             $stmt = $pdo->prepare("UPDATE users SET balance = balance $op ? WHERE id = ?");
             $stmt->execute([$balance_amount, $user_id]);
             
             $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$user_id, 'admin_adj', $balance_amount, "Admin adjusted balance ($balance_type)"]);
+            $stmt->execute([$user_id, 'admin_adj', ($balance_type === 'add' ? $balance_amount : -$balance_amount), "Admin adjusted balance ($balance_type)"]);
         }
 
         $pdo->commit();
         $success = 'User updated successfully!';
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) $pdo->rollBack();
         $error = 'Error: ' . $e->getMessage();
     }
 }
