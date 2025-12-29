@@ -177,6 +177,7 @@ $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
                             <td>
                                 <div class="d-flex gap-2">
                                     <a href="edit_user.php?id=<?php echo $user['id']; ?>" class="btn btn-primary btn-sm btn-action"><i class="fas fa-edit"></i>Edit</a>
+                                    <a href="add_balance.php?user_id=<?php echo $user['id']; ?>" class="btn btn-success btn-sm btn-action"><i class="fas fa-wallet"></i>Add Balance</a>
                                     <button onclick="confirmDelete(<?php echo $user['id']; ?>)" class="btn btn-danger btn-sm btn-action"><i class="fas fa-trash"></i>Delete</button>
                                 </div>
                             </td>

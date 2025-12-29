@@ -1,5 +1,5 @@
-<?php require_once "includes/optimization.php"; ?>
 <?php
+require_once "includes/optimization.php";
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -8,174 +8,68 @@ require_once 'includes/functions.php';
 
 requireAdmin();
 
-if (!isset($_SESSION)) {
-    session_start();
-}
-
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit();
-}
-
-try {
-    $pdo = getDBConnection();
-    
-    // Create force_logouts table if it doesn't exist
-    $pdo->exec("CREATE TABLE IF NOT EXISTS force_logouts (
-        id INTEGER PRIMARY KEY,
-        user_id INTEGER NOT NULL,
-        logged_out_by INTEGER NOT NULL,
-        logout_limit INTEGER DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (logged_out_by) REFERENCES users(id) ON DELETE CASCADE
-    )");
-} catch (Exception $e) {
-    $error = 'Database connection failed: ' . $e->getMessage();
-    $pdo = null;
-}
-
-$user = null;
+$pdo = getDBConnection();
 $user_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$success = '';
+$error = '';
 
-// Get user
-try {
-    if ($pdo && $user_id) {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$user) {
-            $error = 'User not found';
-        }
-    }
-} catch (Exception $e) {
-    $error = 'Failed to fetch user: ' . $e->getMessage();
-}
-
-// LOG: Initial state
-file_put_contents('/tmp/edit_user_log.txt', "\n=== PAGE LOAD ===\n" . date('Y-m-d H:i:s') . "\nUser ID: $user_id\nPDO: " . ($pdo ? "YES" : "NO") . "\nUser: " . ($user ? $user['username'] : "NO") . "\n", FILE_APPEND);
-file_put_contents('/tmp/edit_user_log.txt', "REQUEST METHOD: " . $_SERVER['REQUEST_METHOD'] . "\n", FILE_APPEND);
-
-// Handle form submission
-file_put_contents('/tmp/edit_user_log.txt', "Checking condition: REQUEST_METHOD=" . $_SERVER['REQUEST_METHOD'] . " PDO=" . ($pdo ? "1" : "0") . " USER=" . ($user ? "1" : "0") . "\n", FILE_APPEND);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
-    file_put_contents('/tmp/edit_user_log.txt', "✓ CONDITION MET - PROCESSING FORM\n", FILE_APPEND);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user_id) {
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? 'user';
-    $logout_limit = isset($_POST['logout_limit']) ? (int)$_POST['logout_limit'] : 0;
+    $logout_limit = isset($_POST['logout_limit']) ? (int)$_POST['logout_limit'] : 1;
     $balance_amount = isset($_POST['balance_amount']) ? (float)$_POST['balance_amount'] : 0;
     $balance_type = $_POST['balance_type'] ?? 'add';
-    
-    // LOG: What data was received
-    file_put_contents('/tmp/edit_user_log.txt', "\n=== FORM SUBMISSION ===\n" . date('Y-m-d H:i:s') . "\n", FILE_APPEND);
-    file_put_contents('/tmp/edit_user_log.txt', "User ID: $user_id\n", FILE_APPEND);
-    file_put_contents('/tmp/edit_user_log.txt', "Username: $username\n", FILE_APPEND);
-    file_put_contents('/tmp/edit_user_log.txt', "Email: $email\n", FILE_APPEND);
-    file_put_contents('/tmp/edit_user_log.txt', "Password: " . (!empty($password) ? "YES (length: " . strlen($password) . ")" : "NO") . "\n", FILE_APPEND);
-    
+
     try {
-        // 1. UPDATE USERNAME & EMAIL
-        if (!empty($username) && !empty($email)) {
-            file_put_contents('/tmp/edit_user_log.txt', "→ Updating username & email\n", FILE_APPEND);
-            $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE (username = ? OR email = ?) AND id != ?");
-            $stmt->execute([$username, $email, $user_id]);
-            
-            if ($stmt->fetchColumn() > 0) {
-                $error = 'Username or email already exists';
-                file_put_contents('/tmp/edit_user_log.txt', "✗ Username/email already exists\n", FILE_APPEND);
-            } else {
-                $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
-                $result = $stmt->execute([$username, $email, $user_id]);
-                $affected = $stmt->rowCount();
-                file_put_contents('/tmp/edit_user_log.txt', "✓ Updated username/email (affected: $affected)\n", FILE_APPEND);
-                $success = 'Username and email updated!';
-            }
-        }
+        $pdo->beginTransaction();
         
-        // 2. UPDATE PASSWORD (INDEPENDENT - ALWAYS WORKS)
+        // Update basic info
+        $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ?, role = ? WHERE id = ?");
+        $stmt->execute([$username, $email, $role, $user_id]);
+
+        // Update password if provided
         if (!empty($password)) {
-            file_put_contents('/tmp/edit_user_log.txt', "→ Updating password\n", FILE_APPEND);
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            file_put_contents('/tmp/edit_user_log.txt', "→ Hash generated (length: " . strlen($hashed_password) . ")\n", FILE_APPEND);
-            
+            $hashed = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-            $result = $stmt->execute([$hashed_password, $user_id]);
-            $affected = $stmt->rowCount();
-            
-            file_put_contents('/tmp/edit_user_log.txt', "→ Execute result: " . ($result ? "TRUE" : "FALSE") . "\n", FILE_APPEND);
-            file_put_contents('/tmp/edit_user_log.txt', "→ Rows affected: $affected\n", FILE_APPEND);
-            
-            if ($affected > 0) {
-                file_put_contents('/tmp/edit_user_log.txt', "✓ Password updated successfully!\n", FILE_APPEND);
-                $success = 'Password updated successfully!';
-            } else {
-                file_put_contents('/tmp/edit_user_log.txt', "✗ Password update failed - no rows affected\n", FILE_APPEND);
-                $error = 'Failed to update password - please try again';
-            }
+            $stmt->execute([$hashed, $user_id]);
         }
-        
-        // 3. UPDATE ROLE
-        $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
-        $stmt->execute([$role, $user_id]);
-        
-        // 4. UPDATE FORCE LOGOUT LIMIT
-        $stmt = $pdo->prepare("SELECT id FROM force_logouts WHERE user_id = ?");
-        $stmt->execute([$user_id]);
-        $exists = $stmt->fetch();
-        
-        if ($exists) {
-            $stmt = $pdo->prepare("UPDATE force_logouts SET logout_limit = ? WHERE user_id = ?");
-            $stmt->execute([$logout_limit, $user_id]);
-        } else {
-            $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) VALUES (?, ?, ?)");
-            $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
-        }
-        
-        // 5. UPDATE BALANCE
+
+        // Update logout limit
+        $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) 
+                              VALUES (?, ?, ?) 
+                              ON DUPLICATE KEY UPDATE logout_limit = ?");
+        $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit, $logout_limit]);
+
+        // Update balance
         if ($balance_amount > 0) {
-            if ($balance_type === 'add') {
-                $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
-            } else {
-                $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
-            }
+            $op = ($balance_type === 'add') ? '+' : '-';
+            $stmt = $pdo->prepare("UPDATE users SET balance = balance $op ? WHERE id = ?");
             $stmt->execute([$balance_amount, $user_id]);
             
-            $desc = $balance_type === 'add' ? 'Balance added by admin' : 'Balance deducted by admin';
             $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$user_id, 'balance_' . $balance_type, $balance_amount, $desc]);
+            $stmt->execute([$user_id, 'admin_adj', $balance_amount, "Admin adjusted balance ($balance_type)"]);
         }
-        
-        // Refresh user data
-        $stmt = $pdo->prepare("SELECT u.*, COALESCE(fl.logout_limit, 0) as logout_limit FROM users u LEFT JOIN force_logouts fl ON u.id = fl.user_id WHERE u.id = ?");
-        $stmt->execute([$user_id]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $pdo->commit();
+        $success = 'User updated successfully!';
     } catch (Exception $e) {
-        $error = 'Error updating user: ' . $e->getMessage();
+        $pdo->rollBack();
+        $error = 'Error: ' . $e->getMessage();
     }
 }
 
-// Get user statistics
-$stats = [
-    'purchases' => 0,
-    'total_spent' => 0,
-    'member_since' => ''
-];
+$stmt = $pdo->prepare("SELECT u.*, COALESCE(fl.logout_limit, 1) as logout_limit 
+                      FROM users u 
+                      LEFT JOIN force_logouts fl ON u.id = fl.user_id 
+                      WHERE u.id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-try {
-    if ($pdo && $user) {
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'purchase'");
-        $stmt->execute([$user_id]);
-        $trans = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stats['purchases'] = $trans['count'] ?? 0;
-        $stats['total_spent'] = $trans['total'] ?? 0;
-        $stats['member_since'] = $user['created_at'] ?? '';
-    }
-} catch (Exception $e) {
-    // Use defaults
+if (!$user) {
+    header("Location: manage_users.php");
+    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -183,268 +77,174 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit User - SilentMultiPanel</title>
+    <title>Edit User - Silent Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --border-light: #e2e8f0;
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.1);
         }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
+
         .sidebar {
             background: var(--card-bg);
+            backdrop-filter: blur(30px);
             border-right: 1px solid var(--border-light);
-            width: 280px;
-            padding: 20px;
             min-height: 100vh;
+            position: fixed;
+            width: 280px;
+            left: 0; top: 0;
+            padding: 2rem 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
         }
-        
-        .main-content {
-            flex: 1;
-            padding: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-        
-        .form-control {
-            border: 1px solid var(--border-light);
-            border-radius: 6px;
-            padding: 10px 12px;
-            font-size: 0.95rem;
-        }
-        
-        .form-control:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
-        }
-        
-        .btn-primary:hover {
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
-        }
-        
-        .btn-secondary {
-            background-color: #f3f4f6;
-            color: var(--text-primary);
-            border: 1px solid var(--border-light);
-        }
-        
-        .btn-secondary:hover {
-            background-color: #e5e7eb;
-            border-color: #d1d5db;
-        }
-        
-        .card {
+
+        .sidebar.active { transform: translateX(0); }
+        .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; }
+        .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
+        .sidebar .nav-link.active { background: var(--primary); color: white; }
+
+        .edit-wrapper { width: 100%; max-width: 600px; padding: 20px; position: relative; z-index: 1; margin-left: 280px; transition: margin-left 0.3s ease; }
+
+        .glass-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(30px);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border-radius: 32px;
+            padding: 40px;
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
         }
-        
-        .alert {
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
-        
-        .alert-success {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        
-        .alert-error {
-            background-color: #fee2e2;
-            color: #7f1d1d;
-        }
-        
-        .stat-box {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border-light);
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-        .stat-box h3 {
-            color: var(--purple);
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .stat-box p {
-            color: #888;
-            font-size: 12px;
-            margin: 0;
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        .input-field { width: 100%; background: rgba(15, 23, 42, 0.5); border: 1.5px solid var(--border-light); border-radius: 14px; padding: 14px 16px 14px 48px; color: white; font-size: 14px; transition: all 0.4s; }
+        .input-field:focus { outline: none; border-color: var(--primary); background: rgba(139, 92, 246, 0.05); }
+        .field-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 18px; }
+
+        .btn-submit { width: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 14px; padding: 14px; color: white; font-weight: 700; margin-top: 20px; cursor: pointer; transition: all 0.4s; }
+        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); }
+
+        .hamburger { display: none; position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; }
+
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); width: 250px; }
+            .sidebar.active { transform: translateX(0); }
+            .edit-wrapper { margin-left: 0; }
+            .hamburger { display: block; }
         }
     </style>
 </head>
 <body>
-    <div style="display: flex; min-height: 100vh;">
-        <div class="sidebar">
-            <h5 style="margin-bottom: 30px;"><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
-            <nav class="nav flex-column gap-2">
-                <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
-                <a class="nav-link" href="manage_users.php"><i class="fas fa-users me-2"></i>Manage Users</a>
-                <a class="nav-link" href="add_balance.php"><i class="fas fa-plus-circle me-2"></i>Add Balance</a>
-                <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
-            </nav>
-        </div>
+    <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+    <div class="sidebar" id="sidebar">
+        <h4>SILENT PANEL</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
+            <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
+            <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
+            <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload APK</a>
+            <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i>Mod List</a>
+            <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
+            <a class="nav-link" href="licence_key_list.php"><i class="fas fa-list"></i>License List</a>
+            <a class="nav-link active" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+            <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
+            <hr style="border-color: var(--border-light); margin: 1.5rem 16px;">
+            <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
+        </nav>
+    </div>
 
-        <div class="main-content">
-            <a href="manage_users.php" style="color: var(--purple); text-decoration: none; margin-bottom: 20px; display: inline-block;">
-                <i class="fas fa-arrow-left me-2"></i>Back to Users
-            </a>
-
-            <?php if (isset($success)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
-            <?php endif; ?>
-            <?php if (isset($error)): ?>
-                <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-
-            <?php if ($user): ?>
-                <div class="card">
-                    <h2 style="margin-bottom: 30px;">Edit User: <?php echo htmlspecialchars($user['username']); ?></h2>
-                    
-                    <form method="POST" action="edit_user.php?id=<?php echo $user_id; ?>" style="margin-bottom: 30px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                            <div class="form-group">
-                                <label class="form-label">Username</label>
-                                <input type="text" name="username" class="form-control" value="<?php echo htmlspecialchars($user["username"]); ?>" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user["email"]); ?>" required>
-                            </div>
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                            <div class="form-group">
-                                <label class="form-label">New Password <span style="color: #888; font-weight: 400;">(Leave blank to keep current)</span></label>
-                                <input type="password" name="password" class="form-control" placeholder="Enter new password (minimum 8 characters)">
-                                <small style="color: #888;">Minimum 8 characters</small>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Role</label>
-                                <select name="role" class="form-control">
-                                    <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
-                                    <option value="reseller" <?php echo $user['role'] === 'reseller' ? 'selected' : ''; ?>>Reseller</option>
-                                    <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                </select>
-                            </div>
-                        </div>
-
+    <div class="edit-wrapper">
+        <div class="glass-card">
+            <h2 class="text-center mb-4" style="font-weight: 800;">Edit User</h2>
+            <form method="POST">
+                <div class="form-group">
+                    <i class="fas fa-user field-icon"></i>
+                    <input type="text" name="username" class="input-field" value="<?php echo htmlspecialchars($user['username']); ?>" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <i class="fas fa-envelope field-icon"></i>
+                    <input type="email" name="email" class="input-field" value="<?php echo htmlspecialchars($user['email']); ?>" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <i class="fas fa-lock field-icon"></i>
+                    <input type="password" name="password" class="input-field" placeholder="New Password (Leave blank to keep current)">
+                </div>
+                <div class="form-group">
+                    <i class="fas fa-user-shield field-icon"></i>
+                    <select name="role" class="input-field" style="padding-left: 48px; -webkit-appearance: none;">
+                        <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
+                        <option value="reseller" <?php echo $user['role'] === 'reseller' ? 'selected' : ''; ?>>Reseller</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <i class="fas fa-history field-icon"></i>
+                    <input type="number" name="logout_limit" class="input-field" value="<?php echo htmlspecialchars($user['logout_limit']); ?>" placeholder="Force Logout Limit (24h)" min="1">
+                </div>
+                
+                <hr style="border-color: var(--border-light); margin: 2rem 0;">
+                <h5 class="mb-3">Balance Management</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">Force Logout Limit (24h)</label>
-                            <input type="number" name="logout_limit" class="form-control" value="<?php echo htmlspecialchars($user['logout_limit'] ?? 0); ?>" min="0" placeholder="0 = Unlimited">
-                            <small style="color: #888;">0 means unlimited force logouts</small>
+                            <i class="fas fa-wallet field-icon"></i>
+                            <input type="number" step="0.01" name="balance_amount" class="input-field" placeholder="Amount (₹)">
                         </div>
-
-                        <div id="balance" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; color: white;">
-                            <h4 style="margin-top: 0; color: white;">Manage Balance</h4>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                                <div class="form-group">
-                                    <label class="form-label" style="color: white;">Amount (₹)</label>
-                                    <input type="number" name="balance_amount" class="form-control" placeholder="Enter amount" min="0" step="0.01" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white;">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" style="color: white;">Action</label>
-                                    <select name="balance_type" class="form-control" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white;">
-                                        <option value="add" style="background: #1e293b;">Add Balance</option>
-                                        <option value="deduct" style="background: #1e293b;">Deduct Balance</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" style="color: white;">Current: <?php echo formatCurrency($user['balance'] ?? 0); ?></label>
-                                    <div style="padding: 10px; background: rgba(255,255,255,0.2); border-radius: 6px; text-align: center; font-weight: 600;">
-                                        <?php echo formatCurrency($user['balance'] ?? 0); ?>
-                                    </div>
-                                </div>
-                            </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <i class="fas fa-tasks field-icon"></i>
+                            <select name="balance_type" class="input-field" style="padding-left: 48px; -webkit-appearance: none;">
+                                <option value="add">Add</option>
+                                <option value="deduct">Deduct</option>
+                            </select>
                         </div>
-
-                        <div style="display: flex; gap: 12px; margin-top: 30px;">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-check-circle"></i>Update User
-                            </button>
-                            <a href="manage_users.php" class="btn btn-secondary">
-                                <i class="fas fa-times-circle"></i>Cancel
-                            </a>
-                        </div>
-                    </form>
+                    </div>
                 </div>
 
-                <h3 style="margin-top: 30px; margin-bottom: 20px;">User Statistics</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                    <div class="stat-box">
-                        <h3><?php echo (int)$stats['purchases']; ?></h3>
-                        <p>Purchases</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3><?php echo formatCurrency($stats['total_spent']); ?></h3>
-                        <p>Total Spent</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3><?php echo formatDate($stats['member_since']); ?></h3>
-                        <p>Member Since</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3><?php echo formatCurrency($user['balance'] ?? 0); ?></h3>
-                        <p>Current Balance</p>
-                    </div>
-                </div>
-            <?php else: ?>
-                <div class="alert alert-error">User not found or failed to load.</div>
-            <?php endif; ?>
+                <button type="submit" class="btn-submit">Update User Profile</button>
+            </form>
         </div>
     </div>
-    <script src="assets/js/scroll-restore.js"></script>
-<script src="assets/js/menu-logic.js"></script></body>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        hamburgerBtn.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('active'); });
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 992 && sidebar.classList.contains('active') && !sidebar.contains(e.target) && e.target !== hamburgerBtn) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        <?php if ($success): ?>
+        Swal.fire({ icon: 'success', title: 'Success', text: '<?php echo $success; ?>', background: '#111827', color: '#fff' });
+        <?php endif; ?>
+        <?php if ($error): ?>
+        Swal.fire({ icon: 'error', title: 'Error', text: '<?php echo $error; ?>', background: '#111827', color: '#fff' });
+        <?php endif; ?>
+    </script>
+</body>
 </html>
