@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0a0e27">
+
+    <!-- The Website Viewer -->
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- Loading Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_alignParentTop="true"
+        android:indeterminate="false"
+        android:progressDrawable="@drawable/progress_glow"
+        android:visibility="gone" />
+
+    <!-- The Refresh Button (UI Matched) -->
+    <ImageButton
+        android:id="@+id/btn_refresh"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="24dp"
+        android:background="@drawable/refresh_btn_bg"
+        android:src="@android:drawable/ic_menu_rotate"
+        android:padding="12dp"
+        android:scaleType="centerInside"
+        android:onClick="refreshPage"
+        android:elevation="8dp"
+        android:visibility="gone"
+        android:contentDescription="Refresh" />
+
+    <!-- Startup Splash Screen -->
+    <RelativeLayout
+        android:id="@+id/splash_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:elevation="10dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/splash_logo" />
+
+        <ProgressBar
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="60dp"
+            android:indeterminateTint="#8b5cf6" />
+    </RelativeLayout>
+
+</RelativeLayout>
