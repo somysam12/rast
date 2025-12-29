@@ -1,4 +1,4 @@
-package silent.owner;
+package app;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,43 +7,32 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
-public class Main extends Activity {
+public class Activity extends android.app.Activity {
     WebView web;
-    ProgressBar bar;
+    ProgressBar prog;
     ImageButton btn;
 
-    protected void onCreate(Bundle s) {
+    public void onCreate(Bundle s) {
         super.onCreate(s);
         setContentView(R.layout.main);
         web = findViewById(R.id.web);
-        bar = findViewById(R.id.bar);
+        prog = findViewById(R.id.prog);
         btn = findViewById(R.id.btn);
-
         web.getSettings().setJavaScriptEnabled(true);
         web.getSettings().setDomStorageEnabled(true);
         web.setWebViewClient(new WebViewClient() {
             public void onPageStarted(WebView v, String u, android.graphics.Bitmap b) {
-                bar.setVisibility(View.VISIBLE);
+                prog.setVisibility(View.VISIBLE);
             }
             public void onPageFinished(WebView v, String u) {
-                bar.setVisibility(View.GONE);
-            }
-            public boolean shouldOverrideUrlLoading(WebView v, String u) {
-                v.loadUrl(u);
-                return true;
+                prog.setVisibility(View.GONE);
             }
         });
-
-        btn.setOnClickListener(v -> {
-            web.reload();
-            Toast.makeText(this, "Refreshing", Toast.LENGTH_SHORT).show();
-        });
-
+        btn.setOnClickListener(v -> web.reload());
         web.loadUrl("https://silentmultipanel.vippanel.in");
     }
-
+    
     public void onBackPressed() {
         if(web.canGoBack()) web.goBack();
         else super.onBackPressed();
