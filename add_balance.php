@@ -5,48 +5,24 @@ require_once 'includes/functions.php';
 
 requireAdmin();
 
-$success = '';
-$error = '';
-
 $pdo = getDBConnection();
 
-// Get user statistics for dashboard
-$userStats = [
-    'total_users' => 0,
-    'total_balance' => 0,
-    'users_with_balance' => 0,
-    'avg_balance' => 0
-];
-
-try {
-    $stmt = $pdo->query("SELECT 
-        COUNT(*) as total_users,
-        COALESCE(SUM(balance), 0) as total_balance,
-        COUNT(CASE WHEN balance > 0 THEN 1 END) as users_with_balance,
-        COALESCE(AVG(balance), 0) as avg_balance
-        FROM users WHERE role = 'user'");
-    $userStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: $userStats;
-} catch (Exception $e) {
-    // Use defaults
+// Simple AJAX Search Handler
+if (isset($_GET['ajax_search'])) {
+    $search = $_GET['ajax_search'] ?? '';
+    $results = [];
+    try {
+        $stmt = $pdo->prepare("SELECT id, username, balance FROM users WHERE role = 'user' AND username LIKE ? ORDER BY username LIMIT 10");
+        $stmt->execute(['%' . $search . '%']);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {}
+    header('Content-Type: application/json');
+    echo json_encode($results);
+    exit;
 }
 
-// Pre-select user if provided in URL
-$selectedUserId = $_GET['user_id'] ?? '';
-
-// Get all users for dropdown or search
-$allUsers = [];
-$search = $_GET['search'] ?? '';
-try {
-    if (!empty($search)) {
-        $stmt = $pdo->prepare("SELECT id, username, email, balance FROM users WHERE role = 'user' AND (username LIKE ? OR email LIKE ?) ORDER BY username");
-        $stmt->execute(['%' . $search . '%', '%' . $search . '%']);
-    } else {
-        $stmt = $pdo->query("SELECT id, username, email, balance FROM users WHERE role = 'user' ORDER BY username LIMIT 100");
-    }
-    $allUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    $allUsers = [];
-}
+$success = '';
+$error = '';
 
 if ($_POST) {
     try {
@@ -59,7 +35,6 @@ if ($_POST) {
         } else {
             if (updateBalance($userId, $amount, 'balance_add', $reference)) {
                 $success = 'Balance added successfully!';
-                $selectedUserId = $userId;
             } else {
                 $error = 'Failed to add balance';
             }
@@ -74,7 +49,7 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Balance - SilentMultiPanel</title>
+    <title>Add Balance - Silent Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -83,144 +58,158 @@ if ($_POST) {
             --primary: #8b5cf6;
             --primary-dark: #7c3aed;
             --secondary: #06b6d4;
-            --accent: #ec4899;
             --bg: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.7);
+            --card-bg: rgba(15, 23, 42, 0.8);
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
-            --border-light: rgba(148, 163, 184, 0.1);
-            --border-glow: rgba(139, 92, 246, 0.2);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            --border: rgba(255, 255, 255, 0.1);
         }
 
         body {
             background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
             background-attachment: fixed;
             min-height: 100vh;
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid var(--border);
+            padding: 2rem 0;
+        }
+
+        .sidebar.active { left: 0; }
+
+        .nav-link {
+            color: var(--text-dim);
+            padding: 12px 24px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: var(--text-main);
-            overflow-x: hidden;
-            position: relative;
-            padding: 40px 20px;
+            gap: 12px;
+            text-decoration: none;
+            transition: 0.3s;
+            font-weight: 600;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .nav-link.active { border-left: 4px solid var(--primary); }
+
+        /* Mobile Header */
+        .mobile-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 14, 39, 0.5);
+            backdrop-filter: blur(10px);
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
+            z-index: 900;
+            border-bottom: 1px solid var(--border);
         }
 
-        .wrapper {
-            width: 100%;
-            max-width: 500px;
-            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            z-index: 1;
+        .hamburger {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary);
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Form Container */
+        .main-container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 2px solid;
-            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
-            border-radius: 32px;
-            padding: 40px;
-            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
-            position: relative;
-            overflow: hidden;
-            animation: borderGlow 4s ease-in-out infinite;
-        }
-
-        @keyframes borderGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1); }
-            50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2); }
-        }
-
-        .brand-section {
-            text-align: center;
-            margin-bottom: 30px;
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-top: 10px;
         }
 
         .brand-icon {
-            width: 64px;
-            height: 64px;
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 20px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 15px;
             font-size: 28px;
-            color: white;
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+            margin: 0 auto 15px;
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
         }
 
-        h1 {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #f8fafc, var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-        }
+        .form-label { color: var(--text-dim); font-size: 14px; margin-bottom: 8px; font-weight: 600; }
 
-        .form-group {
-            margin-bottom: 20px;
+        .input-group-custom {
             position: relative;
+            margin-bottom: 20px;
         }
 
-        .input-field, select.input-field {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.5);
-            border: 1.5px solid var(--border-light);
-            border-radius: 14px;
-            padding: 12px 16px 12px 48px;
-            color: white;
-            font-size: 15px;
-            transition: all 0.3s;
-        }
-
-        select.input-field option {
-            background: #1e1b4b;
-            color: white;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(139, 92, 246, 0.05);
-        }
-
-        .field-icon {
+        .input-icon {
             position: absolute;
-            left: 18px;
+            left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-dim);
-            font-size: 18px;
+            color: var(--primary);
         }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 15px 12px 45px;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-input:focus { border-color: var(--primary); background: rgba(255,255,255,0.08); }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1e1b4b;
+            border-radius: 14px;
+            margin-top: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+            border: 1px solid var(--border);
+        }
+
+        .search-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-item:hover { background: var(--primary); }
 
         .btn-submit {
             width: 100%;
@@ -231,131 +220,149 @@ if ($_POST) {
             color: white;
             font-weight: 700;
             font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
         }
 
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5);
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 999;
         }
 
-        .alert-custom {
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .alert-success-custom {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #6ee7b7;
-        }
-
-        .alert-error-custom {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-
-        .back-link:hover { color: var(--primary); }
-
-        .search-container {
-            margin-bottom: 25px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .search-input {
-            flex: 1;
-            background: rgba(15, 23, 42, 0.3);
-            border: 1.5px solid var(--border-light);
-            border-radius: 12px;
-            padding: 10px 15px;
-            color: white;
-            font-size: 14px;
-        }
+        .overlay.active { display: block; }
     </style>
 </head>
 <body>
-    <div class="wrapper">
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="px-4 mb-4">
+            <h4 class="text-primary fw-bold">SILENT PANEL</h4>
+        </div>
+        <nav>
+            <a href="admin_dashboard.php" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="manage_users.php" class="nav-link"><i class="fas fa-users"></i> Manage Users</a>
+            <a href="add_balance.php" class="nav-link active"><i class="fas fa-wallet"></i> Add Balance</a>
+            <a href="transactions.php" class="nav-link"><i class="fas fa-history"></i> Transactions</a>
+            <hr class="border-secondary opacity-25">
+            <a href="logout.php" class="nav-link text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+    </div>
+
+    <header class="mobile-header">
+        <div class="hamburger" id="hamBtn"><i class="fas fa-bars"></i></div>
+        <div class="fw-bold">SILENT PANEL</div>
+        <div style="width: 24px;"></div>
+    </header>
+
+    <div class="main-container">
         <div class="glass-card">
-            <div class="brand-section">
-                <div class="brand-icon">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <h1>Add User Balance</h1>
-                <p>Manage user wallets with ease</p>
-            </div>
+            <div class="brand-icon"><i class="fas fa-coins"></i></div>
+            <h4 class="text-center mb-1">Add Balance</h4>
+            <p class="text-center text-dim small mb-4">Search user by typing initials</p>
 
             <?php if ($success): ?>
-                <div class="alert-custom alert-success-custom">
-                    <i class="fas fa-check-circle"></i>
-                    <?php echo htmlspecialchars($success); ?>
-                </div>
+                <div class="alert alert-success border-0 bg-success bg-opacity-10 text-success rounded-3 mb-4"><?php echo $success; ?></div>
             <?php endif; ?>
-
             <?php if ($error): ?>
-                <div class="alert-custom alert-error-custom">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <?php echo htmlspecialchars($error); ?>
-                </div>
+                <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger rounded-3 mb-4"><?php echo $error; ?></div>
             <?php endif; ?>
 
-            <!-- Search Section -->
-            <form method="GET" class="search-container">
-                <input type="text" name="search" class="search-input" placeholder="Search username/email..." value="<?php echo htmlspecialchars($search); ?>">
-                <button type="submit" class="btn btn-sm btn-primary" style="border-radius: 10px; background: var(--primary); border: none;">Search</button>
-                <?php if($search): ?>
-                    <a href="add_balance.php" class="btn btn-sm btn-secondary" style="border-radius: 10px;">Clear</a>
-                <?php endif; ?>
+            <form method="POST" id="balanceForm">
+                <label class="form-label">Search User</label>
+                <div class="input-group-custom">
+                    <i class="fas fa-search input-icon"></i>
+                    <input type="text" id="userSearch" class="form-input" placeholder="Type username..." autocomplete="off">
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+
+                <input type="hidden" name="user_id" id="userIdInput" required>
+
+                <div id="selectedUserBox" class="mb-3 d-none">
+                    <div class="p-3 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small text-dim">Selected User</div>
+                            <div id="selectedUsername" class="fw-bold text-primary"></div>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-dim">Current Balance</div>
+                            <div id="selectedBalance" class="fw-bold text-success"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="form-label">Amount (₹)</label>
+                <div class="input-group-custom">
+                    <i class="fas fa-plus-circle input-icon"></i>
+                    <input type="number" name="amount" step="0.01" min="0.01" class="form-input" placeholder="Enter amount" required>
+                </div>
+
+                <label class="form-label">Reference (Optional)</label>
+                <div class="input-group-custom">
+                    <i class="fas fa-tag input-icon"></i>
+                    <input type="text" name="reference" class="form-input" placeholder="e.g. UPI ID / Purpose">
+                </div>
+
+                <button type="submit" class="btn-submit">CONFIRM ADDITION</button>
             </form>
-
-            <form method="POST">
-                <div class="form-group">
-                    <i class="fas fa-user field-icon"></i>
-                    <select name="user_id" class="input-field" required>
-                        <option value="">-- <?php echo empty($allUsers) ? 'No users found' : 'Select User'; ?> --</option>
-                        <?php foreach ($allUsers as $user): ?>
-                            <option value="<?php echo htmlspecialchars($user['id']); ?>" <?php echo $selectedUserId == $user['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($user['username']); ?> (<?php echo formatCurrency($user['balance']); ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <i class="fas fa-indian-rupee-sign field-icon"></i>
-                    <input type="number" name="amount" step="0.01" min="0" class="input-field" placeholder="Amount (0.00)" required>
-                </div>
-
-                <div class="form-group">
-                    <i class="fas fa-tag field-icon"></i>
-                    <input type="text" name="reference" class="input-field" placeholder="Reference (Optional)">
-                </div>
-
-                <button type="submit" class="btn-submit">Add Balance</button>
-            </form>
-
-            <a href="admin_dashboard.php" class="back-link"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
         </div>
     </div>
-    <script src="assets/js/scroll-restore.js"></script>
-    <script src="assets/js/menu-logic.js"></script>
+
+    <script>
+        const hamBtn = document.getElementById('hamBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const userSearch = document.getElementById('userSearch');
+        const searchResults = document.getElementById('searchResults');
+        const userIdInput = document.getElementById('userIdInput');
+        const selectedUserBox = document.getElementById('selectedUserBox');
+        const selectedUsername = document.getElementById('selectedUsername');
+        const selectedBalance = document.getElementById('selectedBalance');
+
+        // Sidebar Toggle
+        hamBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
+        overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
+
+        // Advanced AJAX Search
+        userSearch.oninput = async (e) => {
+            const val = e.target.value.trim();
+            if (val.length < 1) { searchResults.style.display = 'none'; return; }
+
+            const res = await fetch(`add_balance.php?ajax_search=${val}`);
+            const data = await res.json();
+
+            searchResults.innerHTML = '';
+            if (data.length > 0) {
+                searchResults.style.display = 'block';
+                data.forEach(user => {
+                    const div = document.createElement('div');
+                    div.className = 'search-item';
+                    div.innerHTML = `<div class="fw-bold">${user.username}</div><div class="small text-dim">Balance: ₹${user.balance}</div>`;
+                    div.onclick = () => {
+                        userIdInput.value = user.id;
+                        selectedUsername.innerText = user.username;
+                        selectedBalance.innerText = '₹' + parseFloat(user.balance).toFixed(2);
+                        selectedUserBox.classList.remove('d-none');
+                        searchResults.style.display = 'none';
+                        userSearch.value = user.username;
+                    };
+                    searchResults.appendChild(div);
+                });
+            } else {
+                searchResults.style.display = 'none';
+            }
+        };
+
+        // Close search results when clicking outside
+        document.onclick = (e) => { if (!userSearch.contains(e.target)) searchResults.style.display = 'none'; };
+    </script>
 </body>
 </html>
