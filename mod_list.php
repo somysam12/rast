@@ -309,7 +309,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td class="text-dim"><?php echo htmlspecialchars($mod['description'] ?: 'No description'); ?></td>
                                     <td>
                                         <?php if ($mod['file_name']): ?>
-                                            <span class="badge bg-success">Uploaded</span>
+                                            <a href="<?php echo htmlspecialchars($mod['file_path']); ?>" class="badge bg-success" target="_blank">Download APK</a>
                                         <?php else: ?>
                                             <span class="badge bg-warning text-dark">Not uploaded</span>
                                         <?php endif; ?>

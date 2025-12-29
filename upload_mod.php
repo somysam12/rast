@@ -45,10 +45,11 @@ if ($_POST && isset($_FILES['apk_file'])) {
             $error = 'Only .apk files allowed';
         } else {
             @mkdir('uploads/apks', 0777, true);
-            $name = uniqid() . '_' . $file['name'];
+            $name = uniqid() . '_' . preg_replace("/[^a-zA-Z0-9.]/", "_", $file['name']);
             $path = 'uploads/apks/' . $name;
             
             if (move_uploaded_file($file['tmp_name'], $path)) {
+                @chmod($path, 0644);
                 try {
                     $stmt = $pdo->prepare("INSERT INTO mod_apks (mod_id, file_name, file_path, file_size) VALUES (?, ?, ?, ?)");
                     $stmt->execute([$mod_id, $file['name'], $path, $file['size']]);
