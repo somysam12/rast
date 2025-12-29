@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme: Changed to NoActionBar and dark theme -->
+    <style name="Theme.SilentPanel" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Main background color -->
+        <item name="android:windowBackground">#05070a</item>
+        <!-- Primary branding color -->
+        <item name="colorPrimary">#6366f1</item>
+        <item name="colorPrimaryDark">#05070a</item>
+        <item name="colorAccent">#6366f1</item>
+        
+        <!-- Status bar and Navigation bar -->
+        <item name="android:statusBarColor">#05070a</item>
+        <item name="android:navigationBarColor">#05070a</item>
+    </style>
+
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6366f1</color>
+    <color name="purple_700">#FF4f46e5</color>
+    <color name="teal_200">#FF0ea5e9</color>
+    <color name="teal_700">#FF0284c7</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
