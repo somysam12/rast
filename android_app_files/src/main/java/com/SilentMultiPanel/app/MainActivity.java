@@ -17,12 +17,13 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 
 public class MainActivity extends Activity {
 
     private WebView webView;
     private ProgressBar progressBar;
-    private View splashLayout;
+    private RelativeLayout splashLayout;
     private ImageButton btnRefresh;
     private ValueCallback<Uri[]> uploadMessage;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
@@ -43,9 +44,10 @@ public class MainActivity extends Activity {
 
         webView = (WebView) findViewById(R.id.webview);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        splashLayout = findViewById(R.id.splash_layout);
+        splashLayout = (RelativeLayout) findViewById(R.id.splash_layout);
         btnRefresh = (ImageButton) findViewById(R.id.btn_refresh);
 
+        // Core WebView Settings for smooth response and single tap
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
@@ -54,8 +56,8 @@ public class MainActivity extends Activity {
         webSettings.setAllowContentAccess(true);
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
-        
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        
         if (Build.VERSION.SDK_INT >= 11) {
             webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         }
@@ -105,7 +107,7 @@ public class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
                 
-                // Hide splash and show webview when first page is ready
+                // Final reveal of the webview after the splash
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -113,7 +115,7 @@ public class MainActivity extends Activity {
                         if (webView != null) webView.setVisibility(View.VISIBLE);
                         if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
                     }
-                }, 1000); // 1 second delay for smoothness
+                }, 2000); // 2 second display for the logo
             }
 
             @Override
@@ -135,6 +137,7 @@ public class MainActivity extends Activity {
     public void refreshPage(View v) {
         if (webView != null) {
             webView.reload();
+            Toast.makeText(this, "Refreshing...", Toast.LENGTH_SHORT).show();
         }
     }
 
