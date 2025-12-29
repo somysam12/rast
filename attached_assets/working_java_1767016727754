@@ -1,8 +1,6 @@
 package com.silentpanel.app;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,7 +9,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -27,10 +24,6 @@ public class MainActivity extends Activity {
     private ProgressBar progressBar;
     private View splashScreen;
     private Handler uiHandler;
-    
-    // For file uploads
-    private ValueCallback<Uri[]> mUploadMessage;
-    private final static int FILECHOOSER_RESULTCODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +40,7 @@ public class MainActivity extends Activity {
 
         // Status bar color
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(0xFF05070a); // Matching website bg
+            getWindow().setStatusBarColor(0xFF0A0E27);
         }
 
         setContentView(R.layout.activity_main);
@@ -66,29 +59,28 @@ public class MainActivity extends Activity {
 
     private void setupWebView() {
         try {
-            // Enable hardware acceleration for animations
-            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            
             WebSettings webSettings = webView.getSettings();
 
             webSettings.setJavaScriptEnabled(true);
             webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-            
-            // File access for uploads
-            webSettings.setAllowFileAccess(true);
-            webSettings.setAllowContentAccess(true);
+
+            webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
 
             webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
             webSettings.setDomStorageEnabled(true);
             webSettings.setDatabaseEnabled(true);
-            
-            // Deprecated but often needed in older Android versions for compatibility
             webSettings.setAppCacheEnabled(true);
             webSettings.setAppCachePath(getCacheDir().getAbsolutePath());
 
             webSettings.setLoadsImagesAutomatically(true);
+            webSettings.setBlockNetworkImage(false);
+            webSettings.setBlockNetworkLoads(false);
+
             webSettings.setUseWideViewPort(true);
             webSettings.setLoadWithOverviewMode(true);
+
+            webSettings.setBuiltInZoomControls(true);
+            webSettings.setDisplayZoomControls(false);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
@@ -99,13 +91,16 @@ public class MainActivity extends Activity {
                 CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
             }
 
-            // AIDE-safe long click listener (Java 7 compatible)
+            // AIDE-safe long click listener
             webView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
                     return true;
                 }
             });
+
+            webView.setDrawingCacheEnabled(true);
+            webView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
             webView.setWebViewClient(new FastWebViewClient());
             webView.setWebChromeClient(new FastWebChromeClient());
@@ -117,27 +112,13 @@ public class MainActivity extends Activity {
 
     private void loadWebsite() {
         try {
-            // Replace with your actual domain
-            String websiteUrl = "http://0.0.0.0:5000"; 
+            String websiteUrl =
+                    "https://79de34c8-fff8-4ccf-9f46-36beeea3b515-00-23zygehn5l9uv.pike.replit.dev/";
+
             webView.loadUrl(websiteUrl);
+
         } catch (Exception e) {
             Toast.makeText(this, "Error loading website: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.onActivityResult(requestCode, resultCode, intent);
-        if (requestCode == FILECHOOSER_RESULTCODE) {
-            if (null == mUploadMessage) return;
-            Uri[] result = null;
-            if (resultCode == RESULT_OK && intent != null) {
-                if (intent.getData() != null) {
-                    result = new Uri[]{intent.getData()};
-                }
-            }
-            mUploadMessage.onReceiveValue(result);
-            mUploadMessage = null;
         }
     }
 
@@ -171,6 +152,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (webView != null) {
+            webView.clearHistory();
+            webView.clearCache(true);
             webView.destroy();
         }
         super.onDestroy();
@@ -199,6 +182,7 @@ public class MainActivity extends Activity {
 
             if (progressBar != null) {
                 progressBar.setVisibility(View.VISIBLE);
+                progressBar.setProgress(10);
             }
         }
 
@@ -206,6 +190,7 @@ public class MainActivity extends Activity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             if (progressBar != null) {
+                progressBar.setProgress(100);
                 progressBar.setVisibility(View.GONE);
             }
         }
@@ -228,25 +213,6 @@ public class MainActivity extends Activity {
                     progressBar.setVisibility(View.GONE);
                 }
             }
-        }
-
-        // Java 7 compatible File Chooser (Android 5.0+)
-        @Override
-        public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
-            if (mUploadMessage != null) {
-                mUploadMessage.onReceiveValue(null);
-            }
-            mUploadMessage = filePathCallback;
-
-            Intent intent = fileChooserParams.createIntent();
-            try {
-                startActivityForResult(intent, FILECHOOSER_RESULTCODE);
-            } catch (Exception e) {
-                mUploadMessage = null;
-                Toast.makeText(MainActivity.this, "Cannot open file chooser", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-            return true;
         }
     }
 }
