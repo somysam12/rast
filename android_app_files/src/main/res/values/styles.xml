@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SilentMultiPanel" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">#0a0e27</item>
+    </style>
+</resources>
