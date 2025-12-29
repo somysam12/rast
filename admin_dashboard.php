@@ -207,32 +207,32 @@ try {
 
         .mobile-header {
             display: none;
-            background: var(--card-bg);
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             padding: 1rem;
             position: sticky;
             top: 0;
             z-index: 999;
-            border-bottom: 1px solid var(--border-light);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
         }
 
         .mobile-toggle {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: transparent;
             border: none;
             color: #06b6d4;
             padding: 0.75rem;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
             font-weight: 700;
+            font-size: 1.3rem;
         }
 
         .mobile-toggle:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5);
-            filter: brightness(1.15);
+            color: #06b6d4;
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
         }
 
         .glass-card {
@@ -802,9 +802,7 @@ try {
             }
 
             .page-header {
-                margin-bottom: 1.5rem;
-                padding: 1.5rem;
-                border-radius: 16px;
+                display: none;
             }
 
             .page-header h1 {
@@ -991,9 +989,7 @@ try {
             }
 
             .page-header {
-                margin-bottom: 1rem;
-                padding: 1.2rem;
-                border-radius: 12px;
+                display: none;
             }
 
             .page-header h1 {
