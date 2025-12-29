@@ -120,6 +120,7 @@ $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
             <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
             <a class="nav-link" href="licence_key_list.php"><i class="fas fa-list"></i>License List</a>
             <a class="nav-link active" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+            <a class="nav-link" href="add_balance.php"><i class="fas fa-plus-circle"></i>Add Balance</a>
             <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
             <hr style="border-color: var(--border-light); margin: 1.5rem 16px;">
             <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>

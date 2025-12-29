@@ -771,7 +771,7 @@ try {
             <a class="nav-link" href="licence_key_list.php"><i class="fas fa-key"></i><span>License List</span></a>
             <a class="nav-link" href="available_keys.php"><i class="fas fa-key"></i><span>Available Keys</span></a>
             <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i><span>Manage Users</span></a>
-            <a class="nav-link" href="edit_user.php"><i class="fas fa-wallet"></i><span>Add Balance</span></a>
+            <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i><span>Add Balance</span></a>
             <a class="nav-link" href="transactions.php"><i class="fas fa-exchange-alt"></i><span>Transactions</span></a>
             <a class="nav-link" href="referral_codes.php"><i class="fas fa-tag"></i><span>Referral Codes</span></a>
             <a class="nav-link" href="admin_block_reset_requests.php"><i class="fas fa-shield-alt"></i><span>Block & Reset</span></a>
