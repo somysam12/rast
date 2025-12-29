@@ -18,6 +18,7 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -42,10 +43,10 @@ public class MainActivity extends Activity {
             window.setNavigationBarColor(android.graphics.Color.parseColor("#0a0e27"));
         }
 
-        webView = (WebView) findViewById(R.id.webview);
+        webView = (WebView) findViewById(R.id.webView);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        splashLayout = (RelativeLayout) findViewById(R.id.splash_layout);
-        btnRefresh = (ImageButton) findViewById(R.id.btn_refresh);
+        splashLayout = (RelativeLayout) findViewById(R.id.splashLayout);
+        btnRefresh = (ImageButton) findViewById(R.id.refreshButton);
 
         // Core WebView Settings for smooth response and single tap
         WebSettings webSettings = webView.getSettings();
@@ -115,7 +116,7 @@ public class MainActivity extends Activity {
                         if (webView != null) webView.setVisibility(View.VISIBLE);
                         if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
                     }
-                }, 2000); // 2 second display for the logo
+                }, 3000); // 3 second display for the logo
             }
 
             @Override
@@ -131,14 +132,17 @@ public class MainActivity extends Activity {
             }
         });
 
-        webView.loadUrl("https://silentmultipanel.vippanel.in");
-    }
+        btnRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (webView != null) {
+                    webView.reload();
+                    Toast.makeText(MainActivity.this, "Refreshing...", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
-    public void refreshPage(View v) {
-        if (webView != null) {
-            webView.reload();
-            Toast.makeText(this, "Refreshing...", Toast.LENGTH_SHORT).show();
-        }
+        webView.loadUrl("https://silentmultipanel.vippanel.in");
     }
 
     @Override
