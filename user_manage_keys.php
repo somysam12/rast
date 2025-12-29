@@ -499,7 +499,8 @@ try {
                     background: 'rgba(15, 23, 42, 0.95)',
                     color: '#fff',
                     showConfirmButton: false,
-                    timer: 1500,
+                    timer: 1000,
+                    timerProgressBar: true,
                     toast: true,
                     position: 'top-end',
                     customClass: {
