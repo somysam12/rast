@@ -116,56 +116,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
             echo "<script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const keys = " . json_encode($keysString) . ";
+                    
                     function copyToClipboard(text) {
-                        if (navigator.clipboard && window.isSecureContext) {
-                            return navigator.clipboard.writeText(text);
-                        } else {
-                            let textArea = document.createElement('textarea');
+                        try {
+                            const textArea = document.createElement('textarea');
                             textArea.value = text;
                             textArea.style.position = 'fixed';
-                            textArea.style.left = '-999999px';
-                            textArea.style.top = '-999999px';
+                            textArea.style.left = '-9999px';
+                            textArea.style.top = '0';
+                            textArea.style.opacity = '0';
                             document.body.appendChild(textArea);
                             textArea.focus();
                             textArea.select();
-                            return new Promise((res, rej) => {
-                                document.execCommand('copy') ? res() : rej();
-                                textArea.remove();
-                            });
+                            textArea.setSelectionRange(0, 99999);
+                            const successful = document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            return successful;
+                        } catch (err) {
+                            return false;
                         }
                     }
 
-                    copyToClipboard(keys).then(() => {
-                        const confetti = document.createElement('div');
-                        confetti.className = 'confetti-burst';
-                        document.body.appendChild(confetti);
-                        
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Key(s) purchased and copied to clipboard!',
-                            icon: 'success',
-                            background: 'rgba(15, 23, 42, 0.95)',
-                            color: '#fff',
-                            showConfirmButton: false,
-                            timer: 2000,
-                            timerProgressBar: true,
-                            backdrop: `rgba(0,0,123,0.1)`,
-                            customClass: {
-                                popup: 'cyber-swal'
-                            }
-                        });
-                        
-                        setTimeout(() => confetti.remove(), 3000);
-                    }).catch(err => {
-                        console.error('Copy failed: ', err);
-                        Swal.fire({
-                            title: 'Purchased!',
-                            text: 'Key(s) purchased successfully, but auto-copy failed. Please copy manually from Manage Keys.',
-                            icon: 'warning',
-                            background: 'rgba(15, 23, 42, 0.95)',
-                            color: '#fff'
-                        });
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti-burst';
+                    document.body.appendChild(confetti);
+                    
+                    // Attempt automatic copy
+                    const autoCopied = copyToClipboard(keys);
+                    
+                    Swal.fire({
+                        title: 'Purchase Successful!',
+                        html: `
+                            <div class=\"mt-3 mb-3 p-3 bg-dark text-info border border-secondary rounded\" style=\"font-family: monospace; font-size: 0.9rem; max-height: 150px; overflow-y: auto; text-align: left; word-break: break-all; white-space: pre-wrap;\">\${keys}</div>
+                            <button id=\"manualCopyBtn\" class=\"btn \${autoCopied ? 'btn-success' : 'btn-primary'} w-100\">
+                                <i class=\"fas \${autoCopied ? 'fa-check' : 'fa-copy'}\"></i> \${autoCopied ? 'Automatically Copied!' : 'Copy to Clipboard'}
+                            </button>
+                        `,
+                        icon: 'success',
+                        background: 'rgba(15, 23, 42, 0.95)',
+                        color: '#fff',
+                        showConfirmButton: true,
+                        confirmButtonText: 'Done',
+                        confirmButtonColor: '#8b5cf6',
+                        didOpen: () => {
+                            const btn = document.getElementById('manualCopyBtn');
+                            btn.onclick = () => {
+                                if(copyToClipboard(keys)) {
+                                    btn.innerHTML = '<i class=\"fas fa-check\"></i> Copied!';
+                                    btn.className = 'btn btn-success w-100';
+                                    setTimeout(() => {
+                                        btn.innerHTML = '<i class=\"fas fa-copy\"></i> Copy Again';
+                                        btn.className = 'btn btn-primary w-100';
+                                    }, 2000);
+                                }
+                            };
+                        }
                     });
+                    
+                    setTimeout(() => confetti.remove(), 3000);
                 });
             </script>";
 
@@ -291,7 +299,6 @@ try {
             animation: confettiFall 3s linear forwards;
         }
 
-        /* Redesigned Filter Button & Popup */
         .mod-selector-wrapper {
             position: relative;
             margin-bottom: 2rem;
@@ -397,7 +404,6 @@ try {
             color: white;
         }
 
-        /* Animated Border for Results */
         .results-container {
             position: relative;
             padding: 3px;
@@ -447,7 +453,6 @@ try {
             box-shadow: -5px 0 15px rgba(139, 92, 246, 0.1);
         }
 
-        /* Search Styles */
         .search-container {
             margin-bottom: 2rem;
             position: relative;
@@ -559,7 +564,6 @@ try {
             </div>
         </div>
 
-        <!-- Stylish Search Bar -->
         <div class="search-container">
             <div class="stylish-search-wrapper">
                 <i class="fas fa-search text-primary me-3 fs-5"></i>
@@ -572,7 +576,6 @@ try {
             <h5 class="text-secondary">No products found matching your search.</h5>
         </div>
 
-        <!-- Stylish Mod Selector -->
         <div class="mod-selector-wrapper">
             <div class="mod-trigger-btn" onclick="toggleModPopup()">
                 <div class="d-flex align-items-center gap-3">
@@ -650,10 +653,8 @@ try {
 
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
-        
-        function toggleAvatarDropdown() {
-            document.getElementById('avatarDropdown').classList.toggle('show');
-        }
+        function toggleAvatarDropdown() { document.getElementById('avatarDropdown').classList.toggle('show'); }
+        function toggleModPopup() { document.getElementById('modPopup').classList.toggle('show'); }
 
         window.onclick = function(event) {
             if (!event.target.matches('.user-avatar-header')) {
@@ -666,12 +667,7 @@ try {
                 }
             }
         }
-        
-        function toggleModPopup() {
-            document.getElementById('modPopup').classList.toggle('show');
-        }
 
-        // Real-time Search Logic with smart matching
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('productSearch');
             const noResults = document.getElementById('noResults');
@@ -686,58 +682,40 @@ try {
                     modSections.forEach(section => {
                         const modName = section.getAttribute('data-mod-name').toLowerCase();
                         const durationItems = section.querySelectorAll('.duration-item');
-                        let matchedItems = [];
-                        let unmatchedItems = [];
+                        let matchedCount = 0;
 
-                        // Categorize items based on match
                         durationItems.forEach(item => {
                             const text = item.textContent.toLowerCase();
                             if (query === '' || text.includes(query)) {
-                                matchedItems.push({ element: item, match: text.indexOf(query) });
+                                item.closest('.col-12').style.display = 'block';
+                                matchedCount++;
                             } else {
-                                unmatchedItems.push(item);
+                                item.closest('.col-12').style.display = 'none';
                             }
                         });
 
-                        if (query !== '') {
-                            // Sort matched items by position of match (earlier matches first)
-                            matchedItems.sort((a, b) => a.match - b.match);
-                        }
-
-                        // Show section if it has matched items or mod name matches
-                        const sectionMatches = query === '' || modName.includes(query) || matchedItems.length > 0;
-                        
-                        if (sectionMatches) {
-                            section.style.setProperty('display', 'block', 'important');
+                        if (query === '' || modName.includes(query) || matchedCount > 0) {
+                            section.style.display = 'block';
                             anyVisible = true;
-
-                            // Reorder: matched items first, then unmatched
-                            if (query !== '') {
-                                const row = section.querySelector('.row');
-                                if (row) {
-                                    // Move matched items to the top
-                                    matchedItems.forEach(item => {
-                                        row.insertBefore(item.element, row.firstChild);
-                                    });
-                                }
+                            if(modName.includes(query) && query !== '') {
+                                section.querySelectorAll('.col-12').forEach(c => c.style.display = 'block');
                             }
                         } else {
-                            section.style.setProperty('display', 'none', 'important');
+                            section.style.display = 'none';
                         }
                     });
 
                     if (!anyVisible && query !== '') {
-                        noResults.style.setProperty('display', 'block', 'important');
-                        resultsContainer.style.setProperty('display', 'none', 'important');
+                        noResults.style.display = 'block';
+                        resultsContainer.style.display = 'none';
                     } else {
-                        noResults.style.setProperty('display', 'none', 'important');
-                        resultsContainer.style.setProperty('display', 'block', 'important');
+                        noResults.style.display = 'none';
+                        resultsContainer.style.display = 'block';
                     }
                 });
             }
         });
 
-        // Close popup when clicking outside
         document.addEventListener('click', function(e) {
             const popup = document.getElementById('modPopup');
             const trigger = document.querySelector('.mod-trigger-btn');
@@ -746,7 +724,6 @@ try {
             }
         });
         
-        // Confetti burst logic
         const createConfetti = () => {
             const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b'];
             for (let i = 0; i < 50; i++) {
