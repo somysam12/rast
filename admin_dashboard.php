@@ -801,25 +801,25 @@ try {
         <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon icon-mods"><i class="fas fa-gamepad"></i></div>
+                <div class="stat-icon icon-mods"><i class="fas fa-mobile-alt"></i></div>
                 <h6>Total Mods</h6>
                 <h3><?php echo $stats['total_mods']; ?></h3>
                 <span class="stat-label">⚡ Active</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon icon-keys"><i class="fas fa-shield-alt"></i></div>
+                <div class="stat-icon icon-keys"><i class="fas fa-lock"></i></div>
                 <h6>License Keys</h6>
                 <h3><?php echo $stats['total_keys']; ?></h3>
                 <span class="stat-label">🔐 Generated</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon icon-users"><i class="fas fa-crown"></i></div>
+                <div class="stat-icon icon-users"><i class="fas fa-users"></i></div>
                 <h6>Total Users</h6>
                 <h3><?php echo $stats['total_users']; ?></h3>
                 <span class="stat-label">👥 Community</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon icon-sold"><i class="fas fa-rocket"></i></div>
+                <div class="stat-icon icon-sold"><i class="fas fa-coins"></i></div>
                 <h6>Sold Licenses</h6>
                 <h3><?php echo $stats['sold_keys']; ?></h3>
                 <span class="stat-label">💰 Revenue</span>

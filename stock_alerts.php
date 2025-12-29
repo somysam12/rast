@@ -165,6 +165,31 @@ $pendingCount = $stmt->fetchColumn();
             z-index: 1;
         }
 
+        .mobile-header {
+            display: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .hamburger-btn {
+            background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+            border: 2px solid rgba(6, 182, 212, 0.4) !important;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 10px 12px !important;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+            outline: none;
+            flex-shrink: 0;
+        }
+
+        .hamburger-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+            border-color: rgba(6, 182, 212, 0.7);
+        }
+
         .page-header {
             text-align: center;
             margin-bottom: 2rem;
@@ -373,6 +398,12 @@ $pendingCount = $stmt->fetchColumn();
                 padding: 1rem;
             }
 
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
             .alert-banner {
                 flex-direction: column;
                 gap: 1rem;
@@ -451,6 +482,11 @@ $pendingCount = $stmt->fetchColumn();
 
     <!-- Main Content -->
     <div class="main-content">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        </div>
+
         <!-- Page Header -->
         <div class="page-header">
             <h2><i class="fas fa-bell"></i> Stock Alerts</h2>
