@@ -645,7 +645,7 @@ try {
             document.getElementById('modPopup').classList.toggle('show');
         }
 
-        // Real-time Search Logic (Matching Manage Keys behavior)
+        // Real-time Search Logic with smart matching
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('productSearch');
             const noResults = document.getElementById('noResults');
@@ -659,9 +659,42 @@ try {
 
                     modSections.forEach(section => {
                         const modName = section.getAttribute('data-mod-name').toLowerCase();
-                        if (query === '' || modName.includes(query)) {
+                        const durationItems = section.querySelectorAll('.duration-item');
+                        let matchedItems = [];
+                        let unmatchedItems = [];
+
+                        // Categorize items based on match
+                        durationItems.forEach(item => {
+                            const text = item.textContent.toLowerCase();
+                            if (query === '' || text.includes(query)) {
+                                matchedItems.push({ element: item, match: text.indexOf(query) });
+                            } else {
+                                unmatchedItems.push(item);
+                            }
+                        });
+
+                        if (query !== '') {
+                            // Sort matched items by position of match (earlier matches first)
+                            matchedItems.sort((a, b) => a.match - b.match);
+                        }
+
+                        // Show section if it has matched items or mod name matches
+                        const sectionMatches = query === '' || modName.includes(query) || matchedItems.length > 0;
+                        
+                        if (sectionMatches) {
                             section.style.setProperty('display', 'block', 'important');
                             anyVisible = true;
+
+                            // Reorder: matched items first, then unmatched
+                            if (query !== '') {
+                                const row = section.querySelector('.row');
+                                if (row) {
+                                    // Move matched items to the top
+                                    matchedItems.forEach(item => {
+                                        row.insertBefore(item.element, row.firstChild);
+                                    });
+                                }
+                            }
                         } else {
                             section.style.setProperty('display', 'none', 'important');
                         }
