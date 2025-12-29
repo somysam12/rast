@@ -289,6 +289,42 @@ try {
         }
         
         .swal2-popup { animation: popInDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
+
+        /* Custom Copy Feedback Overlay */
+        .copy-overlay {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(13, 20, 33, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.2);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        .copy-overlay.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .copy-overlay .icon-circle {
+            width: 32px;
+            height: 32px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #10b981;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -452,13 +488,20 @@ try {
                                         </div>
                                     </td>
                                 </tr>
-<?php endforeach; ?>
+                            <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
+
+    <div id="copyOverlay" class="copy-overlay">
+        <div class="icon-circle">
+            <i class="fas fa-check"></i>
+        </div>
+        <span class="fw-bold">Copied to clipboard</span>
+    </div>
 
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
@@ -479,6 +522,7 @@ try {
             }
         }
         
+        let copyTimeout;
         function copyToClipboard(text, element) {
             navigator.clipboard.writeText(text).then(() => {
                 // Flash animation on the element
@@ -492,28 +536,14 @@ try {
                     }, 300);
                 }
 
-                // Close any existing SweetAlerts first
-                Swal.close();
-
-                // Show the toast with a definite timer and explicit closing
-                const toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 1000,
-                    timerProgressBar: true,
-                    background: 'rgba(15, 23, 42, 0.95)',
-                    color: '#fff',
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    }
-                });
-
-                toast.fire({
-                    icon: 'success',
-                    title: 'Copied to clipboard'
-                });
+                // Show Custom Overlay
+                const overlay = document.getElementById('copyOverlay');
+                overlay.classList.add('show');
+                
+                if(copyTimeout) clearTimeout(copyTimeout);
+                copyTimeout = setTimeout(() => {
+                    overlay.classList.remove('show');
+                }, 1000);
             });
         }
         
@@ -547,7 +577,6 @@ try {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Submit via fetch for better response handling
                     const formData = new FormData();
                     formData.append('request_type', requestType);
                     formData.append('license_key', licenseKey);
