@@ -137,21 +137,41 @@ try {
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--border-light);
+            text-align: center;
         }
 
         .sidebar-brand h4 {
-            color: var(--secondary);
-            font-weight: 700;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.75rem;
+            font-size: 1.4rem;
+        }
+
+        .sidebar-brand .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
         }
 
         .sidebar-brand p {
             color: var(--text-dim);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             margin: 0;
+            font-weight: 500;
         }
 
         .sidebar .nav {
@@ -736,7 +756,8 @@ try {
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <h4><i class="fas fa-crown"></i>SilentMultiPanel</h4>
+            <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+            <h4>SilentMultiPanel</h4>
             <p>Admin Control Panel</p>
         </div>
         <nav class="nav">
@@ -776,11 +797,6 @@ try {
             </div>
         </div>
 
-        <!-- Welcome Banner -->
-        <div class="welcome-banner">
-            <h2>✨ Welcome back, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>!</h2>
-            <p>You're the boss! Full administrative control over SilentMultiPanel — manage mods, licenses, users, and maximize your revenue potential.</p>
-        </div>
 
         <!-- Stats Grid -->
         <div class="stats-grid">
