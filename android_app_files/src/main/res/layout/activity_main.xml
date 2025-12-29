@@ -19,4 +19,17 @@
         android:progressDrawable="@drawable/progress_glow"
         android:visibility="gone" />
 
+    <ImageButton
+        android:id="@+id/btn_refresh"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="20dp"
+        android:background="@android:color/transparent"
+        android:src="@android:drawable/ic_menu_rotate"
+        android:tint="#8b5cf6"
+        android:onClick="refreshPage"
+        android:contentDescription="Refresh" />
+
 </RelativeLayout>

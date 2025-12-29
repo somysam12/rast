@@ -28,12 +28,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Native Full Screen
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        
         setContentView(R.layout.activity_main);
         
-        // Immersive Colors
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -44,7 +41,6 @@ public class MainActivity extends Activity {
         webView = (WebView) findViewById(R.id.webview);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-        // Core WebView Settings
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
@@ -54,13 +50,11 @@ public class MainActivity extends Activity {
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
         
-        // Performance
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         if (Build.VERSION.SDK_INT >= 11) {
             webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         }
         
-        // Enable File/APK Uploading
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -121,6 +115,12 @@ public class MainActivity extends Activity {
         });
 
         webView.loadUrl("https://silentmultipanel.vippanel.in");
+    }
+
+    public void refreshPage(View v) {
+        if (webView != null) {
+            webView.reload();
+        }
     }
 
     @Override
