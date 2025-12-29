@@ -110,15 +110,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
 
             $pdo->commit();
             
-            $keysString = implode("\\n", $allPurchasedKeys);
+            $keysString = implode("\n", $allPurchasedKeys);
             $success = "Purchased $keysSold license key(s) successfully!";
             
             echo "<script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    const keys = `" . $keysString . "`;
-                    navigator.clipboard.writeText(keys).then(() => {
-                        // Success animation
-                        const container = document.querySelector('.main-content');
+                    const keys = " . json_encode($keysString) . ";
+                    function copyToClipboard(text) {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            return navigator.clipboard.writeText(text);
+                        } else {
+                            let textArea = document.createElement('textarea');
+                            textArea.value = text;
+                            textArea.style.position = 'fixed';
+                            textArea.style.left = '-999999px';
+                            textArea.style.top = '-999999px';
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            return new Promise((res, rej) => {
+                                document.execCommand('copy') ? res() : rej();
+                                textArea.remove();
+                            });
+                        }
+                    }
+
+                    copyToClipboard(keys).then(() => {
                         const confetti = document.createElement('div');
                         confetti.className = 'confetti-burst';
                         document.body.appendChild(confetti);
@@ -139,6 +156,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
                         });
                         
                         setTimeout(() => confetti.remove(), 3000);
+                    }).catch(err => {
+                        console.error('Copy failed: ', err);
+                        Swal.fire({
+                            title: 'Purchased!',
+                            text: 'Key(s) purchased successfully, but auto-copy failed. Please copy manually from Manage Keys.',
+                            icon: 'warning',
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            color: '#fff'
+                        });
                     });
                 });
             </script>";
