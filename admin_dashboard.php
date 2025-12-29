@@ -89,6 +89,11 @@ try {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
+        html {
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%) !important;
+            background-attachment: fixed !important;
+        }
+
         body {
             background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
             background-attachment: fixed;
@@ -210,11 +215,18 @@ try {
             background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             position: sticky;
             top: 0;
             z-index: 999;
-            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            border-bottom: none;
+            width: 100%;
+        }
+
+        .mobile-welcome-text {
+            flex: 1;
+            text-align: center;
+            margin: 0 1rem;
         }
 
         .mobile-toggle {
@@ -789,7 +801,7 @@ try {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.75rem 1rem;
+                padding: 0.75rem 0.5rem;
             }
 
             .mobile-header h5 {
@@ -799,6 +811,11 @@ try {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 max-width: 200px;
+            }
+
+            .mobile-welcome-text {
+                font-size: 0.8rem !important;
+                margin: 0 0.5rem;
             }
 
             .page-header {
@@ -986,6 +1003,12 @@ try {
             .mobile-toggle {
                 padding: 0.5rem;
                 font-size: 1rem;
+                margin: 0;
+                margin-right: 0.5rem;
+            }
+
+            .mobile-welcome-text {
+                font-size: 0.75rem !important;
             }
 
             .page-header {
@@ -1203,24 +1226,29 @@ try {
     
     <!-- Mobile Header -->
     <div class="mobile-header">
-        <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
+        <div class="d-flex align-items-center justify-content-between w-100">
+            <button class="mobile-toggle" onclick="toggleSidebar(event)">
                 <i class="fas fa-bars"></i>
             </button>
-        </div>
-        <div class="admin-menu-container">
-            <div class="admin-menu-btn" onclick="toggleAdminMenu(event)">
-                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+            <div class="mobile-welcome-text">
+                <div style="color: #06b6d4; font-weight: 700; font-size: 0.9rem;">Welcome back, <span style="color: #8b5cf6;">
+                <?php echo htmlspecialchars($_SESSION['username']); ?>
+                </span>!</div>
             </div>
-            <div class="admin-dropdown" id="adminDropdown">
-                <a href="manage_users.php">
-                    <i class="fas fa-users"></i>
-                    <span>Manage Users</span>
-                </a>
-                <a href="logout.php">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
+            <div class="admin-menu-container">
+                <div class="admin-menu-btn" onclick="toggleAdminMenu(event)">
+                    <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+                </div>
+                <div class="admin-dropdown" id="adminDropdown">
+                    <a href="manage_users.php">
+                        <i class="fas fa-users"></i>
+                        <span>Manage Users</span>
+                    </a>
+                    <a href="logout.php">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
