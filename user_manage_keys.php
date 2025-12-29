@@ -11,7 +11,6 @@ function formatCurrency($amount){
 }
 function formatDate($dt){
     if(!$dt){ return '-'; }
-    // Set Indian Timezone for formatting
     $date = new DateTime($dt, new DateTimeZone('UTC'));
     $date->setTimezone(new DateTimeZone('Asia/Kolkata'));
     return $date->format('d M Y, h:i A');
@@ -44,15 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_block_reset_re
     
     if ($requestType && $licenseKey && in_array($requestType, ['block', 'reset'])) {
         try {
-            // Get key details
             $stmt = $pdo->prepare('SELECT id, mod_id FROM license_keys WHERE license_key = ? AND sold_to = ? LIMIT 1');
             $stmt->execute([$licenseKey, $user['id']]);
             $keyDetails = $stmt->fetch();
             
             if ($keyDetails) {
                 $pdo->beginTransaction();
-                
-                // Get mod name
                 $modName = 'Unknown';
                 if ($keyDetails['mod_id']) {
                     $stmt = $pdo->prepare('SELECT name FROM mods WHERE id = ? LIMIT 1');
@@ -61,13 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_block_reset_re
                     if ($modResult) $modName = $modResult['name'];
                 }
                 
-                // Insert request with empty reason (user can add it later from pending requests)
                 $stmt = $pdo->prepare('INSERT INTO key_requests (user_id, key_id, request_type, mod_name, reason, status) VALUES (?, ?, ?, ?, ?, ?)');
                 $stmt->execute([$user['id'], $keyDetails['id'], $requestType, $modName, '', 'pending']);
-                
                 $pdo->commit();
                 
-                // Return JSON response for AJAX handling
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => ucfirst($requestType) . ' request submitted successfully']);
                 exit;
@@ -89,57 +82,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_block_reset_re
     }
 }
 
-// Get filter parameters
 $modFilter = $_GET['mod_id'] ?? '';
 $searchQuery = $_GET['search'] ?? '';
 $keyIdFilter = $_GET['key_id'] ?? '';
 
-// Get user's purchased mods for filter
 $purchasedMods = [];
 try {
-    $stmt = $pdo->prepare('SELECT DISTINCT m.id, m.name 
-                           FROM license_keys lk
-                           LEFT JOIN mods m ON m.id = lk.mod_id
-                           WHERE lk.sold_to = ?
-                           ORDER BY m.name');
+    $stmt = $pdo->prepare('SELECT DISTINCT m.id, m.name FROM license_keys lk LEFT JOIN mods m ON m.id = lk.mod_id WHERE lk.sold_to = ? ORDER BY m.name');
     $stmt->execute([$user['id']]);
     $purchasedMods = $stmt->fetchAll();
-} catch (Throwable $e) {
-    $purchasedMods = [];
-}
+} catch (Throwable $e) {}
 
-// Get user's purchased keys with filter and search
 $purchasedKeys = [];
 try {
-    $sql = 'SELECT lk.*, m.name AS mod_name
-            FROM license_keys lk
-            LEFT JOIN mods m ON m.id = lk.mod_id
-            WHERE lk.sold_to = ?';
+    $sql = 'SELECT lk.*, m.name AS mod_name FROM license_keys lk LEFT JOIN mods m ON m.id = lk.mod_id WHERE lk.sold_to = ?';
     $params = [$user['id']];
-
-    if ($keyIdFilter !== '' && ctype_digit((string)$keyIdFilter)) {
-        $sql .= ' AND lk.id = ?';
-        $params[] = $keyIdFilter;
-    }
-
-    if ($modFilter !== '' && ctype_digit((string)$modFilter)) {
-        $sql .= ' AND lk.mod_id = ?';
-        $params[] = $modFilter;
-    }
-
-    if ($searchQuery !== '') {
-        $sql .= ' AND (m.name LIKE ? OR lk.license_key LIKE ?)';
-        $params[] = '%' . $searchQuery . '%';
-        $params[] = '%' . $searchQuery . '%';
-    }
-
+    if ($keyIdFilter !== '' && ctype_digit((string)$keyIdFilter)) { $sql .= ' AND lk.id = ?'; $params[] = $keyIdFilter; }
+    if ($modFilter !== '' && ctype_digit((string)$modFilter)) { $sql .= ' AND lk.mod_id = ?'; $params[] = $modFilter; }
+    if ($searchQuery !== '') { $sql .= ' AND (m.name LIKE ? OR lk.license_key LIKE ?)'; $params[] = '%' . $searchQuery . '%'; $params[] = '%' . $searchQuery . '%'; }
     $sql .= ' ORDER BY lk.sold_at DESC';
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $purchasedKeys = $stmt->fetchAll();
-} catch (Throwable $e) {
-    $purchasedKeys = [];
-}
+} catch (Throwable $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -153,185 +118,107 @@ try {
     <link href="assets/css/cyber-ui.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { padding-top: 60px; }
-        .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; transition: transform 0.3s ease; }
-        .main-content { margin-left: 260px; padding: 2rem; transition: margin-left 0.3s ease; }
+        body { padding-top: 60px; overflow-x: hidden; }
+        .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .main-content { margin-left: 260px; padding: 2rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; transform: translateY(20px); animation: pageAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes pageAppear { to { opacity: 1; transform: translateY(0); } }
+        
         .header { height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; background: rgba(5,7,10,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        
         @media (max-width: 992px) {
             .sidebar { transform: translateX(-260px); }
             .sidebar.show { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 1rem; }
         }
 
-        .search-input {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1.5px solid rgba(148, 163, 184, 0.1);
-            color: white;
-            border-radius: 12px;
-            padding: 10px 15px 10px 45px;
-            width: 100%;
-            transition: all 0.3s ease;
+        .cyber-card { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            animation: cardSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        .cyber-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15); }
+        
+        @keyframes cardSlideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .search-input:focus {
-            background: rgba(15, 23, 42, 0.8);
-            border-color: #8b5cf6;
-            color: white;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
-        }
-
+        .search-input { background: rgba(15, 23, 42, 0.5); border: 1.5px solid rgba(148, 163, 184, 0.1); color: white; border-radius: 12px; padding: 10px 15px 10px 45px; width: 100%; transition: all 0.3s ease; }
+        .search-input:focus { background: rgba(15, 23, 42, 0.8); border-color: #8b5cf6; color: white; outline: none; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1); }
         .search-wrapper { position: relative; }
         .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: rgba(148, 163, 184, 0.5); }
 
         .license-key-box {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: rgba(139, 92, 246, 0.1);
+            background: rgba(139, 92, 246, 0.05);
             padding: 0.6rem 1.2rem;
             border-radius: 12px;
-            border: 1px solid rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.1);
             color: #a78bfa;
             font-size: 0.95rem;
             word-break: break-all;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
             display: inline-flex;
             align-items: center;
             gap: 10px;
         }
+        .license-key-box:hover { background: rgba(139, 92, 246, 0.15); border-color: #8b5cf6; transform: scale(1.02); color: white; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
+        .license-key-box:active { transform: scale(0.98); }
+        .license-key-box::after { content: '\f0c5'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 0.8rem; opacity: 0.5; }
 
-        .license-key-box:hover {
-            background: rgba(139, 92, 246, 0.2);
-            border-color: #8b5cf6;
-            transform: scale(1.02);
-            color: white;
-        }
-
-        .license-key-box:active {
-            transform: scale(0.98);
-        }
-
-        .license-key-box::after {
-            content: '\f0c5';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            font-size: 0.8rem;
-            opacity: 0.5;
-        }
-
-        .status-purchased {
-            background: rgba(16, 185, 129, 0.1) !important;
-            color: #10b981 !important;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .status-purchased { background: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; animation: pulseGreen 2s infinite; }
+        @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
         
-        .table-responsive {
-            border-radius: 15px;
-            overflow-x: auto;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            background: rgba(10, 15, 25, 0.5);
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .table {
-            min-width: 900px;
-            margin-bottom: 0;
-        }
+        .table-responsive { border-radius: 15px; overflow-x: auto; border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(10, 15, 25, 0.5); -webkit-overflow-scrolling: touch; }
+        .table { min-width: 900px; margin-bottom: 0; }
+        .table tr { transition: all 0.3s ease; }
+        .table tr:hover { background: rgba(139, 92, 246, 0.03); }
 
-        /* Custom scrollbar for better UI */
-        .table-responsive::-webkit-scrollbar {
-            height: 6px;
-        }
-        .table-responsive::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        .table-responsive::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.3);
-            border-radius: 10px;
-        }
-        .table-responsive::-webkit-scrollbar-thumb:hover {
-            background: rgba(139, 92, 246, 0.5);
-        }
-        
         .user-nav-wrapper { position: relative; }
         .user-avatar-header { cursor:pointer; transition:all 0.3s ease; }
         .user-avatar-header:hover { transform:scale(1.05); box-shadow:0 0 15px rgba(139, 92, 246, 0.4); }
-        .avatar-dropdown { position:absolute; top:calc(100% + 15px); right:0; width:220px; background:rgba(10, 15, 25, 0.95); backdrop-filter:blur(20px); border:1px solid rgba(139, 92, 246, 0.3); border-radius:16px; padding:10px; z-index:1002; display:none; box-shadow:0 10px 30px rgba(0,0,0,0.5); animation:dropdownFade 0.3s ease; }
+        .avatar-dropdown { position:absolute; top:calc(100% + 15px); right:0; width:220px; background:rgba(10, 15, 25, 0.95); backdrop-filter:blur(20px); border:1px solid rgba(139, 92, 246, 0.3); border-radius:16px; padding:10px; z-index:1002; display:none; box-shadow:0 10px 30px rgba(0,0,0,0.5); animation:dropdownFade 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .avatar-dropdown.show { display:block; }
-        @keyframes dropdownFade { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        .dropdown-item-cyber { display:flex; align-items:center; gap:12px; padding:10px 15px; color:rgba(255, 255, 255, 0.7); text-decoration:none; border-radius:10px; transition:all 0.2s ease; font-size:0.9rem; }
-        .dropdown-item-cyber:hover { background:rgba(139, 92, 246, 0.1); color:#fff; transform:translateX(5px); }
-        .dropdown-item-cyber i { width:20px; text-align:center; color:var(--primary); }
-        .dropdown-divider { height:1px; background:rgba(255, 255, 255, 0.05); margin:8px 0; }
+        @keyframes dropdownFade { from { opacity:0; transform:translateY(10px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
         
-        .action-btn-with-hover { position: relative; }
-        .action-btn-with-hover .btn { transition: all 0.3s ease; }
-        .action-btn-with-hover .btn:hover { transform: scale(1.1); }
-        
-        .cyber-swal {
-            border: 2px solid rgba(139, 92, 246, 0.5) !important;
-            border-radius: 24px !important;
-            box-shadow: 0 0 40px rgba(139, 92, 246, 0.2) !important;
-        }
-        
-        @keyframes popInDown {
-            0% { opacity: 0; transform: scale(0.8) translateY(-30px); }
-            70% { transform: scale(1.05) translateY(5px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        
-        .swal2-popup { animation: popInDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
+        .action-btn-with-hover .btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .action-btn-with-hover .btn:hover { transform: translateY(-2px) scale(1.1); box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3); }
 
         /* Custom Copy Feedback Overlay */
         .copy-overlay {
             position: fixed;
-            top: 20px;
+            top: 30px;
             left: 50%;
             transform: translateX(-50%) translateY(-100px);
-            background: rgba(13, 20, 33, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(139, 92, 246, 0.5);
-            border-radius: 12px;
-            padding: 12px 24px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 100px;
+            padding: 12px 28px;
             color: white;
-            z-index: 9999;
+            z-index: 10000;
             display: flex;
             align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.2);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            gap: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.1);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             pointer-events: none;
+            opacity: 0;
         }
-        .copy-overlay.show {
-            transform: translateX(-50%) translateY(0);
-        }
-        .copy-overlay .icon-circle {
-            width: 32px;
-            height: 32px;
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid #10b981;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #10b981;
-            font-size: 0.9rem;
-        }
+        .copy-overlay.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .copy-overlay .icon-circle { width: 32px; height: 32px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        
+        .btn-sm { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-sm:hover { transform: translateY(-2px); }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="d-flex align-items-center gap-3">
             <button class="btn text-white p-0 d-lg-none" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-            <h4 class="m-0 text-neon fw-bold">SilentMultiPanel</h4>
+            <h4 class="m-0 text-neon fw-bold" style="letter-spacing: 1px;">SilentMultiPanel</h4>
         </div>
         <div class="d-flex align-items-center gap-3">
             <div class="text-end d-none d-sm-block">
@@ -348,19 +235,11 @@ try {
                         <div class="text-secondary small">ID: #<?php echo $user['id']; ?></div>
                     </div>
                     <div class="dropdown-divider"></div>
-                    <a href="user_transactions.php" class="dropdown-item-cyber">
-                        <i class="fas fa-history"></i> Transactions
-                    </a>
-                    <a href="user_generate.php" class="dropdown-item-cyber">
-                        <i class="fas fa-plus"></i> Generate Key
-                    </a>
-                    <a href="user_settings.php" class="dropdown-item-cyber">
-                        <i class="fas fa-cog"></i> Settings
-                    </a>
+                    <a href="user_transactions.php" class="dropdown-item-cyber"><i class="fas fa-history"></i> Transactions</a>
+                    <a href="user_generate.php" class="dropdown-item-cyber"><i class="fas fa-plus"></i> Generate Key</a>
+                    <a href="user_settings.php" class="dropdown-item-cyber"><i class="fas fa-cog"></i> Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="logout.php" class="dropdown-item-cyber text-danger">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a>
+                    <a href="logout.php" class="dropdown-item-cyber text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
             </div>
         </div>
@@ -383,7 +262,7 @@ try {
     </aside>
 
     <main class="main-content">
-        <div class="cyber-card mb-4">
+        <div class="cyber-card mb-4" style="animation-delay: 0.1s;">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h2 class="text-neon mb-1">Manage Keys</h2>
@@ -394,7 +273,7 @@ try {
 
         <div class="row g-4 mb-4">
             <div class="col-12">
-                <div class="cyber-card">
+                <div class="cyber-card" style="animation-delay: 0.2s;">
                     <form method="GET" class="row g-3 align-items-end">
                         <div class="col-12 col-md-4">
                             <label class="small fw-bold text-secondary mb-2">FILTER BY MOD</label>
@@ -415,13 +294,9 @@ try {
                             </div>
                         </div>
                         <div class="col-12 col-md-3 d-flex gap-2">
-                            <button type="submit" class="cyber-btn w-100 py-2">
-                                <i class="fas fa-search"></i> Search
-                            </button>
+                            <button type="submit" class="cyber-btn w-100 py-2"><i class="fas fa-search"></i> Search</button>
                             <?php if ($modFilter || $searchQuery || $keyIdFilter): ?>
-                                <a href="user_manage_keys.php" class="btn btn-outline-secondary rounded-3 px-3">
-                                    <i class="fas fa-times"></i>
-                                </a>
+                                <a href="user_manage_keys.php" class="btn btn-outline-secondary rounded-3 px-3"><i class="fas fa-times"></i></a>
                             <?php endif; ?>
                         </div>
                     </form>
@@ -429,7 +304,7 @@ try {
             </div>
         </div>
 
-        <div class="cyber-card">
+        <div class="cyber-card" style="animation-delay: 0.3s;">
             <h5 class="mb-4 text-white"><i class="fas fa-list text-primary me-2"></i> Your Purchased Keys</h5>
             <div class="table-responsive">
                 <table class="table align-middle">
@@ -447,13 +322,13 @@ try {
                         <?php if (empty($purchasedKeys)): ?>
                             <tr>
                                 <td colspan="6" class="text-center py-5 text-secondary">
-                                    <i class="fas fa-key d-block mb-3" style="font-size: 2rem; opacity: 0.2;"></i>
+                                    <i class="fas fa-key d-block mb-3" style="font-size: 3rem; opacity: 0.1;"></i>
                                     No keys found matching your criteria.
                                 </td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($purchasedKeys as $key): ?>
-                                <tr>
+                            <?php foreach ($purchasedKeys as $index => $key): ?>
+                                <tr style="animation: cardSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) <?php echo 0.4 + ($index * 0.05); ?>s both;">
                                     <td>
                                         <div class="fw-bold text-white"><?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?></div>
                                         <div class="small text-secondary">₹<?php echo number_format($key['price'], 2); ?></div>
@@ -463,28 +338,14 @@ try {
                                             <?php echo htmlspecialchars($key['license_key']); ?>
                                         </div>
                                     </td>
-                                    <td>
-                                        <span class="badge bg-secondary bg-opacity-25 text-white">
-                                            <?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="status-purchased">
-                                            PURCHASED
-                                        </span>
-                                    </td>
+                                    <td><span class="badge bg-secondary bg-opacity-25 text-white"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></span></td>
+                                    <td><span class="status-purchased">PURCHASED</span></td>
                                     <td class="small text-secondary"><?php echo formatDate($key['sold_at']); ?></td>
                                     <td class="text-end">
                                         <div class="d-flex justify-content-end gap-2">
-                                            <button class="btn btn-sm btn-outline-primary rounded-2" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>')" title="Copy Key">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-info rounded-2" onclick="showRequestModal('reset', '<?php echo htmlspecialchars($key['license_key']); ?>', '<?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?>')" title="Reset HWID">
-                                                <i class="fas fa-sync-alt"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger rounded-2" onclick="showRequestModal('block', '<?php echo htmlspecialchars($key['license_key']); ?>', '<?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?>')" title="Block Key">
-                                                <i class="fas fa-ban"></i>
-                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary rounded-2" onclick="copyToClipboard('<?php echo htmlspecialchars($key['license_key']); ?>', this)" title="Copy Key"><i class="fas fa-copy"></i></button>
+                                            <button class="btn btn-sm btn-outline-info rounded-2" onclick="showRequestModal('reset', '<?php echo htmlspecialchars($key['license_key']); ?>', '<?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?>')" title="Reset HWID"><i class="fas fa-sync-alt"></i></button>
+                                            <button class="btn btn-sm btn-outline-danger rounded-2" onclick="showRequestModal('block', '<?php echo htmlspecialchars($key['license_key']); ?>', '<?php echo htmlspecialchars($key['mod_name'] ?? 'Unknown'); ?>')" title="Block Key"><i class="fas fa-ban"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -497,134 +358,58 @@ try {
     </main>
 
     <div id="copyOverlay" class="copy-overlay">
-        <div class="icon-circle">
-            <i class="fas fa-check"></i>
-        </div>
+        <div class="icon-circle"><i class="fas fa-check"></i></div>
         <span class="fw-bold">Copied to clipboard</span>
     </div>
 
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
-        
-        function toggleAvatarDropdown() {
-            document.getElementById('avatarDropdown').classList.toggle('show');
-        }
-
-        window.onclick = function(event) {
-            if (!event.target.matches('.user-avatar-header')) {
-                var dropdowns = document.getElementsByClassName("avatar-dropdown");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                    }
-                }
-            }
-        }
+        function toggleAvatarDropdown() { document.getElementById('avatarDropdown').classList.toggle('show'); }
+        window.onclick = function(e) { if (!e.target.closest('.user-nav-wrapper')) { document.getElementById('avatarDropdown').classList.remove('show'); } }
         
         let copyTimeout;
         function copyToClipboard(text, element) {
             navigator.clipboard.writeText(text).then(() => {
-                // Flash animation on the element
                 if (element) {
-                    const originalColor = element.style.borderColor;
                     element.style.borderColor = '#8b5cf6';
-                    element.style.background = 'rgba(139, 92, 246, 0.3)';
+                    element.style.background = 'rgba(139, 92, 246, 0.2)';
+                    element.style.transform = 'scale(1.05)';
                     setTimeout(() => {
-                        element.style.borderColor = originalColor;
+                        element.style.borderColor = '';
                         element.style.background = '';
-                    }, 300);
+                        element.style.transform = '';
+                    }, 400);
                 }
-
-                // Show Custom Overlay
                 const overlay = document.getElementById('copyOverlay');
                 overlay.classList.add('show');
-                
-                if(copyTimeout) clearTimeout(copyTimeout);
-                copyTimeout = setTimeout(() => {
-                    overlay.classList.remove('show');
-                }, 1000);
+                if (copyTimeout) clearTimeout(copyTimeout);
+                copyTimeout = setTimeout(() => overlay.classList.remove('show'), 1500);
             });
         }
         
-        function showRequestModal(requestType, licenseKey, modName) {
-            const typeLabel = requestType === 'reset' ? 'Reset HWID' : 'Block Key';
-            const typeColor = requestType === 'reset' ? '#06b6d4' : '#ef4444';
-            
+        function showRequestModal(type, key, mod) {
+            const label = type === 'reset' ? 'Reset HWID' : 'Block Key';
+            const color = type === 'reset' ? '#06b6d4' : '#ef4444';
             Swal.fire({
-                title: typeLabel,
-                html: `
-                    <div style="text-align: left; margin: 20px 0;">
-                        <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); padding: 12px; border-radius: 8px; font-size: 0.85rem;">
-                            <div style="color: rgba(255,255,255,0.7); margin-bottom: 5px;"><strong>Mod:</strong> ${modName}</div>
-                            <div style="color: rgba(255,255,255,0.7);"><strong>Key:</strong> ${licenseKey}</div>
-                        </div>
-                        <div style="margin-top: 15px; color: rgba(255,255,255,0.6); font-size: 0.9rem;">
-                            Are you sure you want to proceed with this request?
-                        </div>
-                    </div>
-                `,
-                icon: 'question',
-                background: 'rgba(15, 23, 42, 0.95)',
-                color: '#fff',
-                showCancelButton: true,
-                confirmButtonText: 'Confirm',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: typeColor,
-                cancelButtonColor: '#6b7280',
-                customClass: {
-                    popup: 'cyber-swal'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const formData = new FormData();
-                    formData.append('request_type', requestType);
-                    formData.append('license_key', licenseKey);
-                    formData.append('submit_block_reset_request', '1');
-                    
-                    fetch(window.location.href, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
+                title: label,
+                html: `<div style="text-align: left; margin: 20px 0;"><div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); padding: 12px; border-radius: 12px;"><div style="color: rgba(255,255,255,0.7); margin-bottom: 5px;"><strong>Mod:</strong> ${mod}</div><div style="color: rgba(255,255,255,0.7);"><strong>Key:</strong> ${key}</div></div></div>`,
+                icon: 'question', background: 'rgba(15, 23, 42, 0.95)', color: '#fff',
+                showCancelButton: true, confirmButtonText: 'Confirm', confirmButtonColor: color,
+                customClass: { popup: 'cyber-swal' }
+            }).then((r) => {
+                if (r.isConfirmed) {
+                    const fd = new FormData();
+                    fd.append('request_type', type);
+                    fd.append('license_key', key);
+                    fd.append('submit_block_reset_request', '1');
+                    fetch(window.location.href, { method: 'POST', body: fd })
+                    .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            Swal.fire({
-                                title: 'Request Sent!',
-                                text: 'Your ' + (requestType === 'reset' ? 'Reset HWID' : 'Block Key') + ' request has been sent to admin.',
-                                icon: 'success',
-                                background: 'rgba(15, 23, 42, 0.95)',
-                                color: '#fff',
-                                showConfirmButton: false,
-                                timer: 3000,
-                                timerProgressBar: true,
-                                backdrop: `rgba(139, 92, 246, 0.1)`,
-                                customClass: {
-                                    popup: 'cyber-swal'
-                                }
-                            }).then(() => {
-                                location.reload();
-                            });
+                            Swal.fire({ title: 'Success!', text: data.message, icon: 'success', timer: 2000, background: 'rgba(15, 23, 42, 0.95)', color: '#fff', showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
                         } else {
-                            Swal.fire({
-                                title: 'Error',
-                                text: data.message || 'An error occurred',
-                                icon: 'error',
-                                background: 'rgba(15, 23, 42, 0.95)',
-                                color: '#fff',
-                                customClass: { popup: 'cyber-swal' }
-                            });
+                            Swal.fire({ title: 'Error', text: data.message, icon: 'error', background: 'rgba(15, 23, 42, 0.95)', color: '#fff', customClass: { popup: 'cyber-swal' } });
                         }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Failed to send request',
-                            icon: 'error',
-                            background: 'rgba(15, 23, 42, 0.95)',
-                            color: '#fff',
-                            customClass: { popup: 'cyber-swal' }
-                        });
                     });
                 }
             });
