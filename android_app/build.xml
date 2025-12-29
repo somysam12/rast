@@ -1,19 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SilentMultiPanel" default="help">
-
-    <property file="local.properties" />
-    <property file="build.properties" />
-    <property file="project.properties" />
-
-    <property name="target" value="android-34"/>
-
-    <taskdef name="aapt" classname="com.android.ant.AaptExecTask" classpathref="project.classpath" />
-    <taskdef name="aidl" classname="com.android.ant.AidlExecTask" classpathref="project.classpath" />
-    <taskdef name="apkbuilder" classname="com.android.ant.ApkBuilderTask" classpathref="project.classpath" />
-    <taskdef name="dx" classname="com.android.ant.DxTask" classpathref="project.classpath" />
-    <taskdef name="renderscript" classname="com.android.ant.RenderScriptTask" classpathref="project.classpath" />
-    <taskdef name="apksigner" classname="com.android.ant.ApkSignerTask" classpathref="project.classpath" />
-
-    <import file="${sdk.dir}/tools/ant/build.xml" />
-
+    <property name="target" value="android-34" />
 </project>

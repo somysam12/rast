@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="AppTheme" parent="android:Theme.Material.Light">
-        <item name="android:colorPrimary">#0a0e27</item>
-        <item name="android:colorPrimaryDark">#0a0e27</item>
-        <item name="android:colorAccent">#8b5cf6</item>
-        <item name="android:windowFullscreen">false</item>
-    </style>
-</resources>
