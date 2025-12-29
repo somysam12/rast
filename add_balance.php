@@ -74,100 +74,288 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add User Balance - SilentMultiPanel</title>
+    <title>Add Balance - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --accent: #ec4899;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(139, 92, 246, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+            padding: 40px 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 500px;
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border-radius: 32px;
+            padding: 40px;
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
+            position: relative;
+            overflow: hidden;
+            animation: borderGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1); }
+            50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2); }
+        }
+
+        .brand-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .brand-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f8fafc, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-field, select.input-field {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1.5px solid var(--border-light);
+            border-radius: 14px;
+            padding: 12px 16px 12px 48px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        select.input-field option {
+            background: #1e1b4b;
+            color: white;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .field-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 18px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5);
+        }
+
+        .alert-custom {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success-custom {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .alert-error-custom {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover { color: var(--primary); }
+
+        .search-container {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1.5px solid var(--border-light);
+            border-radius: 12px;
+            padding: 10px 15px;
+            color: white;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container-fluid" style="display: flex; min-height: 100vh;">
-        <!-- Sidebar -->
-        <div class="sidebar" style="background: #fff; border-right: 1px solid #e0e0e0; width: 280px; padding: 20px;">
-            <div style="margin-bottom: 30px;">
-                <h5><i class="fas fa-crown me-2"></i>SilentMultiPanel</h5>
-            </div>
-            <nav class="nav flex-column gap-2">
-                <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
-                <a class="nav-link active" href="add_balance.php"><i class="fas fa-plus-circle me-2"></i>Add Balance</a>
-                <a class="nav-link" href="manage_users.php"><i class="fas fa-users me-2"></i>Manage Users</a>
-                <a class="nav-link" href="transactions.php"><i class="fas fa-exchange-alt me-2"></i>Transaction</a>
-            </nav>
-        </div>
-
-        <!-- Main Content -->
-        <div style="flex: 1; padding: 30px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2>Add User Balance</h2>
-                <div><span style="background: #7c3aed; color: white; padding: 8px 16px; border-radius: 20px;"><?php echo htmlspecialchars($_SESSION['username'] ?? 'admin'); ?></span></div>
+    <div class="wrapper">
+        <div class="glass-card">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h1>Add User Balance</h1>
+                <p>Manage user wallets with ease</p>
             </div>
 
             <?php if ($success): ?>
-                <div class="alert alert-success" role="alert"><?php echo htmlspecialchars($success); ?></div>
+                <div class="alert-custom alert-success-custom">
+                    <i class="fas fa-check-circle"></i>
+                    <?php echo htmlspecialchars($success); ?>
+                </div>
             <?php endif; ?>
+
             <?php if ($error): ?>
-                <div class="alert alert-danger" role="alert"><?php echo htmlspecialchars($error); ?></div>
+                <div class="alert-custom alert-error-custom">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <?php echo htmlspecialchars($error); ?>
+                </div>
             <?php endif; ?>
 
-            <!-- Stats Cards -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                    <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Users</div>
-                    <h3><?php echo (int)($userStats['total_users'] ?? 0); ?></h3>
-                </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                    <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Total Balance</div>
-                    <h3><?php echo formatCurrency($userStats['total_balance'] ?? 0); ?></h3>
-                </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                    <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Active Wallets</div>
-                    <h3><?php echo (int)($userStats['users_with_balance'] ?? 0); ?></h3>
-                </div>
-                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                    <div style="color: #888; font-size: 12px; margin-bottom: 8px;">Avg Balance</div>
-                    <h3><?php echo formatCurrency($userStats['avg_balance'] ?? 0); ?></h3>
-                </div>
-            </div>
+            <!-- Search Section -->
+            <form method="GET" class="search-container">
+                <input type="text" name="search" class="search-input" placeholder="Search username/email..." value="<?php echo htmlspecialchars($search); ?>">
+                <button type="submit" class="btn btn-sm btn-primary" style="border-radius: 10px; background: var(--primary); border: none;">Search</button>
+                <?php if($search): ?>
+                    <a href="add_balance.php" class="btn btn-sm btn-secondary" style="border-radius: 10px;">Clear</a>
+                <?php endif; ?>
+            </form>
 
-            <!-- Add Balance Form -->
-            <div style="background: white; padding: 30px; border-radius: 12px; border: 1px solid #e0e0e0; max-width: 600px;">
-                <h4 style="margin-bottom: 20px;">Add Balance</h4>
-                
-                <!-- Search User -->
-                <form method="GET" class="mb-4">
-                    <div class="input-group">
-                        <input type="text" name="search" class="form-control" placeholder="Search user by username or email..." value="<?php echo htmlspecialchars($search); ?>">
-                        <button class="btn btn-outline-primary" type="submit">Search</button>
-                        <?php if(!empty($search)): ?>
-                            <a href="add_balance.php" class="btn btn-outline-secondary">Clear</a>
-                        <?php endif; ?>
-                    </div>
-                </form>
+            <form method="POST">
+                <div class="form-group">
+                    <i class="fas fa-user field-icon"></i>
+                    <select name="user_id" class="input-field" required>
+                        <option value="">-- <?php echo empty($allUsers) ? 'No users found' : 'Select User'; ?> --</option>
+                        <?php foreach ($allUsers as $user): ?>
+                            <option value="<?php echo htmlspecialchars($user['id']); ?>" <?php echo $selectedUserId == $user['id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($user['username']); ?> (<?php echo formatCurrency($user['balance']); ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-                <form method="POST">
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Select User</label>
-                        <select name="user_id" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;" required>
-                            <option value="">-- <?php echo empty($allUsers) ? 'No users found' : 'Select User'; ?> --</option>
-                            <?php foreach ($allUsers as $user): ?>
-                                <option value="<?php echo htmlspecialchars($user['id']); ?>" <?php echo $selectedUserId == $user['id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($user['username']); ?> (<?php echo formatCurrency($user['balance']); ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Amount (₹)</label>
-                        <input type="number" name="amount" step="0.01" min="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;" placeholder="0.00" required>
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Reference</label>
-                        <input type="text" name="reference" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;" placeholder="Optional">
-                    </div>
-                    <button type="submit" style="background: #7c3aed; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 500;">Add Balance</button>
-                </form>
-            </div>
+                <div class="form-group">
+                    <i class="fas fa-indian-rupee-sign field-icon"></i>
+                    <input type="number" name="amount" step="0.01" min="0" class="input-field" placeholder="Amount (0.00)" required>
+                </div>
+
+                <div class="form-group">
+                    <i class="fas fa-tag field-icon"></i>
+                    <input type="text" name="reference" class="input-field" placeholder="Reference (Optional)">
+                </div>
+
+                <button type="submit" class="btn-submit">Add Balance</button>
+            </form>
+
+            <a href="admin_dashboard.php" class="back-link"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
         </div>
     </div>
     <script src="assets/js/scroll-restore.js"></script>
-<script src="assets/js/menu-logic.js"></script></body>
+    <script src="assets/js/menu-logic.js"></script>
+</body>
 </html>
