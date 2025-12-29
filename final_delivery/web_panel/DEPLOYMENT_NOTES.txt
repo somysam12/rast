@@ -1,1 +1,2 @@
 Database credentials are pre-configured in config/database.php
+Final synchronization complete. Config folder added.
