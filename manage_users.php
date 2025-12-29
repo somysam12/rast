@@ -114,10 +114,17 @@ $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
         .header-card { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); padding: 1.5rem; border-radius: 24px; margin-bottom: 2rem; position: relative; overflow: hidden; }
         .header-card::after { content: ''; position: absolute; top: -50%; right: -10%; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; }
 
-        .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); border-radius: 18px; padding: 15px; text-align: center; height: 100%; transition: transform 0.3s; }
+        .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); border-radius: 18px; padding: 12px 8px; text-align: center; height: 100%; transition: transform 0.3s; display: flex; flex-direction: column; justify-content: center; min-height: 80px; }
         .stat-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.08); }
-        .stat-card h3 { color: var(--secondary); font-weight: 800; margin-bottom: 5px; font-size: 1.5rem; }
-        .stat-card p { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card h3 { color: var(--secondary); font-weight: 800; margin-bottom: 2px; font-size: 1.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stat-card p { color: var(--text-dim); font-size: 0.7rem; margin-bottom: 0; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+
+        @media (max-width: 576px) {
+            .header-card { padding: 1rem; }
+            .stat-card h3 { font-size: 1rem; }
+            .stat-card p { font-size: 0.6rem; }
+            .row.g-2 { --bs-gutter-x: 0.5rem; }
+        }
 
         .search-container { margin-bottom: 20px; position: relative; }
         .search-input { width: 100%; background: rgba(15, 23, 42, 0.5); border: 1.5px solid var(--border-light); border-radius: 14px; padding: 12px 15px 12px 45px; color: white; font-size: 15px; transition: all 0.3s; }
