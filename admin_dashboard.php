@@ -198,18 +198,30 @@ try {
         }
 
         .hamburger-btn {
-            background: transparent !important;
-            border: none !important;
-            color: var(--secondary);
-            font-size: 1.5rem;
+            background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+            border: 2px solid rgba(6, 182, 212, 0.4) !important;
+            color: white;
+            font-size: 1.2rem;
             cursor: pointer;
-            padding: 0 !important;
+            padding: 10px 12px !important;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+        }
+
+        .hamburger-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+            border-color: rgba(6, 182, 212, 0.7);
         }
 
         .user-info {
             display: flex;
             align-items: center;
             gap: 1rem;
+            flex: 1;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .user-avatar {
@@ -309,32 +321,69 @@ try {
         }
 
         .welcome-banner {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(6, 182, 212, 0.08));
-            border: 1.5px solid rgba(139, 92, 246, 0.2);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.25), rgba(236, 72, 153, 0.15));
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #8b5cf6, #06b6d4, #ec4899) 1;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            margin-bottom: 2.5rem;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
         }
 
         .welcome-banner h2 {
             color: var(--text-main);
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            font-size: 1.6rem;
-            letter-spacing: -0.5px;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            font-size: 1.9rem;
+            letter-spacing: -0.8px;
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .welcome-banner p {
             color: var(--text-dim);
-            font-size: 0.95rem;
+            font-size: 1rem;
             margin: 0;
-            line-height: 1.5;
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+            font-weight: 500;
         }
 
         .welcome-banner p strong {
-            color: var(--secondary);
-            font-weight: 600;
+            color: #ec4899;
+            font-weight: 700;
         }
 
         .stats-grid {
@@ -345,11 +394,11 @@ try {
         }
 
         .stat-card {
-            background: var(--card-bg);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 27, 75, 0.6));
             backdrop-filter: blur(30px);
-            border: 1.5px solid var(--border-light);
-            border-radius: 20px;
-            padding: 1.5rem;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 24px;
+            padding: 1.75rem;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -362,7 +411,7 @@ try {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), transparent);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), transparent, rgba(6, 182, 212, 0.1));
             pointer-events: none;
         }
 
@@ -372,47 +421,93 @@ try {
         }
 
         .stat-card:hover {
-            border-color: rgba(139, 92, 246, 0.3);
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
-            transform: translateY(-4px);
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 15px 50px rgba(6, 182, 212, 0.2);
+            transform: translateY(-8px);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 27, 75, 0.8));
         }
 
         .stat-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--secondary), rgba(6, 182, 212, 0.6));
-            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             color: white;
             margin-bottom: 1rem;
+            box-shadow: 0 8px 20px rgba(6, 182, 212, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 30px rgba(6, 182, 212, 0.5);
+        }
+
+        .stat-icon.icon-mods {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3) !important;
+        }
+
+        .stat-card:hover .stat-icon.icon-mods {
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5) !important;
+        }
+
+        .stat-icon.icon-keys {
+            background: linear-gradient(135deg, #ec4899, #db2777) !important;
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3) !important;
+        }
+
+        .stat-card:hover .stat-icon.icon-keys {
+            box-shadow: 0 12px 30px rgba(236, 72, 153, 0.5) !important;
+        }
+
+        .stat-icon.icon-users {
+            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3) !important;
+        }
+
+        .stat-card:hover .stat-icon.icon-users {
+            box-shadow: 0 12px 30px rgba(245, 158, 11, 0.5) !important;
+        }
+
+        .stat-icon.icon-sold {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3) !important;
+        }
+
+        .stat-card:hover .stat-icon.icon-sold {
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5) !important;
         }
 
         .stat-label {
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            margin-top: 0.75rem;
+            color: var(--secondary);
+            font-size: 0.85rem;
+            margin-top: 1rem;
             display: block;
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .stat-card h3 {
             color: var(--text-main);
-            font-weight: 700;
-            font-size: 2.2rem;
-            margin: 0.75rem 0 0;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin: 0.5rem 0 0;
             letter-spacing: -1px;
         }
 
         .stat-card h6 {
-            color: var(--text-dim);
-            font-weight: 600;
-            font-size: 0.85rem;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.95rem;
             margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            text-transform: capitalize;
+            letter-spacing: 0px;
         }
 
         .table-section {
@@ -551,6 +646,9 @@ try {
 
             .top-bar {
                 display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
             }
 
             .welcome-banner {
@@ -680,35 +778,35 @@ try {
 
         <!-- Welcome Banner -->
         <div class="welcome-banner">
-            <h2>Welcome back, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong></h2>
-            <p>Full administrative control over SilentMultiPanel. Manage mods, licensing, users, and transactions seamlessly.</p>
+            <h2>✨ Welcome back, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>!</h2>
+            <p>You're the boss! Full administrative control over SilentMultiPanel — manage mods, licenses, users, and maximize your revenue potential.</p>
         </div>
 
         <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-cube"></i></div>
+                <div class="stat-icon icon-mods"><i class="fas fa-gamepad"></i></div>
                 <h6>Total Mods</h6>
                 <h3><?php echo $stats['total_mods']; ?></h3>
-                <span class="stat-label">Active in system</span>
+                <span class="stat-label">⚡ Active</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-lock"></i></div>
+                <div class="stat-icon icon-keys"><i class="fas fa-shield-alt"></i></div>
                 <h6>License Keys</h6>
                 <h3><?php echo $stats['total_keys']; ?></h3>
-                <span class="stat-label">Generated licenses</span>
+                <span class="stat-label">🔐 Generated</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-user-group"></i></div>
+                <div class="stat-icon icon-users"><i class="fas fa-crown"></i></div>
                 <h6>Total Users</h6>
                 <h3><?php echo $stats['total_users']; ?></h3>
-                <span class="stat-label">Active accounts</span>
+                <span class="stat-label">👥 Community</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-chart-simple"></i></div>
+                <div class="stat-icon icon-sold"><i class="fas fa-rocket"></i></div>
                 <h6>Sold Licenses</h6>
                 <h3><?php echo $stats['sold_keys']; ?></h3>
-                <span class="stat-label">License revenue</span>
+                <span class="stat-label">💰 Revenue</span>
             </div>
         </div>
 
