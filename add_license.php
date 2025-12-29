@@ -139,114 +139,131 @@ if ($_POST) {
 
         .glass-card { 
             background: var(--card-bg); 
-            border: 1px solid #374151;
-            border-radius: 24px; 
+            border: 2px solid #374151;
+            border-radius: 28px; 
             padding: 40px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
         }
 
         .tab-btn-group {
             display: flex;
             background: #1f2937;
-            padding: 6px;
-            border-radius: 16px;
+            padding: 8px;
+            border-radius: 20px;
             margin-bottom: 3rem;
             width: fit-content;
             margin-left: auto;
             margin-right: auto;
+            border: 1px solid #374151;
         }
 
         .tab-btn {
-            padding: 12px 30px;
+            padding: 14px 35px;
             border: none;
             background: transparent;
             color: var(--text-dim);
-            font-weight: 700;
-            border-radius: 12px;
+            font-weight: 800;
+            border-radius: 14px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .tab-btn.active {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.4);
+            transform: scale(1.05);
         }
 
-        .form-group { margin-bottom: 1.8rem; }
-        .form-label { display: block; font-weight: 700; color: #e5e7eb; margin-bottom: 0.8rem; font-size: 1rem; }
+        .form-group { margin-bottom: 2rem; }
+        .form-label { display: block; font-weight: 800; color: var(--primary); margin-bottom: 0.8rem; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .form-control, .form-select { 
-            background: var(--input-bg); 
+            background: #111827; 
             border: 2px solid #374151; 
             color: #ffffff; 
-            border-radius: 14px; 
-            padding: 14px 18px;
+            border-radius: 16px; 
+            padding: 16px 20px;
             width: 100%;
-            font-size: 1rem;
-            transition: all 0.2s;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
         }
 
         .form-control:focus, .form-select:focus { 
             border-color: var(--primary); 
             outline: none;
-            background: #2d3748;
+            background: #1f2937;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        /* Styling for select options */
+        option {
+            background: #111827;
+            color: white;
+            padding: 15px;
+            font-weight: 600;
         }
 
         .input-group { position: relative; display: flex; align-items: stretch; width: 100%; }
         .input-group-text {
             display: flex;
             align-items: center;
-            padding: 0.375rem 0.75rem;
-            font-size: 1.2rem;
-            font-weight: 800;
+            padding: 0 25px;
+            font-size: 1.5rem;
+            font-weight: 900;
             color: #ffffff;
-            background-color: #374151;
-            border: 2px solid #374151;
-            border-radius: 14px 0 0 14px;
+            background-color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 16px 0 0 16px;
         }
-        .input-group .form-control { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+        .input-group .form-control { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; color: #34d399 !important; font-size: 1.4rem; font-weight: 800; }
 
         .submit-btn {
-            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            border-radius: 16px;
-            padding: 18px;
+            border-radius: 18px;
+            padding: 20px;
             font-weight: 800;
             width: 100%;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             margin-top: 1rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
 
         .submit-btn:hover {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.4);
+            filter: brightness(1.2);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.5);
         }
 
         .alert {
-            border-radius: 16px;
-            padding: 1.25rem;
-            margin-bottom: 2rem;
-            font-weight: 700;
-            border: none;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            font-weight: 800;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .alert-success { background: #065f46; color: #34d399; }
-        .alert-danger { background: #991b1b; color: #f87171; }
+        .alert-success { background: rgba(6, 95, 70, 0.3); color: #34d399; border-color: #059669; }
+        .alert-danger { background: rgba(153, 27, 27, 0.3); color: #f87171; border-color: #dc2626; }
 
         @media (max-width: 992px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; padding: 5rem 1.5rem; }
+            .main-content { margin-left: 0; padding: 6rem 1.5rem; }
             .hamburger { display: block; }
         }
 
-        ::placeholder { color: #6b7280; opacity: 1; }
+        ::placeholder { color: #4b5563; font-weight: 500; }
+        
+        textarea { resize: none; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -274,13 +291,13 @@ if ($_POST) {
             <p>Generate secure access keys for your mods instantly</p>
         </div>
 
-        <?php if ($success): ?><div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><?php echo $success; ?></div><?php endif; ?>
-        <?php if ($error): ?><div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i><?php echo $error; ?></div><?php endif; ?>
+        <?php if ($success): ?><div class="alert alert-success"><i class="fas fa-check-circle fa-lg"></i><?php echo $success; ?></div><?php endif; ?>
+        <?php if ($error): ?><div class="alert alert-danger"><i class="fas fa-times-circle fa-lg"></i><?php echo $error; ?></div><?php endif; ?>
 
         <div class="glass-card">
             <div class="tab-btn-group">
-                <button class="tab-btn active" onclick="showTab('single', this)">Add Single Key</button>
-                <button class="tab-btn" onclick="showTab('bulk', this)">Add Bulk Keys</button>
+                <button class="tab-btn active" onclick="showTab('single', this)">Single Key</button>
+                <button class="tab-btn" onclick="showTab('bulk', this)">Bulk Keys</button>
             </div>
 
             <div id="singleTab">
@@ -290,7 +307,7 @@ if ($_POST) {
                         <div class="col-md-6 form-group">
                             <label class="form-label">Target Mod</label>
                             <select name="mod_id" class="form-select" required>
-                                <option value="">Choose Mod...</option>
+                                <option value="" disabled selected>Select Product</option>
                                 <?php foreach ($mods as $mod): ?>
                                     <option value="<?php echo $mod['id']; ?>"><?php echo htmlspecialchars($mod['name']); ?></option>
                                 <?php endforeach; ?>
@@ -298,7 +315,7 @@ if ($_POST) {
                         </div>
                         <div class="col-md-6 form-group">
                             <label class="form-label">License Key</label>
-                            <input type="text" name="license_key" class="form-control" placeholder="Type key here...">
+                            <input type="text" name="license_key" class="form-control" placeholder="Type access key...">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="form-label">Time Value</label>
@@ -307,14 +324,14 @@ if ($_POST) {
                         <div class="col-md-4 form-group">
                             <label class="form-label">Time Type</label>
                             <select name="duration_type" class="form-select">
-                                <option value="days">Days</option>
-                                <option value="months">Months</option>
-                                <option value="hours">Hours</option>
-                                <option value="seasons">Seasons</option>
+                                <option value="days">DAYS</option>
+                                <option value="months">MONTHS</option>
+                                <option value="hours">HOURS</option>
+                                <option value="seasons">SEASONS</option>
                             </select>
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Price (₹)</label>
+                            <label class="form-label">Price</label>
                             <div class="input-group">
                                 <span class="input-group-text">₹</span>
                                 <input type="number" step="0.01" name="price" class="form-control" value="0.00">
@@ -332,15 +349,15 @@ if ($_POST) {
                         <div class="col-12 form-group">
                             <label class="form-label">Target Mod</label>
                             <select name="mod_id" class="form-select" required>
-                                <option value="">Choose Mod...</option>
+                                <option value="" disabled selected>Select Product</option>
                                 <?php foreach ($mods as $mod): ?>
                                     <option value="<?php echo $mod['id']; ?>"><?php echo htmlspecialchars($mod['name']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="col-12 form-group">
-                            <label class="form-label">Paste Keys (One key per line)</label>
-                            <textarea name="bulk_keys" class="form-control" rows="8" placeholder="Paste keys here..."></textarea>
+                            <label class="form-label">Batch Input (one key per line)</label>
+                            <textarea name="bulk_keys" class="form-control" rows="8" placeholder="Paste your keys list here..."></textarea>
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="form-label">Time Value</label>
@@ -349,14 +366,14 @@ if ($_POST) {
                         <div class="col-md-4 form-group">
                             <label class="form-label">Time Type</label>
                             <select name="duration_type" class="form-select">
-                                <option value="days">Days</option>
-                                <option value="months">Months</option>
-                                <option value="hours">Hours</option>
-                                <option value="seasons">Seasons</option>
+                                <option value="days">DAYS</option>
+                                <option value="months">MONTHS</option>
+                                <option value="hours">HOURS</option>
+                                <option value="seasons">SEASONS</option>
                             </select>
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Price (₹)</label>
+                            <label class="form-label">Price</label>
                             <div class="input-group">
                                 <span class="input-group-text">₹</span>
                                 <input type="number" step="0.01" name="price" class="form-control" value="0.00">
@@ -381,7 +398,6 @@ if ($_POST) {
         function showTab(type, btn) {
             document.getElementById('singleTab').style.display = type === 'single' ? 'block' : 'none';
             document.getElementById('bulkTab').style.display = type === 'bulk' ? 'block' : 'none';
-            
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         }
