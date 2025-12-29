@@ -166,12 +166,22 @@ try {
 // Get available keys grouped by mod and duration
 $availableKeys = [];
 try {
-    $stmt = $pdo->query('SELECT m.name AS mod_name, lk.mod_id, lk.duration, lk.duration_type, lk.price, COUNT(*) as key_count, MIN(lk.id) as min_id
-                          FROM license_keys lk
-                          LEFT JOIN mods m ON m.id = lk.mod_id
-                          WHERE lk.sold_to IS NULL
-                          GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
-                          ORDER BY m.name, lk.duration');
+    if ($modId !== '' && ctype_digit((string)$modId)) {
+        $stmt = $pdo->prepare('SELECT m.name AS mod_name, lk.mod_id, lk.duration, lk.duration_type, lk.price, COUNT(*) as key_count, MIN(lk.id) as min_id
+                               FROM license_keys lk
+                               LEFT JOIN mods m ON m.id = lk.mod_id
+                               WHERE lk.sold_to IS NULL AND lk.mod_id = ?
+                               GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
+                               ORDER BY m.name, lk.duration');
+        $stmt->execute([$modId]);
+    } else {
+        $stmt = $pdo->query('SELECT m.name AS mod_name, lk.mod_id, lk.duration, lk.duration_type, lk.price, COUNT(*) as key_count, MIN(lk.id) as min_id
+                              FROM license_keys lk
+                              LEFT JOIN mods m ON m.id = lk.mod_id
+                              WHERE lk.sold_to IS NULL
+                              GROUP BY m.name, lk.mod_id, lk.duration, lk.duration_type, lk.price
+                              ORDER BY m.name, lk.duration');
+    }
     $availableKeys = $stmt->fetchAll();
 } catch (Throwable $e) {
     $availableKeys = [];
@@ -206,266 +216,496 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Generate Key - Silent Panel</title>
+    <title>Generate Key - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="assets/css/cyber-ui.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root {
-            --primary: #8b5cf6;
-            --primary-dark: #7c3aed;
-            --secondary: #06b6d4;
-            --bg: #0a0e27;
-            --card-bg: rgba(15, 23, 42, 0.7);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --border-light: rgba(255, 255, 255, 0.1);
+        body { padding-top: 60px; }
+        .sidebar { width: 260px; position: fixed; top: 60px; bottom: 0; left: 0; z-index: 1000; transition: transform 0.3s ease; }
+        .main-content { margin-left: 260px; padding: 2rem; transition: margin-left 0.3s ease; }
+        .header { height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; background: rgba(5,7,10,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-260px); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-
-        body {
-            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
-            color: var(--text-main);
-            overflow-x: hidden;
+        
+        .user-nav-wrapper { position: relative; }
+        .user-avatar-header { cursor:pointer; transition:all 0.3s ease; }
+        .user-avatar-header:hover { transform:scale(1.05); box-shadow:0 0 15px rgba(139, 92, 246, 0.4); }
+        .avatar-dropdown { position:absolute; top:calc(100% + 15px); right:0; width:220px; background:rgba(10, 15, 25, 0.95); backdrop-filter:blur(20px); border:1px solid rgba(139, 92, 246, 0.3); border-radius:16px; padding:10px; z-index:1002; display:none; box-shadow:0 10px 30px rgba(0,0,0,0.5); animation:dropdownFade 0.3s ease; }
+        .avatar-dropdown.show { display:block; }
+        @keyframes dropdownFade { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .dropdown-item-cyber { display:flex; align-items:center; gap:12px; padding:10px 15px; color:rgba(255, 255, 255, 0.7); text-decoration:none; border-radius:10px; transition:all 0.2s ease; font-size:0.9rem; }
+        .dropdown-item-cyber:hover { background:rgba(139, 92, 246, 0.1); color:#fff; transform:translateX(5px); }
+        .dropdown-item-cyber i { width:20px; text-align:center; color:var(--primary); }
+        .dropdown-divider { height:1px; background:rgba(255, 255, 255, 0.05); margin:8px 0; }
+        
+        .cyber-swal {
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #8b5cf6, #06b6d4) 1;
+            border-radius: 20px !important;
         }
-
-        .sidebar {
-            background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-right: 1px solid var(--border-light);
-            min-height: 100vh;
+        
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .confetti-piece {
             position: fixed;
-            width: 280px;
-            padding: 2rem 0;
-            z-index: 1000;
-            transition: transform 0.3s ease;
-            left: -280px;
+            width: 10px;
+            height: 10px;
+            background: #8b5cf6;
+            top: -10px;
+            z-index: 9999;
+            animation: confettiFall 3s linear forwards;
         }
 
-        .sidebar.active { transform: translateX(280px); }
-        .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; text-align: center; }
-        .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
-        .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
-        .sidebar .nav-link.active { background: var(--primary); color: white; }
-
-        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; max-width: 1200px; margin: 0 auto; }
-
-        @media (min-width: 993px) {
-            .sidebar { left: 0; }
-            .main-content { margin-left: 280px; }
+        /* Redesigned Filter Button & Popup */
+        .mod-selector-wrapper {
+            position: relative;
+            margin-bottom: 2rem;
+            padding: 2px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.5));
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+            transition: all 0.3s ease;
         }
 
-        .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
-        @media (max-width: 992px) { .hamburger { display: block; } }
-
-        .header-card { 
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
-            padding: 1.5rem; 
-            border-radius: 24px; 
-            margin-bottom: 2rem; 
-            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        .mod-selector-wrapper:hover {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
         }
 
+        .mod-trigger-btn {
+            width: 100%;
+            background: #0a0f19;
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 20px;
+            padding: 1.2rem 2rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mod-popup-menu {
+            position: absolute;
+            top: calc(100% + 15px);
+            left: 0;
+            right: 0;
+            background: rgba(10, 15, 25, 0.98);
+            backdrop-filter: blur(25px);
+            border: 2px solid #8b5cf6;
+            border-radius: 24px;
+            padding: 1.5rem;
+            z-index: 100;
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(139, 92, 246, 0.2);
+            animation: popupReveal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .mod-popup-menu.show {
+            display: grid;
+        }
+
+        @keyframes popupReveal {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .mod-option-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mod-option-item i {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mod-option-item:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: #8b5cf6;
+            color: white;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .mod-option-item.active {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            color: white;
+            border: none;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .mod-option-item.active i {
+            background: none;
+            -webkit-text-fill-color: white;
+            color: white;
+        }
+
+        /* Animated Border for Results */
+        .results-container {
+            position: relative;
+            padding: 3px;
+            border-radius: 30px;
+            background: linear-gradient(45deg, #8b5cf6, #06b6d4, #ec4899, #8b5cf6, #06b6d4);
+            background-size: 300% 300%;
+            animation: gradientBorder 8s linear infinite;
+            display: none;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .results-container.show {
+            display: block;
+            animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-inner {
+            background: #05070c;
+            border-radius: 27px;
+            padding: 2.5rem;
+        }
+
+        .duration-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .duration-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateX(10px);
+            box-shadow: -5px 0 15px rgba(139, 92, 246, 0.1);
+        }
+
+        /* Search Styles */
         .search-container {
             margin-bottom: 2rem;
             position: relative;
         }
-        .stylish-search {
-            background: var(--card-bg);
+        .stylish-search-wrapper {
+            background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(20px);
-            border: 2px solid var(--primary);
-            border-radius: 18px;
-            padding: 12px 20px 12px 45px;
-            color: white;
-            width: 100%;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        .stylish-search:focus {
-            outline: none;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-            border-color: var(--secondary);
-        }
-        .search-icon {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary);
-        }
-
-        .mod-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--border-light);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s;
-        }
-        .mod-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .mod-title { font-weight: 800; color: var(--primary); font-size: 1.2rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
-
-        .duration-option {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-light);
-            border-radius: 18px;
-            padding: 15px;
-            margin-bottom: 10px;
+            border: 2px solid #8b5cf6;
+            border-radius: 20px;
+            padding: 8px 25px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            transition: all 0.3s;
-            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
         }
-        .duration-option:hover { background: rgba(139, 92, 246, 0.1); border-color: var(--primary); }
-
-        .btn-buy {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            border-radius: 12px;
-            padding: 8px 20px;
-            color: white;
-            font-weight: 700;
-            font-size: 0.85rem;
-            transition: all 0.3s;
+        .stylish-search-wrapper:focus-within {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+            border-color: #06b6d4;
         }
-        .btn-buy:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3); }
-
-        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
-        .overlay.active { display: block; }
-
-        #noResults { display: none; text-align: center; padding: 3rem; opacity: 0.5; }
+        .product-search-input {
+            background: transparent !important;
+            border: none !important;
+            color: white !important;
+            height: 50px;
+            width: 100%;
+            outline: none !important;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .product-search-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+        #noResults {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 20px;
+            border: 1px dashed rgba(139, 92, 246, 0.3);
+        }
     </style>
 </head>
 <body>
-    <div class="overlay" id="overlay"></div>
-    <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
-    <div class="sidebar" id="sidebar">
-        <h4>SILENT PANEL</h4>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="user_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
-            <a class="nav-link active" href="user_generate.php"><i class="fas fa-plus"></i>Generate Key</a>
-            <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key"></i>Manage Keys</a>
-            <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt"></i>Applications</a>
-            <a class="nav-link" href="user_stock_alert.php"><i class="fas fa-warehouse"></i>Stock Alert</a>
-            <a class="nav-link" href="user_settings.php"><i class="fas fa-cog"></i>Settings</a>
-            <a class="nav-link" href="user_transactions.php"><i class="fas fa-history"></i>Transactions</a>
-            <hr style="border-color: var(--border-light); margin: 1.5rem 16px;">
-            <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
+    <header class="header">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn text-white p-0 d-lg-none" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="logo-wrapper d-flex align-items-center gap-2">
+                <i class="fas fa-bolt text-primary fs-3"></i>
+                <h4 class="m-0 text-neon fw-bold">SilentMultiPanel</h4>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-end d-none d-sm-block">
+                <div class="small fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
+                <div class="text-secondary small">Balance: <?php echo formatCurrency($user['balance']); ?></div>
+            </div>
+            <div class="user-nav-wrapper">
+                <div class="user-avatar-header" onclick="toggleAvatarDropdown()" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                    <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
+                </div>
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div class="px-3 py-2">
+                        <div class="fw-bold text-white"><?php echo htmlspecialchars($user['username']); ?></div>
+                        <div class="text-secondary small">ID: #<?php echo $user['id']; ?></div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="user_transactions.php" class="dropdown-item-cyber">
+                        <i class="fas fa-history"></i> Transactions
+                    </a>
+                    <a href="user_generate.php" class="dropdown-item-cyber">
+                        <i class="fas fa-plus"></i> Generate Key
+                    </a>
+                    <a href="user_settings.php" class="dropdown-item-cyber">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="logout.php" class="dropdown-item-cyber text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <aside class="sidebar p-3" id="sidebar">
+        <nav class="nav flex-column gap-2">
+            <a class="nav-link" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a class="nav-link active" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
+            <a class="nav-link" href="user_manage_keys.php"><i class="fas fa-key me-2"></i> Manage Keys</a>
+            <a class="nav-link" href="user_applications.php"><i class="fas fa-mobile-alt me-2"></i> Applications</a>
+            <a class="nav-link" href="user_notifications.php"><i class="fas fa-bell me-2"></i> Notifications</a>
+            <a class="nav-link" href="user_block_request.php"><i class="fas fa-ban me-2"></i> Block & Reset</a>
+            <a class="nav-link" href="user_stock_alert.php"><i class="fas fa-warehouse me-2"></i> Stock Alert</a>
+            <a class="nav-link" href="user_settings.php"><i class="fas fa-cog me-2"></i> Settings</a>
+            <a class="nav-link" href="user_transactions.php"><i class="fas fa-history me-2"></i> Transactions</a>
+            <hr class="border-secondary opacity-25">
+            <a class="nav-link text-danger" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
         </nav>
-    </div>
+    </aside>
 
-    <div class="main-content">
-        <div class="header-card">
-            <div class="row align-items-center">
-                <div class="col-8">
-                    <h2 class="text-white mb-1" style="font-weight: 800;">Generate Key</h2>
-                    <p class="text-white opacity-75 mb-0">Select a product to get your license</p>
-                </div>
-                <div class="col-4 text-end">
-                    <div class="bg-black bg-opacity-25 px-3 py-2 rounded-3 d-inline-block text-start">
-                        <div class="small opacity-50 text-white">My Balance</div>
-                        <div class="h5 mb-0 fw-bold"><?php echo formatCurrency($user['balance']); ?></div>
-                    </div>
+    <main class="main-content">
+        <div class="cyber-card mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-neon mb-1">Generate License Key</h2>
+                    <p class="text-secondary mb-0">Select a mod and duration to purchase your key.</p>
                 </div>
             </div>
         </div>
 
+        <!-- Stylish Search Bar -->
         <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="modSearch" class="stylish-search" placeholder="Search product by name..." autocomplete="off">
-        </div>
-
-        <div id="noResults">
-            <i class="fas fa-search-minus mb-3" style="font-size: 3rem;"></i>
-            <h5>No products found matching your search.</h5>
-        </div>
-
-        <div class="row" id="modContainer">
-            <?php foreach ($keysByMod as $modName => $durations): ?>
-            <div class="col-md-6 mod-card-wrapper" data-name="<?php echo strtolower($modName); ?>">
-                <div class="mod-card">
-                    <div class="mod-title">
-                        <i class="fas fa-cube"></i>
-                        <?php echo htmlspecialchars($modName); ?>
-                    </div>
-                    <?php foreach ($durations as $d): ?>
-                    <div class="duration-option" onclick="buyKey(<?php echo $d['min_id']; ?>, '<?php echo htmlspecialchars($modName); ?> (<?php echo $d['duration'] . ' ' . $d['duration_type']; ?>)', <?php echo $d['price']; ?>)">
-                        <div>
-                            <div class="fw-bold text-white"><?php echo $d['duration'] . ' ' . ucfirst($d['duration_type']); ?></div>
-                            <div class="small text-dim"><?php echo $d['key_count']; ?> keys available</div>
-                        </div>
-                        <div class="text-end">
-                            <div class="fw-bold text-primary mb-2">₹<?php echo number_format($d['price'], 2); ?></div>
-                            <button class="btn-buy">Buy Now</button>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
+            <div class="stylish-search-wrapper">
+                <i class="fas fa-search text-primary me-3 fs-5"></i>
+                <input type="text" id="productSearch" class="product-search-input" placeholder="Search for applications or mods..." autocomplete="off">
             </div>
-            <?php endforeach; ?>
         </div>
-    </div>
 
-    <form id="purchaseForm" method="POST" style="display:none;">
-        <input type="hidden" name="purchase_key" value="1">
-        <input type="hidden" name="key_id" id="keyIdInput">
-        <input type="hidden" name="quantity" value="1">
-    </form>
+        <div id="noResults" class="no-results mb-4">
+            <i class="fas fa-search-minus text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+            <h5 class="text-secondary">No products found matching your search.</h5>
+        </div>
+
+        <!-- Stylish Mod Selector -->
+        <div class="mod-selector-wrapper">
+            <div class="mod-trigger-btn" onclick="toggleModPopup()">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fas fa-th-large text-primary fs-4"></i>
+                    <div>
+                        <div class="fw-bold">
+                            <?php 
+                            $currentModName = "All Applications";
+                            foreach($mods as $m) if($m['id'] == $modId) $currentModName = $m['name'];
+                            echo htmlspecialchars($currentModName);
+                            ?>
+                        </div>
+                        <div class="small text-secondary">Tap to browse available mods</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-down opacity-50"></i>
+            </div>
+            
+            <div class="mod-popup-menu" id="modPopup">
+                <a href="user_generate.php" class="mod-option-item <?php echo !$modId ? 'active' : ''; ?>">
+                    <i class="fas fa-globe"></i>
+                    <span>All Mods</span>
+                </a>
+                <?php foreach ($mods as $mod): ?>
+                    <a href="user_generate.php?mod_id=<?php echo $mod['id']; ?>" class="mod-option-item <?php echo $modId == $mod['id'] ? 'active' : ''; ?>">
+                        <i class="fas fa-cube"></i>
+                        <span><?php echo htmlspecialchars($mod['name']); ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4">
+                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="results-container <?php echo !empty($keysByMod) ? 'show' : ''; ?>">
+            <div class="results-inner">
+                <?php if (empty($keysByMod)): ?>
+                    <div class="text-center py-5">
+                        <i class="fas fa-key text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <h5 class="text-secondary">No keys available for the selected mod.</h5>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($keysByMod as $modName => $keys): ?>
+                        <div class="mb-5 last-child-mb-0 mod-section" data-mod-name="<?php echo htmlspecialchars($modName); ?>">
+                            <h4 class="mb-4 text-white"><i class="fas fa-shield-alt text-primary me-2"></i> <?php echo htmlspecialchars($modName); ?></h4>
+                            <div class="row g-3">
+                                <?php foreach ($keys as $key): ?>
+                                    <div class="col-12 col-md-6 col-xl-4">
+                                        <div class="duration-item">
+                                            <div class="mb-3">
+                                                <div class="fw-bold text-white fs-5"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></div>
+                                                <div class="text-secondary">₹<?php echo number_format($key['price'], 2); ?> | <span class="text-success"><?php echo $key['key_count']; ?> In Stock</span></div>
+                                            </div>
+                                            <form method="POST" class="d-flex align-items-center gap-2">
+                                                <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
+                                                <input type="number" name="quantity" class="form-control bg-dark border-secondary text-white text-center" value="1" min="1" max="<?php echo $key['key_count']; ?>" style="width: 70px; border-radius: 8px;">
+                                                <button type="submit" name="purchase_key" class="cyber-btn py-2 flex-grow-1">
+                                                    <i class="fas fa-shopping-cart"></i> Buy Now
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </main>
 
     <script>
-        const sidebar = document.getElementById('sidebar');
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const overlay = document.getElementById('overlay');
-        const modSearch = document.getElementById('modSearch');
-        const modWrappers = document.querySelectorAll('.mod-card-wrapper');
-        const noResults = document.getElementById('noResults');
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
+        
+        function toggleAvatarDropdown() {
+            document.getElementById('avatarDropdown').classList.toggle('show');
+        }
 
-        hamburgerBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
-        overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
-
-        modSearch.oninput = (e) => {
-            const val = e.target.value.toLowerCase().trim();
-            let hasResults = false;
-            
-            modWrappers.forEach(w => {
-                const name = w.getAttribute('data-name');
-                if (name.includes(val)) {
-                    w.style.display = 'block';
-                    hasResults = true;
-                } else {
-                    w.style.display = 'none';
+        window.onclick = function(event) {
+            if (!event.target.matches('.user-avatar-header')) {
+                var dropdowns = document.getElementsByClassName("avatar-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
                 }
-            });
-            
-            noResults.style.display = hasResults ? 'none' : 'block';
+            }
+        }
+        
+        function toggleModPopup() {
+            document.getElementById('modPopup').classList.toggle('show');
+        }
+
+        // Real-time Search Logic (Matching Manage Keys behavior)
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('productSearch');
+            const noResults = document.getElementById('noResults');
+            const resultsContainer = document.querySelector('.results-container');
+            const modSections = document.querySelectorAll('.mod-section');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    let anyVisible = false;
+
+                    modSections.forEach(section => {
+                        const modName = section.getAttribute('data-mod-name').toLowerCase();
+                        if (query === '' || modName.includes(query)) {
+                            section.style.setProperty('display', 'block', 'important');
+                            anyVisible = true;
+                        } else {
+                            section.style.setProperty('display', 'none', 'important');
+                        }
+                    });
+
+                    if (!anyVisible && query !== '') {
+                        noResults.style.setProperty('display', 'block', 'important');
+                        resultsContainer.style.setProperty('display', 'none', 'important');
+                    } else {
+                        noResults.style.setProperty('display', 'none', 'important');
+                        resultsContainer.style.setProperty('display', 'block', 'important');
+                    }
+                });
+            }
+        });
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function(e) {
+            const popup = document.getElementById('modPopup');
+            const trigger = document.querySelector('.mod-trigger-btn');
+            if (popup && !popup.contains(e.target) && !trigger.contains(e.target)) {
+                popup.classList.remove('show');
+            }
+        });
+        
+        // Confetti burst logic
+        const createConfetti = () => {
+            const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = confetti.style.width;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 5000);
+            }
         };
 
-        function buyKey(id, name, price) {
-            Swal.fire({
-                title: 'Confirm Purchase',
-                html: `Purchase license for <b style="color:#8b5cf6">${name}</b> for <b style="color:#10b981">₹${price}</b>?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Confirm Purchase',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#8b5cf6',
-                background: '#0a0e27',
-                color: '#fff'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('keyIdInput').value = id;
-                    document.getElementById('purchaseForm').submit();
-                }
-            });
-        }
+        <?php if ($success): ?>
+            createConfetti();
+        <?php endif; ?>
     </script>
 </body>
 </html>
