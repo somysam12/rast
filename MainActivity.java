@@ -33,20 +33,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Modern Immersive UI
+        // Hide ActionBar for Full Screen Experience
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        
         setContentView(R.layout.activity_main);
         
+        // Immersive Status Bar with Website Theme Color
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(getResources().getColor(android.R.color.transparent));
-            window.setNavigationBarColor(getResources().getColor(android.R.color.black));
+            window.setStatusBarColor(android.graphics.Color.parseColor("#0a0e27"));
+            window.setNavigationBarColor(android.graphics.Color.parseColor("#0a0e27"));
         }
 
         webView = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progressBar);
 
-        // Core WebView Optimization
+        // Core WebView Performance & UI Matching
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
@@ -59,12 +62,13 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setBuiltInZoomControls(false);
         webSettings.setDisplayZoomControls(false);
         
-        // Performance Boost
+        // Fast Load & Smooth Scrolling
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         
-        // Critical: Enable Mod Uploading
+        // Enable File/APK Uploading (Critical Fix)
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -76,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            // For Android 5.0+
+            // For Android 5.0+ (Handles APK and Mod files)
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
                 if (uploadMessage != null) {
@@ -86,8 +90,12 @@ public class MainActivity extends AppCompatActivity {
                 uploadMessage = filePathCallback;
 
                 Intent intent = fileChooserParams.createIntent();
+                // Allow all file types (APK, ZIP, etc.)
+                intent.setType("*/*");
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+                
                 try {
-                    startActivityForResult(intent, FILE_CHOOSER_RESULT_CODE);
+                    startActivityForResult(Intent.createChooser(intent, "Select Mod/APK File"), FILE_CHOOSER_RESULT_CODE);
                 } catch (Exception e) {
                     uploadMessage = null;
                     Toast.makeText(MainActivity.this, "Cannot open file chooser", Toast.LENGTH_SHORT).show();
@@ -111,17 +119,15 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-                // Handle errors silently for better UX
-            }
-
-            @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                if (url.startsWith("http://") || url.startsWith("https://")) {
+                // Ensure internal links stay inside the app
+                if (url.startsWith("https://silentmultipanel.vippanel.in")) {
                     return false;
                 }
+                // Handle external links (like Telegram) in browser
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
                 return true;
             }
         });
@@ -133,7 +139,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == FILE_CHOOSER_RESULT_CODE) {
             if (uploadMessage == null) return;
-            uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+            Uri[] results = null;
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                String dataString = data.getDataString();
+                if (dataString != null) {
+                    results = new Uri[]{Uri.parse(dataString)};
+                }
+            }
+            uploadMessage.onReceiveValue(results);
             uploadMessage = null;
         } else {
             super.onActivityResult(requestCode, resultCode, data);
