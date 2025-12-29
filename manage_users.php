@@ -18,8 +18,8 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     exit();
 }
 
-// Get all users
-$stmt = $pdo->query("SELECT * FROM users WHERE role != 'admin' ORDER BY created_at DESC");
+// Get all users (including admins and resellers)
+$stmt = $pdo->query("SELECT * FROM users ORDER BY created_at DESC");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get user statistics
@@ -27,7 +27,7 @@ $stmt = $pdo->query("SELECT
     COUNT(*) as total_users,
     COALESCE(SUM(balance), 0) as total_balance,
     COUNT(CASE WHEN balance > 0 THEN 1 END) as users_with_balance
-    FROM users WHERE role != 'admin'");
+    FROM users");
 $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
