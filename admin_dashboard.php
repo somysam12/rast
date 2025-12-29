@@ -211,34 +211,58 @@ try {
         }
 
         .mobile-header {
-            display: none;
+            display: none !important;
             background: transparent !important;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            padding: 0.75rem 1rem;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
             position: sticky;
             top: 0;
             z-index: 999;
             border: none !important;
             border-bottom: none !important;
-            width: 100%;
+            border-top: none !important;
+            width: 100% !important;
             box-shadow: none !important;
+            height: auto !important;
+            overflow: visible !important;
         }
 
         .mobile-header .d-flex {
             background: transparent !important;
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0.5rem 0.25rem !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            gap: 0.25rem !important;
+        }
+
+        .mobile-header > * {
+            background: transparent !important;
             border: none !important;
             padding: 0 !important;
-            box-shadow: none !important;
+            margin: 0 !important;
         }
 
         .mobile-welcome-text {
             flex: 1;
             text-align: center;
-            margin: 0 1rem;
+            margin: 0 !important;
             background: transparent !important;
             border: none !important;
             padding: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-welcome-text > div {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
         }
 
         .mobile-toggle {
@@ -246,11 +270,13 @@ try {
             border: none !important;
             color: #06b6d4;
             padding: 0 !important;
+            margin: 0 !important;
             border-radius: 0 !important;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 700;
             font-size: 1.3rem;
+            min-width: fit-content;
         }
 
         .mobile-toggle:hover {
@@ -602,6 +628,7 @@ try {
             background: transparent !important;
             border: none !important;
             padding: 0 !important;
+            margin: 0 !important;
             box-shadow: none !important;
         }
 
@@ -622,6 +649,8 @@ try {
             box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
             position: relative;
             z-index: 1002;
+            padding: 0 !important;
+            margin: 0 !important;
         }
 
         .admin-menu-btn:hover {
@@ -814,10 +843,11 @@ try {
             }
 
             .mobile-header {
-                display: flex;
+                display: flex !important;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.75rem 0.5rem;
+                padding: 0.5rem 0.5rem !important;
+                margin: 0 !important;
                 background: transparent !important;
                 border: none !important;
                 box-shadow: none !important;
@@ -827,6 +857,8 @@ try {
                 background: transparent !important;
                 border: none !important;
                 box-shadow: none !important;
+                padding: 0.5rem 0.5rem !important;
+                margin: 0 !important;
             }
 
             .mobile-header h5 {
@@ -840,7 +872,7 @@ try {
 
             .mobile-welcome-text {
                 font-size: 0.8rem !important;
-                margin: 0 0.5rem;
+                margin: 0 !important;
                 background: transparent !important;
                 border: none !important;
             }
@@ -1028,16 +1060,16 @@ try {
             }
 
             .mobile-toggle {
-                padding: 0;
+                padding: 0 !important;
                 font-size: 1rem;
-                margin: 0;
-                margin-right: 0.5rem;
+                margin: 0 !important;
                 background: transparent !important;
                 border: none !important;
             }
 
             .mobile-welcome-text {
                 font-size: 0.75rem !important;
+                margin: 0 !important;
                 background: transparent !important;
                 border: none !important;
             }
@@ -1046,12 +1078,15 @@ try {
                 background: transparent !important;
                 border: none !important;
                 padding: 0 !important;
+                margin: 0 !important;
             }
 
             .admin-menu-btn {
                 width: 40px;
                 height: 40px;
                 font-size: 0.9rem;
+                padding: 0 !important;
+                margin: 0 !important;
             }
 
             .page-header {
