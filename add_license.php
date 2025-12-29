@@ -148,13 +148,6 @@ if ($_POST) {
             overflow: hidden;
         }
 
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        }
-
         .header-card { 
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
             padding: 3rem; 
@@ -164,8 +157,6 @@ if ($_POST) {
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .header-card h2 { font-weight: 800; letter-spacing: -0.03em; }
-
         .form-label { font-weight: 600; color: var(--text-main); margin-bottom: 0.75rem; font-size: 0.95rem; }
 
         .form-control, .form-select { 
@@ -174,37 +165,41 @@ if ($_POST) {
             color: white; 
             border-radius: 14px; 
             padding: 14px 18px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
         }
 
         .form-control:focus, .form-select:focus { 
             background: rgba(255, 255, 255, 0.1); 
             border-color: var(--primary); 
-            color: white; 
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15); 
-            transform: translateY(-1px);
         }
 
-        .nav-pills-custom { 
+        .nav-tabs-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .nav-tabs-custom { 
             background: var(--glass-bg);
             padding: 8px;
             border-radius: 18px;
-            margin-bottom: 2.5rem;
             display: inline-flex;
             border: 1px solid var(--border-light);
+            gap: 10px;
         }
 
-        .nav-pills-custom .nav-link { 
+        .nav-tabs-custom .nav-link { 
             color: var(--text-dim); 
             border: none; 
             font-weight: 700; 
             padding: 12px 32px; 
             border-radius: 12px; 
             transition: all 0.4s ease;
-            font-size: 1rem;
+            background: transparent;
         }
 
-        .nav-pills-custom .nav-link.active { 
+        .nav-tabs-custom .nav-link.active { 
             background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
             color: white; 
             box-shadow: 0 8px 15px rgba(139, 92, 246, 0.3);
@@ -226,30 +221,17 @@ if ($_POST) {
         }
 
         .btn-primary-custom:hover { 
-            transform: translateY(-3px) scale(1.01); 
+            transform: translateY(-3px); 
             box-shadow: 0 12px 25px rgba(139, 92, 246, 0.4); 
-            filter: brightness(1.1);
         }
-
-        .btn-primary-custom:active { transform: translateY(-1px); }
 
         .input-group-text {
             background: var(--glass-bg);
             border: 1px solid var(--border-light);
-            color: var(--text-dim);
+            color: var(--text-main);
             border-radius: 14px 0 0 14px;
+            font-weight: bold;
         }
-
-        .alert {
-            border-radius: 16px;
-            border: none;
-            padding: 1.25rem 1.5rem;
-            font-weight: 600;
-            backdrop-filter: blur(10px);
-        }
-
-        .alert-success { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-        .alert-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
 
         @media (max-width: 992px) {
             .sidebar { transform: translateX(-100%); width: 250px; }
@@ -257,12 +239,6 @@ if ($_POST) {
             .main-content { margin-left: 0; padding: 6rem 1.5rem 2rem; }
             .hamburger { display: block; }
         }
-
-        /* Custom scrollbar for textarea */
-        textarea::-webkit-scrollbar { width: 8px; }
-        textarea::-webkit-scrollbar-track { background: transparent; }
-        textarea::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        textarea::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
     </style>
 </head>
 <body>
@@ -287,46 +263,46 @@ if ($_POST) {
 
     <div class="main-content">
         <div class="header-card">
-            <h2 class="text-white mb-2"><i class="fas fa-shield-halved me-3"></i>License Factory</h2>
-            <p class="text-white opacity-75 mb-0">Engineered for precision and speed. Generate access keys with ease.</p>
+            <h2 class="text-white mb-2"><i class="fas fa-plus-circle me-3"></i>Add New Keys</h2>
+            <p class="text-white opacity-75 mb-0">Quickly create single or bulk license keys for your users.</p>
         </div>
 
-        <?php if ($success): ?><div class="alert alert-success mb-4"><i class="fas fa-check-circle me-2"></i><?php echo $success; ?></div><?php endif; ?>
-        <?php if ($error): ?><div class="alert alert-danger mb-4"><i class="fas fa-exclamation-triangle me-2"></i><?php echo $error; ?></div><?php endif; ?>
+        <?php if ($success): ?><div class="alert alert-success bg-success text-white border-0 mb-4"><?php echo $success; ?></div><?php endif; ?>
+        <?php if ($error): ?><div class="alert alert-danger bg-danger text-white border-0 mb-4"><?php echo $error; ?></div><?php endif; ?>
 
         <div class="glass-card">
-            <div class="text-center">
-                <div class="nav nav-pills nav-pills-custom" id="factoryTabs" role="tablist">
-                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#single" type="button"><i class="fas fa-fingerprint me-2"></i>Single Unit</button>
-                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#bulk" type="button"><i class="fas fa-layer-group me-2"></i>Bulk Production</button>
+            <div class="nav-tabs-container">
+                <div class="nav nav-tabs-custom" id="keyTabs" role="tablist">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#single" type="button">Add Single Key</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bulk" type="button">Add Bulk Keys</button>
                 </div>
             </div>
 
-            <div class="tab-content" id="factoryTabsContent">
+            <div class="tab-content" id="keyTabsContent">
                 <!-- Single Key Pane -->
                 <div class="tab-pane fade show active" id="single">
                     <form method="POST">
                         <input type="hidden" name="key_type" value="single">
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="form-label"><i class="fas fa-gamepad me-2 text-primary"></i>Target Mod</label>
+                                <label class="form-label">Select Mod</label>
                                 <select name="mod_id" class="form-select" required>
-                                    <option value="">Select target mod...</option>
+                                    <option value="">Choose a mod...</option>
                                     <?php foreach ($mods as $mod): ?>
                                         <option value="<?php echo $mod['id']; ?>"><?php echo htmlspecialchars($mod['name']); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label"><i class="fas fa-key me-2 text-primary"></i>Access Token</label>
-                                <input type="text" name="license_key" class="form-control" placeholder="Enter unique license key">
+                                <label class="form-label">License Key</label>
+                                <input type="text" name="license_key" class="form-control" placeholder="Enter key here">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label"><i class="fas fa-hourglass-half me-2 text-primary"></i>Duration</label>
+                                <label class="form-label">Time Value</label>
                                 <input type="number" name="duration" class="form-control" value="1" min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label"><i class="fas fa-calendar-check me-2 text-primary"></i>Type</label>
+                                <label class="form-label">Time Type</label>
                                 <select name="duration_type" class="form-select">
                                     <option value="days">Days</option>
                                     <option value="months">Months</option>
@@ -335,14 +311,14 @@ if ($_POST) {
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label"><i class="fas fa-tag me-2 text-primary"></i>Price ($)</label>
+                                <label class="form-label">Price (₹)</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">₹</span>
                                     <input type="number" step="0.01" name="price" class="form-control" value="0.00">
                                 </div>
                             </div>
-                            <div class="col-12 mt-5">
-                                <button type="submit" class="btn-primary-custom">Initialize Single License</button>
+                            <div class="col-12">
+                                <button type="submit" class="btn-primary-custom">Add Single Key</button>
                             </div>
                         </div>
                     </form>
@@ -354,24 +330,24 @@ if ($_POST) {
                         <input type="hidden" name="key_type" value="bulk">
                         <div class="row g-4">
                             <div class="col-md-12">
-                                <label class="form-label"><i class="fas fa-gamepad me-2 text-primary"></i>Target Mod</label>
+                                <label class="form-label">Select Mod</label>
                                 <select name="mod_id" class="form-select" required>
-                                    <option value="">Select target mod...</option>
+                                    <option value="">Choose a mod...</option>
                                     <?php foreach ($mods as $mod): ?>
                                         <option value="<?php echo $mod['id']; ?>"><?php echo htmlspecialchars($mod['name']); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-12">
-                                <label class="form-label"><i class="fas fa-list-ol me-2 text-primary"></i>Batch Keys (one per line)</label>
-                                <textarea name="bulk_keys" class="form-control" rows="10" placeholder="KEY-ABCD-1234&#10;KEY-EFGH-5678&#10;..."></textarea>
+                                <label class="form-label">Paste Keys (one per line)</label>
+                                <textarea name="bulk_keys" class="form-control" rows="8" placeholder="Key 1&#10;Key 2&#10;Key 3..."></textarea>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label"><i class="fas fa-hourglass-half me-2 text-primary"></i>Duration</label>
+                                <label class="form-label">Time Value</label>
                                 <input type="number" name="duration" class="form-control" value="1" min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label"><i class="fas fa-calendar-check me-2 text-primary"></i>Type</label>
+                                <label class="form-label">Time Type</label>
                                 <select name="duration_type" class="form-select">
                                     <option value="days">Days</option>
                                     <option value="months">Months</option>
@@ -380,14 +356,14 @@ if ($_POST) {
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label"><i class="fas fa-tag me-2 text-primary"></i>Price ($)</label>
+                                <label class="form-label">Price (₹)</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">₹</span>
                                     <input type="number" step="0.01" name="price" class="form-control" value="0.00">
                                 </div>
                             </div>
-                            <div class="col-12 mt-5">
-                                <button type="submit" class="btn-primary-custom">Execute Bulk Production</button>
+                            <div class="col-12">
+                                <button type="submit" class="btn-primary-custom">Add Bulk Keys</button>
                             </div>
                         </div>
                     </form>
@@ -400,12 +376,7 @@ if ($_POST) {
     <script>
         const sidebar = document.getElementById('sidebar');
         const hamburgerBtn = document.getElementById('hamburgerBtn');
-
-        hamburgerBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            sidebar.classList.toggle('active');
-        });
-
+        hamburgerBtn.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('active'); });
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 992 && sidebar.classList.contains('active') && !sidebar.contains(e.target) && e.target !== hamburgerBtn) {
                 sidebar.classList.remove('active');
