@@ -51,6 +51,7 @@ if ($_POST && isset($_FILES['apk_file'])) {
             if (move_uploaded_file($file['tmp_name'], $path)) {
                 @chmod($path, 0644);
                 try {
+                    // Update table schema to ensure it matches the code
                     $pdo->exec("CREATE TABLE IF NOT EXISTS mod_apks (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         mod_id INT NOT NULL,
@@ -60,15 +61,18 @@ if ($_POST && isset($_FILES['apk_file'])) {
                         uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     ) ENGINE=InnoDB");
                     
+                    // Force path to be relative and clean
+                    $dbPath = 'uploads/apks/' . $name;
+                    
                     $stmt = $pdo->prepare("INSERT INTO mod_apks (mod_id, file_name, file_path, file_size) VALUES (?, ?, ?, ?)");
-                    $stmt->execute([$mod_id, $file['name'], $path, $file['size']]);
-                    $success = '✓ Upload successful!';
+                    $stmt->execute([$mod_id, $file['name'], $dbPath, $file['size']]);
+                    $success = '✓ Upload successful! File is visible in lists.';
                 } catch (Exception $e) {
                     @unlink($path);
                     $error = 'Database error: ' . $e->getMessage();
                 }
             } else {
-                $error = 'File move failed. Check permissions on "uploads/apks".';
+                $error = 'File move failed. Folder "uploads/apks" might not be writable. Try creating it manually via File Manager.';
             }
         }
     }

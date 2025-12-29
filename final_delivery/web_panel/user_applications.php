@@ -26,7 +26,9 @@ if (!function_exists('formatDate')) {
 // Get only mods that have an APK uploaded
 $stmt = $pdo->prepare("SELECT m.*, ma.file_name, ma.file_path, ma.file_size, ma.uploaded_at 
                       FROM mods m 
-                      INNER JOIN mod_apks ma ON m.id = ma.mod_id 
+                      INNER JOIN (
+                          SELECT * FROM mod_apks WHERE id IN (SELECT MAX(id) FROM mod_apks GROUP BY mod_id)
+                      ) ma ON m.id = ma.mod_id 
                       WHERE m.status = 'active'
                       ORDER BY m.name ASC");
 $stmt->execute();

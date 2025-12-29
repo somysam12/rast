@@ -9,7 +9,9 @@ $pdo = getDBConnection();
 // Get all mods with APK information
 $stmt = $pdo->query("SELECT m.*, ma.file_name, ma.file_path, ma.uploaded_at as apk_uploaded_at 
                     FROM mods m 
-                    LEFT JOIN mod_apks ma ON m.id = ma.mod_id 
+                    LEFT JOIN (
+                        SELECT * FROM mod_apks WHERE id IN (SELECT MAX(id) FROM mod_apks GROUP BY mod_id)
+                    ) ma ON m.id = ma.mod_id 
                     ORDER BY m.created_at DESC");
 $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
