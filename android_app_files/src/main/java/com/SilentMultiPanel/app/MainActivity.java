@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -15,12 +16,14 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
-import android.widget.Toast;
+import android.widget.ImageButton;
 
 public class MainActivity extends Activity {
 
     private WebView webView;
     private ProgressBar progressBar;
+    private View splashLayout;
+    private ImageButton btnRefresh;
     private ValueCallback<Uri[]> uploadMessage;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
 
@@ -40,6 +43,8 @@ public class MainActivity extends Activity {
 
         webView = (WebView) findViewById(R.id.webview);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        splashLayout = findViewById(R.id.splash_layout);
+        btnRefresh = (ImageButton) findViewById(R.id.btn_refresh);
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -99,6 +104,16 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
+                
+                // Hide splash and show webview when first page is ready
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (splashLayout != null) splashLayout.setVisibility(View.GONE);
+                        if (webView != null) webView.setVisibility(View.VISIBLE);
+                        if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
+                    }
+                }, 1000); // 1 second delay for smoothness
             }
 
             @Override
