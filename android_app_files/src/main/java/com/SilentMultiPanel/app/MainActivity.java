@@ -11,8 +11,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -30,7 +28,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Use Native Full Screen (No AppCompat needed)
+        // Native Full Screen
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         
         setContentView(R.layout.activity_main);
@@ -58,7 +56,9 @@ public class MainActivity extends Activity {
         
         // Performance
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        if (Build.VERSION.SDK_INT >= 11) {
+            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
         
         // Enable File/APK Uploading
         webView.setWebChromeClient(new WebChromeClient() {
@@ -128,7 +128,7 @@ public class MainActivity extends Activity {
         if (requestCode == FILE_CHOOSER_RESULT_CODE) {
             if (uploadMessage == null) return;
             Uri[] results = null;
-            if (resultCode == Activity.RESULT_OK && data != null) {
+            if (resultCode == RESULT_OK && data != null) {
                 String dataString = data.getDataString();
                 if (dataString != null) {
                     results = new Uri[]{Uri.parse(dataString)};
