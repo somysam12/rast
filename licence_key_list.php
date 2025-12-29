@@ -6,20 +6,27 @@ requireAdmin();
 
 $pdo = getDBConnection();
 
+$success_msg = '';
+$error_msg = '';
+
 // Handle bulk delete
 if (isset($_POST['bulk_delete']) && isset($_POST['selected_keys'])) {
     $ids = $_POST['selected_keys'];
     if (!empty($ids)) {
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id IN ($placeholders)");
-        $stmt->execute($ids);
+        if ($stmt->execute($ids)) {
+            $success_msg = count($ids) . ' keys deleted successfully!';
+        }
     }
 }
 
 // Handle single delete
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
     $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id = ?");
-    $stmt->execute([$_GET['delete_id']]);
+    if ($stmt->execute([$_GET['delete_id']])) {
+        $success_msg = 'Key deleted successfully!';
+    }
 }
 
 // Get filter parameters
@@ -48,6 +55,7 @@ $mods = $pdo->query("SELECT id, name FROM mods ORDER BY name")->fetchAll(PDO::FE
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #8b5cf6;
@@ -155,8 +163,9 @@ $mods = $pdo->query("SELECT id, name FROM mods ORDER BY name")->fetchAll(PDO::FE
         </div>
         <div class="glass-card">
             <form method="POST" id="bulkDeleteForm">
+                <input type="hidden" name="bulk_delete" value="1">
                 <div class="bulk-actions" id="bulkActions">
-                    <button type="submit" name="bulk_delete" class="btn btn-danger" onclick="return confirm('Delete all selected keys?')">
+                    <button type="button" class="btn btn-danger" onclick="confirmBulkDelete()">
                         <i class="fas fa-trash me-2"></i>Delete Selected (<span id="selectedCount">0</span>)
                     </button>
                 </div>
@@ -182,7 +191,7 @@ $mods = $pdo->query("SELECT id, name FROM mods ORDER BY name")->fetchAll(PDO::FE
                                 <td><?php echo $key['duration'] . ' ' . $key['duration_type']; ?></td>
                                 <td>₹<?php echo number_format($key['price'], 2); ?></td>
                                 <td><span class="badge bg-<?php echo $key['status'] === 'available' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($key['status']); ?></span></td>
-                                <td><a href="?delete_id=<?php echo $key['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this key?')"><i class="fas fa-trash"></i></a></td>
+                                <td><button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete(<?php echo $key['id']; ?>)"><i class="fas fa-trash"></i></button></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -214,6 +223,54 @@ $mods = $pdo->query("SELECT id, name FROM mods ORDER BY name")->fetchAll(PDO::FE
         checkboxes.forEach(cb => {
             cb.addEventListener('change', updateBulkActions);
         });
+
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This key will be permanently deleted!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#7c3aed',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#111827',
+                color: '#ffffff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '?delete_id=' + id;
+                }
+            })
+        }
+
+        function confirmBulkDelete() {
+            Swal.fire({
+                title: 'Bulk Delete?',
+                text: "All selected keys will be permanently deleted!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#7c3aed',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, delete them!',
+                background: '#111827',
+                color: '#ffffff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('bulkDeleteForm').submit();
+                }
+            })
+        }
+
+        <?php if ($success_msg): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '<?php echo $success_msg; ?>',
+            timer: 2000,
+            showConfirmButton: false,
+            background: '#111827',
+            color: '#ffffff'
+        });
+        <?php endif; ?>
     </script>
 </body>
 </html>

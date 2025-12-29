@@ -86,6 +86,7 @@ if ($_POST) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #8b5cf6;
@@ -197,7 +198,6 @@ if ($_POST) {
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
         }
 
-        /* Styling for select options */
         option {
             background: #111827;
             color: white;
@@ -241,19 +241,6 @@ if ($_POST) {
             box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.5);
         }
 
-        .alert {
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 2.5rem;
-            font-weight: 800;
-            border: 2px solid;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .alert-success { background: rgba(6, 95, 70, 0.3); color: #34d399; border-color: #059669; }
-        .alert-danger { background: rgba(153, 27, 27, 0.3); color: #f87171; border-color: #dc2626; }
-
         @media (max-width: 992px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -262,7 +249,6 @@ if ($_POST) {
         }
 
         ::placeholder { color: #4b5563; font-weight: 500; }
-        
         textarea { resize: none; line-height: 1.6; }
     </style>
 </head>
@@ -290,9 +276,6 @@ if ($_POST) {
             <h2>Add License Keys</h2>
             <p>Generate secure access keys for your mods instantly</p>
         </div>
-
-        <?php if ($success): ?><div class="alert alert-success"><i class="fas fa-check-circle fa-lg"></i><?php echo $success; ?></div><?php endif; ?>
-        <?php if ($error): ?><div class="alert alert-danger"><i class="fas fa-times-circle fa-lg"></i><?php echo $error; ?></div><?php endif; ?>
 
         <div class="glass-card">
             <div class="tab-btn-group">
@@ -407,6 +390,28 @@ if ($_POST) {
                 sidebar.classList.remove('active');
             }
         });
+
+        <?php if ($success): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '<?php echo $success; ?>',
+            timer: 2500,
+            showConfirmButton: false,
+            background: '#111827',
+            color: '#ffffff'
+        });
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: '<?php echo $error; ?>',
+            background: '#111827',
+            color: '#ffffff'
+        });
+        <?php endif; ?>
     </script>
 </body>
 </html>
