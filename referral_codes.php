@@ -16,19 +16,25 @@ $error = '';
 // Handle generate referral code
 if ($_POST && isset($_POST['generate_code'])) {
     try {
-        $expiryDays = (int)$_POST['expiry_days'];
+        $expiryOption = $_POST['expiry_option'] ?? '30d';
         $bonusAmount = (float)($_POST['bonus_amount'] ?? 50.00);
         $usageLimit = (int)($_POST['usage_limit'] ?? 1);
         
-        if ($expiryDays <= 0) {
-            $error = 'Please enter a valid expiry period';
-        } elseif ($bonusAmount < 0) {
+        $duration = match($expiryOption) {
+            '1h' => '+1 hour',
+            '1d' => '+1 day',
+            '1w' => '+7 days',
+            '1m' => '+30 days',
+            default => '+30 days'
+        };
+
+        if ($bonusAmount < 0) {
             $error = 'Bonus amount cannot be negative';
         } elseif ($usageLimit <= 0) {
             $error = 'Usage limit must be at least 1';
         } else {
             $code = generateReferralCode();
-            $expiresAt = date('Y-m-d H:i:s', strtotime("+$expiryDays days"));
+            $expiresAt = date('Y-m-d H:i:s', strtotime($duration));
             
             $stmt = $pdo->prepare("INSERT INTO referral_codes (code, created_by, expires_at, bonus_amount, usage_limit, usage_count) VALUES (?, ?, ?, ?, ?, 0)");
             if ($stmt->execute([$code, $_SESSION['user_id'], $expiresAt, $bonusAmount, $usageLimit])) {
@@ -39,6 +45,21 @@ if ($_POST && isset($_POST['generate_code'])) {
         }
     } catch (Exception $e) {
         $error = 'Error generating referral code: ' . $e->getMessage();
+    }
+}
+
+// Handle bulk deletion
+if (isset($_POST['bulk_delete']) && isset($_POST['selected_codes'])) {
+    try {
+        $ids = $_POST['selected_codes'];
+        if (!empty($ids)) {
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $stmt = $pdo->prepare("DELETE FROM referral_codes WHERE id IN ($placeholders)");
+            $stmt->execute($ids);
+            $success = "Selected referral codes deleted successfully.";
+        }
+    } catch (Exception $e) {
+        $error = "Error during bulk deletion: " . $e->getMessage();
     }
 }
 
@@ -144,13 +165,23 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         .table thead th { background: rgba(139, 92, 246, 0.1); color: var(--primary); border: none; padding: 12px; font-size: 0.9rem; }
         .table tbody td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.85rem; }
         
-        .code-badge { font-family: 'Courier New', monospace; background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; letter-spacing: 1px; border: 1px solid rgba(139, 92, 246, 0.2); }
+        .code-badge-wrapper { position: relative; display: inline-flex; align-items: center; gap: 8px; }
+        .code-badge { font-family: 'Courier New', monospace; background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; letter-spacing: 1px; border: 1px solid rgba(139, 92, 246, 0.2); cursor: pointer; position: relative; }
+        
+        .copy-btn { color: var(--primary); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+        .copy-btn:hover { color: var(--secondary); transform: scale(1.2); }
+        .copy-btn.copied { color: #10b981; transform: scale(1.3); }
+
         .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .status-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
         .status-inactive { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 
         .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
         .overlay.active { display: block; }
+
+        .checkbox-custom { width: 18px; height: 18px; border: 2px solid var(--primary); border-radius: 4px; appearance: none; cursor: pointer; position: relative; transition: all 0.2s; }
+        .checkbox-custom:checked { background: var(--primary); }
+        .checkbox-custom:checked::after { content: '\f00c'; font-family: 'Font Awesome 5 Free'; font-weight: 900; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; }
     </style>
 </head>
 <body>
@@ -174,7 +205,7 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
             <div class="row align-items-center">
                 <div class="col-md-7">
                     <h2 class="text-white mb-1" style="font-weight: 800;">Referral Management</h2>
-                    <p class="text-white opacity-75 mb-0">Create and track bonus referral codes</p>
+                    <p class="text-white opacity-75 mb-0">Bulk manage bonus referral codes</p>
                 </div>
                 <div class="col-md-5 mt-3 mt-md-0">
                     <div class="row g-2">
@@ -206,12 +237,17 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                             <input type="number" name="bonus_amount" class="form-control" value="50" step="0.01" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small text-dim">Expiry (Days)</label>
-                            <input type="number" name="expiry_days" class="form-control" value="30" required>
+                            <label class="form-label small text-dim">Expiry Duration</label>
+                            <select name="expiry_option" class="form-select">
+                                <option value="1h">1 Hour</option>
+                                <option value="1d">1 Day</option>
+                                <option value="1w">1 Week</option>
+                                <option value="1m" selected>1 Month</option>
+                            </select>
                         </div>
                         <div class="mb-4">
                             <label class="form-label small text-dim">Usage Limit</label>
-                            <input type="number" name="usage_limit" class="form-control" value="10" required>
+                            <input type="number" name="usage_limit" class="form-control" value="1" min="1" required>
                         </div>
                         <button type="submit" class="btn-submit">Generate Code</button>
                     </form>
@@ -219,37 +255,66 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
             </div>
             <div class="col-lg-8">
                 <div class="glass-card">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Bonus</th>
-                                    <th>Usage</th>
-                                    <th>Expires</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($referralCodes as $code): ?>
-                                <tr>
-                                    <td><span class="code-badge"><?php echo $code['code']; ?></span></td>
-                                    <td><span class="text-success fw-bold">₹<?php echo number_format($code['bonus_amount'], 2); ?></span></td>
-                                    <td><span class="text-dim"><?php echo $code['usage_count']; ?> / <?php echo $code['usage_limit']; ?></span></td>
-                                    <td><span class="text-dim small"><?php echo date('M d', strtotime($code['expires_at'])); ?></span></td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <?php if ($code['status'] === 'active'): ?>
-                                                <a href="?deactivate=<?php echo $code['id']; ?>" class="btn btn-warning btn-sm" title="Deactivate"><i class="fas fa-ban"></i></a>
-                                            <?php endif; ?>
-                                            <button onclick="confirmDelete(<?php echo $code['id']; ?>)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                    <form method="POST" id="bulkDeleteForm">
+                        <input type="hidden" name="bulk_delete" value="1">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="checkbox" id="selectAll" class="checkbox-custom">
+                                <label for="selectAll" class="text-dim small mb-0 cursor-pointer">Select All</label>
+                            </div>
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirmBulkDelete(event)">
+                                <i class="fas fa-trash-alt me-2"></i>Delete Selected
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;"></th>
+                                        <th>Code</th>
+                                        <th>Bonus</th>
+                                        <th>Usage</th>
+                                        <th>Expires</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($referralCodes as $code): ?>
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="selected_codes[]" value="<?php echo $code['id']; ?>" class="checkbox-custom code-checkbox">
+                                        </td>
+                                        <td>
+                                            <div class="code-badge-wrapper">
+                                                <span class="code-badge" onclick="copyCode('<?php echo $code['code']; ?>', this)"><?php echo $code['code']; ?></span>
+                                                <i class="fas fa-copy copy-btn" onclick="copyCode('<?php echo $code['code']; ?>', this)"></i>
+                                            </div>
+                                        </td>
+                                        <td><span class="text-success fw-bold">₹<?php echo number_format($code['bonus_amount'], 2); ?></span></td>
+                                        <td><span class="text-dim"><?php echo $code['usage_count']; ?> / <?php echo $code['usage_limit']; ?></span></td>
+                                        <td>
+                                            <?php 
+                                            $isExpired = strtotime($code['expires_at']) < time();
+                                            ?>
+                                            <span class="small <?php echo $isExpired ? 'text-danger fw-bold' : 'text-dim'; ?>">
+                                                <?php echo date('M d, H:i', strtotime($code['expires_at'])); ?>
+                                                <?php if($isExpired): ?> <i class="fas fa-exclamation-circle"></i> <?php endif; ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <?php if ($code['status'] === 'active' && !$isExpired): ?>
+                                                    <a href="?deactivate=<?php echo $code['id']; ?>" class="btn btn-warning btn-sm" title="Deactivate"><i class="fas fa-ban"></i></a>
+                                                <?php endif; ?>
+                                                <button type="button" onclick="confirmDelete(<?php echo $code['id']; ?>)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -259,14 +324,47 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         const sidebar = document.getElementById('sidebar');
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const overlay = document.getElementById('overlay');
+        const selectAll = document.getElementById('selectAll');
+        const codeCheckboxes = document.querySelectorAll('.code-checkbox');
 
         hamburgerBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
 
+        selectAll.onchange = (e) => {
+            codeCheckboxes.forEach(cb => cb.checked = e.target.checked);
+        };
+
+        async function copyCode(text, el) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const btn = el.parentElement.querySelector('.copy-btn') || el;
+                btn.classList.add('copied');
+                btn.classList.replace('fa-copy', 'fa-check-circle');
+                
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Code Copied!',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    background: '#1e293b',
+                    color: '#f8fafc'
+                });
+
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.classList.replace('fa-check-circle', 'fa-copy');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+            }
+        }
+
         function confirmDelete(id) {
             Swal.fire({
                 title: 'Delete Code?',
-                text: "This code will no longer work!",
+                text: "This action cannot be undone!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#7c3aed',
@@ -275,6 +373,27 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                 background: '#111827',
                 color: '#ffffff'
             }).then((result) => { if (result.isConfirmed) window.location.href = '?delete=' + id; })
+        }
+
+        function confirmBulkDelete(e) {
+            e.preventDefault();
+            const selected = document.querySelectorAll('.code-checkbox:checked').length;
+            if (selected === 0) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No codes selected!', background: '#111827', color: '#ffffff' });
+                return false;
+            }
+
+            Swal.fire({
+                title: 'Bulk Delete?',
+                text: `Are you sure you want to delete ${selected} codes?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete all!',
+                background: '#111827',
+                color: '#ffffff'
+            }).then((result) => { if (result.isConfirmed) document.getElementById('bulkDeleteForm').submit(); })
         }
 
         <?php if ($success): ?>
