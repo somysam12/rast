@@ -132,14 +132,14 @@ try {
         }
 
         .cyber-card { 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            animation: cardSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            animation: cardEntrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
         }
-        .cyber-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15); }
+        .cyber-card:hover { transform: translateY(-8px) scale(1.01); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.25); border-color: rgba(139, 92, 246, 0.4); }
         
-        @keyframes cardSlideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
         .search-input { background: rgba(15, 23, 42, 0.5); border: 1.5px solid rgba(148, 163, 184, 0.1); color: white; border-radius: 12px; padding: 10px 15px 10px 45px; width: 100%; transition: all 0.3s ease; }
@@ -149,23 +149,41 @@ try {
 
         .license-key-box {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: rgba(139, 92, 246, 0.05);
-            padding: 0.6rem 1.2rem;
-            border-radius: 12px;
-            border: 1px solid rgba(139, 92, 246, 0.1);
-            color: #a78bfa;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.7rem 1.4rem;
+            border-radius: 14px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #c084fc;
             font-size: 0.95rem;
             word-break: break-all;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            box-shadow: inset 0 0 15px rgba(139, 92, 246, 0.05);
         }
-        .license-key-box:hover { background: rgba(139, 92, 246, 0.15); border-color: #8b5cf6; transform: scale(1.02); color: white; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
-        .license-key-box:active { transform: scale(0.98); }
+        .license-key-box:hover { 
+            background: rgba(139, 92, 246, 0.12); 
+            border-color: #a855f7; 
+            transform: translateY(-2px); 
+            color: #fff; 
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.3), inset 0 0 10px rgba(168, 85, 247, 0.2); 
+        }
+        .license-key-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.5s;
+        }
+        .license-key-box:hover::before { left: 100%; }
+        .license-key-box:active { transform: scale(0.96); }
         .license-key-box::after { content: '\f0c5'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 0.8rem; opacity: 0.5; }
 
         .status-purchased { background: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; animation: pulseGreen 2s infinite; }
@@ -173,8 +191,19 @@ try {
         
         .table-responsive { border-radius: 15px; overflow-x: auto; border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(10, 15, 25, 0.5); -webkit-overflow-scrolling: touch; }
         .table { min-width: 900px; margin-bottom: 0; }
-        .table tr { transition: all 0.3s ease; }
-        .table tr:hover { background: rgba(139, 92, 246, 0.03); }
+        .table tr { 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: rowSlideFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+        }
+        .table tr:hover { 
+            background: rgba(139, 92, 246, 0.06); 
+            transform: scale(1.002) translateX(5px);
+        }
+        
+        @keyframes rowSlideFade {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
 
         .user-nav-wrapper { position: relative; }
         .user-avatar-header { cursor:pointer; transition:all 0.3s ease; }
