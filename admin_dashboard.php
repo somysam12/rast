@@ -17,11 +17,9 @@ $stats = [
 ];
 
 try {
-    // Get mod count
     $stmt = $pdo->query("SELECT COUNT(*) FROM mods");
     $stats['total_mods'] = $stmt->fetchColumn();
     
-    // Get key counts
     $stmt = $pdo->query("SELECT COUNT(*) FROM license_keys");
     $stats['total_keys'] = $stmt->fetchColumn();
     
@@ -31,7 +29,6 @@ try {
     $stmt = $pdo->query("SELECT COUNT(*) FROM license_keys WHERE status = 'sold'");
     $stats['sold_keys'] = $stmt->fetchColumn();
     
-    // Get user count
     $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user'");
     $stats['total_users'] = $stmt->fetchColumn();
     
@@ -56,7 +53,6 @@ try {
     $stmt = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC LIMIT 5");
     $recentUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
-    // Ignore errors for recent data
 }
 ?>
 <!DOCTYPE html>
@@ -89,15 +85,14 @@ try {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        html {
+        html, body {
             background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%) !important;
             background-attachment: fixed !important;
+            width: 100%;
+            height: 100%;
         }
 
         body {
-            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
             color: var(--text-main);
             overflow-x: hidden;
             position: relative;
@@ -139,21 +134,18 @@ try {
         }
 
         .sidebar-brand {
-            padding: 0 1.5rem 2rem;
-            border-bottom: 2px solid rgba(139, 92, 246, 0.4);
+            padding: 1.5rem;
             margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
         }
 
         .sidebar-brand h4 {
-            font-size: 1.3rem;
-            font-weight: 800;
-            margin-bottom: 0.25rem;
-            color: var(--text-main);
-            letter-spacing: -0.02em;
-        }
-
-        .sidebar-brand h4 i {
-            color: var(--primary);
+            color: var(--secondary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .sidebar-brand p {
@@ -173,19 +165,11 @@ try {
             color: var(--text-dim);
             padding: 12px 16px;
             border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
-            font-size: 0.9rem;
-            border: 1px solid transparent;
-            text-decoration: none;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 12px;
-        }
-
-        .sidebar .nav-link i {
-            width: 20px;
-            text-align: center;
+            border: 1px solid transparent;
         }
 
         .sidebar .nav-link:hover,
@@ -199,109 +183,104 @@ try {
 
         .main-content {
             margin-left: 280px;
-            padding: 2rem;
+            padding: 1.5rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
             position: relative;
             z-index: 1;
         }
 
-        .main-content.full-width {
-            margin-left: 0;
+        .top-bar {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        .mobile-header {
-            display: none !important;
+        .hamburger-btn {
             background: transparent !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            color: var(--secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
             padding: 0 !important;
-            margin: 0 !important;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            border: none !important;
-            border-bottom: none !important;
-            border-top: none !important;
-            width: 100% !important;
-            box-shadow: none !important;
-            height: auto !important;
-            overflow: visible !important;
         }
 
-        .mobile-header .d-flex {
-            background: transparent !important;
-            background-color: transparent !important;
-            border: none !important;
-            padding: 0.5rem 0.25rem !important;
-            margin: 0 !important;
-            box-shadow: none !important;
-            gap: 0.25rem !important;
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        .mobile-header > * {
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-        .mobile-welcome-text {
-            flex: 1;
-            text-align: center;
-            margin: 0 !important;
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .mobile-welcome-text > div {
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-        .mobile-toggle {
-            background: transparent !important;
-            border: none !important;
-            color: #06b6d4;
-            padding: 0 !important;
-            margin: 0 !important;
-            border-radius: 0 !important;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: white;
             font-weight: 700;
-            font-size: 1.3rem;
-            min-width: fit-content;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1002;
         }
 
-        .mobile-toggle:hover {
-            transform: translateY(-3px);
-            color: #06b6d4;
-            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+        .user-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .user-dropdown {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            border: 1.5px solid var(--border-light);
+            border-radius: 16px;
+            min-width: 200px;
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
+            z-index: 1003;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s ease;
+            padding: 0.5rem 0;
+        }
+
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown a:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--secondary);
         }
 
         .glass-card {
             background: var(--card-bg);
             backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1.5px solid;
-            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
-            border-radius: 24px;
-            padding: 2rem;
-            box-shadow: 
-                0 0 60px rgba(139, 92, 246, 0.15),
-                0 0 20px rgba(6, 182, 212, 0.05),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1.5px solid var(--border-light);
+            border-radius: 20px;
+            padding: 1.5rem;
             position: relative;
             overflow: hidden;
             animation: borderGlow 4s ease-in-out infinite;
             margin-bottom: 1.5rem;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .glass-card::before {
@@ -317,14 +296,7 @@ try {
 
         .glass-card > * {
             position: relative;
-            z-index: 2;
-        }
-
-        .glass-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 
-                0 0 80px rgba(139, 92, 246, 0.25),
-                0 0 40px rgba(6, 182, 212, 0.1);
+            z-index: 1;
         }
 
         @keyframes borderGlow {
@@ -336,170 +308,123 @@ try {
             }
         }
 
-        .page-header {
+        .welcome-banner {
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15));
             border: 2px solid;
-            border-image: linear-gradient(135deg, #8b5cf6, #06b6d4) 1;
+            border-image: linear-gradient(135deg, var(--primary), var(--secondary)) 1;
+            border-radius: 24px;
             padding: 2rem;
             margin-bottom: 2rem;
-            border-radius: 20px;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 0 50px rgba(139, 92, 246, 0.2), 0 0 30px rgba(6, 182, 212, 0.1);
         }
 
-        .page-header h1 {
-            font-size: 2.2rem;
-            font-weight: 900;
-            letter-spacing: -0.03em;
-            color: #06b6d4;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
-        }
-
-        .page-header h1 i {
-            color: #8b5cf6;
-            font-size: 2.2rem;
-            text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-        }
-
-        .page-header p {
-            color: #8b5cf6;
-            font-size: 1.1rem;
-            margin: 0.75rem 0 0 0;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .page-header p strong {
-            color: #06b6d4;
+        .welcome-banner h2 {
+            color: var(--secondary);
             font-weight: 700;
-            text-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
-            margin-left: 0.25rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
         }
 
-        .stats-container {
+        .welcome-banner p {
+            color: var(--primary);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .welcome-banner p strong {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
-            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards;
         }
 
-        .stats-card {
+        .stat-card {
             background: var(--card-bg);
             backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1.5px solid;
-            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border: 1.5px solid var(--border-light);
             border-radius: 20px;
-            padding: 1.8rem;
-            box-shadow: 
-                0 0 60px rgba(139, 92, 246, 0.15),
-                0 0 20px rgba(6, 182, 212, 0.05),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center;
         }
 
-        .stats-card::before {
+        .stat-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), transparent);
             pointer-events: none;
         }
 
-        .stats-card > * {
+        .stat-card > * {
             position: relative;
-            z-index: 2;
+            z-index: 1;
         }
 
-        .stats-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 
-                0 0 80px rgba(139, 92, 246, 0.25),
-                0 0 40px rgba(6, 182, 212, 0.1);
+        .stat-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+            transform: translateY(-4px);
         }
 
-        .stats-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 16px;
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.5rem;
             color: white;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            margin: 0 auto 1rem;
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
         }
 
-        .stats-card h6 {
+        .stat-label {
             color: var(--text-dim);
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .stats-card h3 {
-            color: var(--secondary);
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-
-        .stats-card .stat-label {
-            color: var(--primary);
             font-size: 0.85rem;
-            font-weight: 600;
+            margin-top: 0.5rem;
+            display: block;
         }
 
-        .user-avatar {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
+        .stat-card h3 {
+            color: var(--secondary);
             font-weight: 700;
-            font-size: 1.2rem;
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 2rem;
+            margin: 0.5rem 0;
+        }
+
+        .stat-card h6 {
+            color: var(--text-dim);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .table-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .table-card {
             background: var(--card-bg);
             backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1.5px solid;
-            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
-            border-radius: 24px;
-            padding: 2rem;
-            box-shadow: 
-                0 0 60px rgba(139, 92, 246, 0.15),
-                0 0 20px rgba(6, 182, 212, 0.05),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1.5px solid var(--border-light);
+            border-radius: 20px;
+            padding: 1.5rem;
             position: relative;
             overflow: hidden;
-            margin-bottom: 1.5rem;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
         }
 
         .table-card::before {
@@ -509,105 +434,82 @@ try {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), transparent);
             pointer-events: none;
         }
 
         .table-card > * {
             position: relative;
-            z-index: 2;
-        }
-
-        .table-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 
-                0 0 80px rgba(139, 92, 246, 0.25),
-                0 0 40px rgba(6, 182, 212, 0.1);
+            z-index: 1;
         }
 
         .table-card h5 {
             color: var(--secondary);
-            margin-bottom: 1.5rem;
             font-weight: 700;
-            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-        }
-
-        .table-card h5 i {
-            color: var(--primary);
+            gap: 0.75rem;
         }
 
         .table {
-            background: transparent;
-            border: none;
+            color: var(--text-main);
+            margin-bottom: 0;
+        }
+
+        .table thead {
+            border-bottom: 1px solid var(--border-light);
         }
 
         .table thead th {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
+            color: var(--secondary);
+            font-weight: 700;
             border: none;
-            font-weight: 600;
             padding: 1rem;
-            border-radius: 12px;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
-        }
-
-        .table tbody tr {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: transparent;
-            border: none;
-        }
-
-        .table tbody tr:hover {
-            background: rgba(139, 92, 246, 0.1);
-            border-radius: 12px;
         }
 
         .table tbody td {
             padding: 1rem;
-            border: none;
-            color: var(--text-main);
             border-bottom: 1px solid var(--border-light);
-            font-weight: 500;
+            color: var(--text-main);
         }
 
-        .table tbody tr:last-child td {
-            border-bottom: none;
+        .table tbody tr:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
         }
 
         .user-card {
-            background: rgba(139, 92, 246, 0.08);
-            border: 1.5px solid var(--border-light);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid var(--border-light);
             border-radius: 16px;
             padding: 1.5rem;
             text-align: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .user-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: all 0.3s ease;
         }
 
         .user-card:hover {
-            background: rgba(139, 92, 246, 0.12);
-            border-color: rgba(139, 92, 246, 0.3);
-            transform: translateY(-3px);
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+            border-color: var(--secondary);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
         }
 
-        .user-card .user-avatar {
+        .user-avatar-lg {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
             margin: 0 auto 1rem;
         }
 
@@ -615,1046 +517,328 @@ try {
             color: var(--secondary);
             font-weight: 700;
             margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .user-card p {
             color: var(--text-dim);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin: 0;
         }
 
-        .admin-menu-container {
-            position: relative;
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            box-shadow: none !important;
-        }
-
-        .admin-menu-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none !important;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-            position: relative;
-            z-index: 1002;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-        .admin-menu-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
-        }
-
-        .admin-menu-btn:active {
-            transform: scale(0.95);
-        }
-
-        .admin-dropdown {
-            position: fixed;
-            top: 60px;
-            right: 20px;
-            background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1.5px solid var(--border-light);
-            border-radius: 16px;
-            min-width: 200px;
-            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
-            z-index: 1003;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px) scale(0.95);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 0.5rem 0;
-        }
-
-        .admin-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0) scale(1);
-        }
-
-        .admin-dropdown a,
-        .admin-dropdown button {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            padding: 12px 16px;
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .admin-dropdown a:hover,
-        .admin-dropdown button:hover {
-            background: rgba(139, 92, 246, 0.1);
-            color: var(--text-main);
-            padding-left: 20px;
-        }
-
-        .admin-dropdown a i,
-        .admin-dropdown button i {
-            width: 18px;
-            text-align: center;
-            color: var(--primary);
-        }
-
-        .mobile-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            z-index: 999;
-        }
-
-        .mobile-overlay.show {
-            display: block;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Tablet and iPad */
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 260px;
-            }
-
-            .main-content {
-                margin-left: 260px;
-                padding: 1.5rem;
-            }
-
-            .page-header h1 {
-                font-size: 2rem;
-            }
-
-            .stats-card h3 {
-                font-size: 2.2rem;
-            }
-
-            .stats-card h6 {
-                font-size: 0.85rem;
-            }
-
-            .table-card h5 {
-                font-size: 1.1rem;
-            }
-        }
-
-        /* Large mobile and small tablet */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 transform: translateX(-100%);
-                border-right: none;
                 padding: 1rem 0;
             }
 
             .sidebar.show {
                 transform: translateX(0);
-                z-index: 1001;
-            }
-
-            .sidebar-brand {
-                padding: 1rem 1.5rem;
-                margin-bottom: 1rem;
-            }
-
-            .sidebar-brand h4 {
-                font-size: 1.1rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .sidebar-brand p {
-                font-size: 0.75rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .sidebar .nav {
-                padding: 0 0.5rem;
-                gap: 0.25rem;
-            }
-
-            .sidebar .nav-link {
-                padding: 10px 12px;
-                font-size: 0.85rem;
-                gap: 10px;
-                border-radius: 10px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .sidebar .nav-link i {
-                width: 18px;
-                min-width: 18px;
-                font-size: 0.95rem;
-            }
-
-            .sidebar .nav-link span {
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
 
             .main-content {
                 margin-left: 0;
-                padding: 1rem 0.75rem;
+                padding: 1rem;
             }
 
-            .main-content.full-width {
-                margin-left: 0;
+            .top-bar {
+                display: flex;
             }
 
-            .mobile-header {
-                display: flex !important;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem 0.5rem !important;
-                margin: 0 !important;
-                background: transparent !important;
-                border: none !important;
-                box-shadow: none !important;
-            }
-
-            .mobile-header .d-flex {
-                background: transparent !important;
-                border: none !important;
-                box-shadow: none !important;
-                padding: 0.5rem 0.5rem !important;
-                margin: 0 !important;
-            }
-
-            .mobile-header h5 {
-                font-size: 1rem;
-                margin-bottom: 0;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                max-width: 200px;
-            }
-
-            .mobile-welcome-text {
-                font-size: 0.8rem !important;
-                margin: 0 !important;
-                background: transparent !important;
-                border: none !important;
-            }
-
-            .page-header {
-                display: none;
-            }
-
-            .page-header h1 {
-                font-size: 1.4rem;
-                margin-bottom: 0.5rem;
-                gap: 0.5rem;
-            }
-
-            .page-header h1 i {
-                font-size: 1.4rem;
-            }
-
-            .page-header p {
-                font-size: 0.9rem;
-                margin: 0.5rem 0 0 0;
-            }
-
-            .stats-container {
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-                gap: 0.75rem;
+            .welcome-banner {
+                padding: 1.5rem;
                 margin-bottom: 1.5rem;
             }
 
-            .stats-card {
-                padding: 1.25rem 1rem;
-                border-radius: 16px;
+            .welcome-banner h2 {
+                font-size: 1.4rem;
             }
 
-            .stats-card h6 {
-                font-size: 0.75rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .stats-card h3 {
-                font-size: 1.8rem;
-                margin-bottom: 0.3rem;
-            }
-
-            .stats-card .stat-label {
-                font-size: 0.75rem;
-            }
-
-            .stats-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
-                margin: 0 auto 0.75rem;
-            }
-
-            .glass-card,
-            .table-card {
-                padding: 1.25rem;
-                border-radius: 16px;
-                margin-bottom: 1rem;
-            }
-
-            .table-card h5 {
-                font-size: 1rem;
-                margin-bottom: 1rem;
-            }
-
-            .table {
-                font-size: 0.9rem;
-            }
-
-            .table thead th {
-                padding: 0.75rem 0.5rem;
-                font-size: 0.75rem;
-            }
-
-            .table tbody td {
-                padding: 0.75rem 0.5rem;
-            }
-
-            .user-card {
-                padding: 1rem;
-                margin-bottom: 0.75rem;
-            }
-
-            .user-card .user-avatar {
-                width: 48px;
-                height: 48px;
-                font-size: 1rem;
-                margin: 0 auto 0.75rem;
-            }
-
-            .user-card h6 {
-                font-size: 0.9rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .user-card p {
-                font-size: 0.8rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .d-flex > div {
-                min-width: 0;
-            }
-
-            .table tbody td .d-flex {
-                gap: 0.5rem;
-            }
-
-            .table tbody td .d-flex > div {
-                overflow: hidden;
-            }
-
-            .table tbody td .d-flex div div {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                font-size: 0.9rem;
-            }
-
-            .table tbody td .d-flex small {
-                font-size: 0.7rem;
-            }
-        }
-
-        /* Small mobile devices */
-        @media (max-width: 480px) {
-            .sidebar {
-                width: 100%;
-            }
-
-            .sidebar-brand {
-                padding: 0.75rem 1rem;
-                margin-bottom: 0.75rem;
-            }
-
-            .sidebar-brand h4 {
-                font-size: 1rem;
-                margin-bottom: 0.15rem;
-            }
-
-            .sidebar-brand p {
-                font-size: 0.7rem;
-            }
-
-            .sidebar .nav {
-                padding: 0 0.25rem;
-                gap: 0.15rem;
-            }
-
-            .sidebar .nav-link {
-                padding: 8px 10px;
-                font-size: 0.8rem;
-                gap: 8px;
-                margin: 0;
-            }
-
-            .sidebar .nav-link i {
-                width: 16px;
-                min-width: 16px;
-                font-size: 0.85rem;
-            }
-
-            .main-content {
-                padding: 0.5rem 0.5rem;
-            }
-
-            .mobile-header {
-                padding: 0.5rem 0.75rem;
-                gap: 0.5rem;
-            }
-
-            .mobile-header h5 {
-                font-size: 0.9rem;
-                max-width: 150px;
-            }
-
-            .mobile-header .d-flex {
-                gap: 0.5rem;
-            }
-
-            .mobile-toggle {
-                padding: 0 !important;
-                font-size: 1rem;
-                margin: 0 !important;
-                background: transparent !important;
-                border: none !important;
-            }
-
-            .mobile-welcome-text {
-                font-size: 0.75rem !important;
-                margin: 0 !important;
-                background: transparent !important;
-                border: none !important;
-            }
-
-            .admin-menu-container {
-                background: transparent !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-
-            .admin-menu-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 0.9rem;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-
-            .page-header {
-                display: none;
-            }
-
-            .page-header h1 {
-                font-size: 1.2rem;
-                margin-bottom: 0.4rem;
-                gap: 0.4rem;
-            }
-
-            .page-header h1 i {
-                font-size: 1.2rem;
-            }
-
-            .page-header p {
-                font-size: 0.85rem;
-                margin: 0.4rem 0 0 0;
-            }
-
-            .stats-container {
+            .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.5rem;
-                margin-bottom: 1rem;
+                gap: 1rem;
             }
 
-            .stats-card {
-                padding: 1rem 0.75rem;
-                border-radius: 12px;
-            }
-
-            .stats-card h6 {
-                font-size: 0.65rem;
-                margin-bottom: 0.35rem;
-                text-transform: capitalize;
-                letter-spacing: 0.02em;
-            }
-
-            .stats-card h3 {
-                font-size: 1.5rem;
-                margin-bottom: 0.25rem;
-            }
-
-            .stats-card .stat-label {
-                font-size: 0.65rem;
-            }
-
-            .stats-card .stat-label i {
-                font-size: 0.6rem;
-            }
-
-            .stats-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-                margin: 0 auto 0.5rem;
-            }
-
-            .glass-card,
-            .table-card {
-                padding: 1rem 0.75rem;
-                border-radius: 12px;
-                margin-bottom: 0.75rem;
-            }
-
-            .table-card h5 {
-                font-size: 0.9rem;
-                margin-bottom: 0.75rem;
-                gap: 0.4rem;
-            }
-
-            .table-card h5 i {
-                font-size: 0.85rem;
-            }
-
-            .table {
-                font-size: 0.8rem;
-                margin-bottom: 0;
-            }
-
-            .table thead th {
-                padding: 0.5rem 0.4rem;
-                font-size: 0.65rem;
-                font-weight: 600;
-                white-space: nowrap;
-            }
-
-            .table tbody tr {
-                border: none;
-            }
-
-            .table tbody td {
-                padding: 0.6rem 0.4rem;
-                font-size: 0.8rem;
-            }
-
-            .table tbody td .d-flex {
-                gap: 0.4rem;
-                flex-wrap: nowrap;
-            }
-
-            .table tbody td .d-flex > div:first-child {
-                width: 28px;
-                height: 28px;
-                min-width: 28px;
-                border-radius: 6px;
-                font-size: 0.65rem;
-                flex-shrink: 0;
-            }
-
-            .table tbody td .d-flex > div:last-child {
-                min-width: 0;
-                flex: 1;
-                overflow: hidden;
-            }
-
-            .table tbody td .d-flex div div {
-                font-size: 0.8rem;
-                font-weight: 600;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .table tbody td .d-flex small {
-                font-size: 0.65rem;
-                color: var(--text-dim);
-                display: block;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .user-card {
-                padding: 0.75rem;
-                margin-bottom: 0.5rem;
-                border-radius: 12px;
-            }
-
-            .user-card .user-avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 0.9rem;
-                margin: 0 auto 0.5rem;
-            }
-
-            .user-card h6 {
-                font-size: 0.8rem;
-                margin-bottom: 0.15rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .user-card p {
-                font-size: 0.7rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .row {
-                margin-right: -0.25rem;
-                margin-left: -0.25rem;
-            }
-
-            .col-md-4,
-            .col-lg-3 {
-                padding-right: 0.25rem;
-                padding-left: 0.25rem;
-            }
-
-            .col-lg-6 {
-                padding-right: 0.25rem;
-                padding-left: 0.25rem;
-            }
-        }
-
-        /* Extra small devices (very small phones) */
-        @media (max-width: 360px) {
-            .sidebar .nav-link span {
-                display: none;
-            }
-
-            .sidebar .nav-link {
-                justify-content: center;
-                padding: 8px;
-            }
-
-            .page-header h1 {
-                font-size: 1.1rem;
-            }
-
-            .stats-container {
+            .table-section {
                 grid-template-columns: 1fr;
             }
 
-            .stats-card h3 {
+            .stat-card {
+                padding: 1.25rem;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .stat-card h3 {
+                font-size: 1.5rem;
+            }
+
+            .stat-card h6 {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+
+            .welcome-banner {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                border-radius: 16px;
+            }
+
+            .welcome-banner h2 {
+                font-size: 1.2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            .stat-card h3 {
                 font-size: 1.3rem;
             }
 
-            .table-card h5 span {
-                display: none;
+            .users-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
-    <link href="assets/css/mobile-fixes.css" rel="stylesheet">
-    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
-    <script src="assets/js/menu-logic.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
     <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="overlay" onclick="toggleSidebar(event)"></div>
+    <div id="overlay" onclick="toggleSidebar()"></div>
     
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="d-flex align-items-center justify-content-between w-100">
-            <button class="mobile-toggle" onclick="toggleSidebar(event)">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="mobile-welcome-text">
-                <div style="color: #06b6d4; font-weight: 700; font-size: 0.9rem;">Welcome back, <span style="color: #8b5cf6;">
-                <?php echo htmlspecialchars($_SESSION['username']); ?>
-                </span>!</div>
-            </div>
-            <div class="admin-menu-container">
-                <div class="admin-menu-btn" onclick="toggleAdminMenu(event)">
-                    <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
-                </div>
-                <div class="admin-dropdown" id="adminDropdown">
-                    <a href="manage_users.php">
-                        <i class="fas fa-users"></i>
-                        <span>Manage Users</span>
-                    </a>
-                    <a href="logout.php">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <h4><i class="fas fa-crown me-2"></i>SilentMultiPanel</h4>
+            <h4><i class="fas fa-crown"></i>SilentMultiPanel</h4>
             <p>Admin Control Panel</p>
         </div>
         <nav class="nav">
-            <a class="nav-link active" href="admin_dashboard.php">
-                <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-            </a>
-            <a class="nav-link" href="stock_alerts.php">
-                <i class="fas fa-bell"></i><span>Stock Alerts</span>
-            </a>
-            <a class="nav-link" href="add_mod.php">
-                <i class="fas fa-plus"></i><span>Add Mod Name</span>
-            </a>
-            <a class="nav-link" href="manage_mods.php">
-                <i class="fas fa-edit"></i><span>Manage Mods</span>
-            </a>
-            <a class="nav-link" href="upload_mod.php">
-                <i class="fas fa-upload"></i><span>Upload Mod APK</span>
-            </a>
-            <a class="nav-link" href="mod_list.php">
-                <i class="fas fa-list"></i><span>Mod APK List</span>
-            </a>
-            <a class="nav-link" href="add_license.php">
-                <i class="fas fa-key"></i><span>Add License Key</span>
-            </a>
-            <a class="nav-link" href="licence_key_list.php">
-                <i class="fas fa-key"></i><span>License Key List</span>
-            </a>
-            <a class="nav-link" href="available_keys.php">
-                <i class="fas fa-key"></i><span>Available Keys</span>
-            </a>
-            <a class="nav-link" href="manage_users.php">
-                <i class="fas fa-users"></i><span>Manage Users</span>
-            </a>
-            <a class="nav-link" href="edit_user.php">
-                <i class="fas fa-wallet"></i><span>Add Balance</span>
-            </a>
-            <a class="nav-link" href="transactions.php">
-                <i class="fas fa-exchange-alt"></i><span>Transactions</span>
-            </a>
-            <a class="nav-link" href="referral_codes.php">
-                <i class="fas fa-tag"></i><span>Referral Codes</span>
-            </a>
-            <a class="nav-link" href="admin_block_reset_requests.php">
-                <i class="fas fa-shield-alt"></i><span>Block & Reset</span>
-            </a>
-            <a class="nav-link" href="settings.php">
-                <i class="fas fa-cog"></i><span>Settings</span>
-            </a>
-            <a class="nav-link" href="logout.php">
-                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-            </a>
+            <a class="nav-link active" href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            <a class="nav-link" href="stock_alerts.php"><i class="fas fa-bell"></i><span>Stock Alerts</span></a>
+            <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i><span>Add Mod</span></a>
+            <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i><span>Manage Mods</span></a>
+            <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i><span>Upload APK</span></a>
+            <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i><span>Mod List</span></a>
+            <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i><span>Add License</span></a>
+            <a class="nav-link" href="licence_key_list.php"><i class="fas fa-key"></i><span>License List</span></a>
+            <a class="nav-link" href="available_keys.php"><i class="fas fa-key"></i><span>Available Keys</span></a>
+            <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i><span>Manage Users</span></a>
+            <a class="nav-link" href="edit_user.php"><i class="fas fa-wallet"></i><span>Add Balance</span></a>
+            <a class="nav-link" href="transactions.php"><i class="fas fa-exchange-alt"></i><span>Transactions</span></a>
+            <a class="nav-link" href="referral_codes.php"><i class="fas fa-tag"></i><span>Referral Codes</span></a>
+            <a class="nav-link" href="admin_block_reset_requests.php"><i class="fas fa-shield-alt"></i><span>Block & Reset</span></a>
+            <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
         </nav>
     </div>
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1><i class="fas fa-crown me-2"></i>SilentMultiPanel</h1>
-            <p>Welcome back, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>!</p>
+        <!-- Top Bar (Mobile) -->
+        <div class="top-bar">
+            <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="user-info">
+                <span style="color: var(--secondary); font-weight: 700;">Welcome back, <span style="color: var(--primary);"><?php echo htmlspecialchars($_SESSION['username']); ?></span>!</span>
+                <div class="user-avatar" onclick="toggleUserDropdown()">
+                    <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+                    <a href="logout.php"><i class="fas fa-sign-out-alt"></i>Logout</a>
+                </div>
+            </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="stats-container">
-            <div class="stats-card">
-                <div class="stats-icon">
-                    <i class="fas fa-box"></i>
-                </div>
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <h2><i class="fas fa-wave-hand"></i> Welcome back, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>!</h2>
+            <p>You have full control over the SilentMultiPanel admin system. Manage mods, licenses, users, and more.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-box"></i></div>
                 <h6>Total Mods</h6>
                 <h3><?php echo $stats['total_mods']; ?></h3>
-                <span class="stat-label"><i class="fas fa-chart-line me-1"></i>Active mods</span>
+                <span class="stat-label"><i class="fas fa-chart-line"></i> Active mods</span>
             </div>
-            <div class="stats-card">
-                <div class="stats-icon">
-                    <i class="fas fa-key"></i>
-                </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-key"></i></div>
                 <h6>License Keys</h6>
                 <h3><?php echo $stats['total_keys']; ?></h3>
-                <span class="stat-label"><i class="fas fa-key me-1"></i>Total generated</span>
+                <span class="stat-label"><i class="fas fa-key"></i> Total generated</span>
             </div>
-            <div class="stats-card">
-                <div class="stats-icon">
-                    <i class="fas fa-users"></i>
-                </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
                 <h6>Total Users</h6>
                 <h3><?php echo $stats['total_users']; ?></h3>
-                <span class="stat-label"><i class="fas fa-user-plus me-1"></i>Registered users</span>
+                <span class="stat-label"><i class="fas fa-user-plus"></i> Registered users</span>
             </div>
-            <div class="stats-card">
-                <div class="stats-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
                 <h6>Sold Licenses</h6>
                 <h3><?php echo $stats['sold_keys']; ?></h3>
-                <span class="stat-label"><i class="fas fa-coins me-1"></i>Revenue generated</span>
+                <span class="stat-label"><i class="fas fa-coins"></i> Revenue generated</span>
             </div>
         </div>
 
         <!-- All Users Section -->
-        <div class="table-card">
+        <div class="glass-card">
             <h5><i class="fas fa-users"></i>All Users</h5>
-            <div class="row">
+            <div class="users-grid">
 <?php
 try {
     $stmt = $pdo->query("SELECT username, role FROM users WHERE role = 'user' ORDER BY username ASC");
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     if (empty($users)) {
-        echo '<div class="col-12"><p style="text-align: center; color: var(--text-dim); padding: 2rem 0;">No users registered yet</p></div>';
+        echo '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim); padding: 2rem 0;">No users registered yet</div>';
     } else {
-        foreach ($users as $userItem):
-            $initials = strtoupper(substr($userItem['username'], 0, 2));
-            $roleDisplay = $userItem['role'] === 'user' ? 'User Account' : 'Administrator';
+        foreach ($users as $user):
+            $initials = strtoupper(substr($user['username'], 0, 2));
 ?>
-                <div class="col-md-4 col-lg-3 mb-3">
-                    <div class="user-card">
-                        <div class="user-avatar">
-                            <?php echo $initials; ?>
-                        </div>
-                        <h6><?php echo htmlspecialchars($userItem['username']); ?></h6>
-                        <p><?php echo $roleDisplay; ?></p>
-                    </div>
+                <div class="user-card">
+                    <div class="user-avatar-lg"><?php echo $initials; ?></div>
+                    <h6><?php echo htmlspecialchars($user['username']); ?></h6>
+                    <p>User Account</p>
                 </div>
 <?php
         endforeach;
     }
 } catch (Exception $e) {
-    echo '<div class="col-12"><p style="color: var(--accent); text-align: center; padding: 2rem 0;">Unable to load users</p></div>';
+    echo '<div style="color: var(--accent); text-align: center; padding: 2rem 0;">Unable to load users</div>';
 }
 ?>
             </div>
         </div>
 
         <!-- Recent Data Tables -->
-        <div class="row">
-            <div class="col-lg-6 mb-4">
-                <div class="table-card">
-                    <h5><i class="fas fa-box"></i>Recent Mods</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th class="d-none d-sm-table-cell">Date & Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($recentMods)): ?>
-                                <tr>
-                                    <td colspan="2" style="text-align: center; color: var(--text-dim); padding: 2rem 0;">
-                                        <i class="fas fa-box fa-2x mb-2 d-block" style="opacity: 0.5;"></i>
-                                        No mods uploaded yet
-                                    </td>
-                                </tr>
-                                <?php else: ?>
-                                    <?php foreach ($recentMods as $mod): ?>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div style="width: 35px; height: 35px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;">
-                                                    <i class="fas fa-mobile-alt text-white"></i>
-                                                </div>
-                                                <div style="min-width: 0;">
-                                                    <div style="font-weight: 600; color: #06b6d4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($mod['name']); ?></div>
-                                                    <small style="color: #8b5cf6; font-weight: 500; display: none;" class="d-sm-none"><?php echo date('M d, Y H:i', strtotime($mod['created_at'])); ?></small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="d-none d-sm-table-cell" style="color: #06b6d4; font-weight: 600;"><?php echo date('M d, Y H:i', strtotime($mod['created_at'])); ?></td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+        <div class="table-section">
+            <div class="table-card">
+                <h5><i class="fas fa-box"></i>Recent Mods</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+<?php
+if (empty($recentMods)):
+    echo '<tr><td colspan="2" style="text-align: center; padding: 2rem 0;">No mods uploaded yet</td></tr>';
+else:
+    foreach ($recentMods as $mod):
+?>
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; color: white;">
+                                            <i class="fas fa-mobile-alt"></i>
+                                        </div>
+                                        <span style="color: var(--secondary); font-weight: 600;"><?php echo htmlspecialchars($mod['name']); ?></span>
+                                    </div>
+                                </td>
+                                <td style="color: var(--secondary); font-weight: 600;"><?php echo date('M d, Y H:i', strtotime($mod['created_at'])); ?></td>
+                            </tr>
+<?php
+    endforeach;
+endif;
+?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="col-lg-6 mb-4">
-                <div class="table-card">
-                    <h5><i class="fas fa-users"></i>Recent Users</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th class="d-none d-sm-table-cell">Join Date & Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($recentUsers)): ?>
-                                <tr>
-                                    <td colspan="2" style="text-align: center; color: var(--text-dim); padding: 2rem 0;">
-                                        <i class="fas fa-users fa-2x mb-2 d-block" style="opacity: 0.5;"></i>
-                                        No users registered yet
-                                    </td>
-                                </tr>
-                                <?php else: ?>
-                                    <?php foreach ($recentUsers as $user): ?>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div style="width: 35px; height: 35px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem; flex-shrink: 0;">
-                                                    <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
-                                                </div>
-                                                <div style="min-width: 0;">
-                                                    <div style="font-weight: 600; color: #06b6d4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($user['username']); ?></div>
-                                                    <small style="color: #8b5cf6; font-weight: 500; display: none;" class="d-sm-none"><?php echo date('M d, Y H:i', strtotime($user['created_at'])); ?></small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="d-none d-sm-table-cell" style="color: #06b6d4; font-weight: 600;"><?php echo date('M d, Y H:i', strtotime($user['created_at'])); ?></td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+
+            <div class="table-card">
+                <h5><i class="fas fa-users"></i>Recent Users</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Join Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+<?php
+if (empty($recentUsers)):
+    echo '<tr><td colspan="2" style="text-align: center; padding: 2rem 0;">No users registered yet</td></tr>';
+else:
+    foreach ($recentUsers as $user):
+?>
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem; flex-shrink: 0;">
+                                            <?php echo strtoupper(substr($user['username'], 0, 2)); ?>
+                                        </div>
+                                        <span style="color: var(--secondary); font-weight: 600;"><?php echo htmlspecialchars($user['username']); ?></span>
+                                    </div>
+                                </td>
+                                <td style="color: var(--secondary); font-weight: 600;"><?php echo date('M d, Y H:i', strtotime($user['created_at'])); ?></td>
+                            </tr>
+<?php
+    endforeach;
+endif;
+?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        function toggleAdminMenu(event) {
-            if (event) event.stopPropagation();
-            const dropdown = document.getElementById('adminDropdown');
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('active');
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('show');
         }
 
-        function closeAdminMenu() {
-            const dropdown = document.getElementById('adminDropdown');
-            dropdown.classList.remove('show');
-        }
-
-        function toggleSidebar(event) {
-            if (event) event.preventDefault();
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            
-            if (sidebar.classList.contains('show')) {
-                sidebar.classList.remove('show');
-                overlay.classList.remove('show');
-                document.body.style.overflow = '';
-            } else {
-                sidebar.classList.add('show');
-                overlay.classList.add('show');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('overlay');
-            const navLinks = document.querySelectorAll('.sidebar .nav-link');
-            const adminDropdown = document.getElementById('adminDropdown');
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth <= 768) {
-                        sidebar.classList.remove('show');
-                        overlay.classList.remove('show');
-                        document.body.style.overflow = '';
-                    }
-                    if (this.href === window.location.href) {
-                        this.classList.add('active');
-                    }
-                });
-            });
-
-            if (overlay) {
-                overlay.addEventListener('click', toggleSidebar);
-            }
-
-            // Close admin dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (adminDropdown && !e.target.closest('.admin-menu-container')) {
-                    adminDropdown.classList.remove('show');
-                }
-            });
-
-            // Close admin dropdown when clicking a link
-            if (adminDropdown) {
-                adminDropdown.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', closeAdminMenu);
-                });
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('userDropdown');
+            const avatar = e.target.closest('.user-avatar');
+            if (!avatar && dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
             }
         });
 
-        window.addEventListener('resize', function() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('overlay');
-            if (window.innerWidth > 768) {
-                sidebar.classList.remove('show');
-                overlay.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        });
-
-        // Animate stats numbers on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const statsCards = document.querySelectorAll('.stats-card h3');
-            statsCards.forEach(stat => {
-                const finalValue = parseInt(stat.textContent);
-                if (finalValue > 0) {
-                    let currentValue = 0;
-                    const increment = Math.max(1, Math.floor(finalValue / 20));
-                    
-                    const timer = setInterval(() => {
-                        currentValue += increment;
-                        if (currentValue >= finalValue) {
-                            stat.textContent = finalValue;
-                            clearInterval(timer);
-                        } else {
-                            stat.textContent = currentValue;
-                        }
-                    }, 30);
-                }
-            });
-        });
+        // Close sidebar when clicking overlay
+        document.getElementById('overlay').addEventListener('click', toggleSidebar);
     </script>
 </body>
 </html>
