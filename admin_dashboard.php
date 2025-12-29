@@ -309,31 +309,32 @@ try {
         }
 
         .welcome-banner {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15));
-            border: 2px solid;
-            border-image: linear-gradient(135deg, var(--primary), var(--secondary)) 1;
-            border-radius: 24px;
-            padding: 2rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(6, 182, 212, 0.08));
+            border: 1.5px solid rgba(139, 92, 246, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
             margin-bottom: 2rem;
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(10px);
         }
 
         .welcome-banner h2 {
-            color: var(--secondary);
+            color: var(--text-main);
             font-weight: 700;
             margin-bottom: 0.5rem;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
+            letter-spacing: -0.5px;
         }
 
         .welcome-banner p {
-            color: var(--primary);
-            font-size: 1rem;
+            color: var(--text-dim);
+            font-size: 0.95rem;
             margin: 0;
+            line-height: 1.5;
         }
 
         .welcome-banner p strong {
             color: var(--secondary);
-            font-weight: 700;
+            font-weight: 600;
         }
 
         .stats-grid {
@@ -379,7 +380,7 @@ try {
         .stat-icon {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: linear-gradient(135deg, var(--secondary), rgba(6, 182, 212, 0.6));
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -391,23 +392,27 @@ try {
 
         .stat-label {
             color: var(--text-dim);
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
             display: block;
+            font-weight: 500;
         }
 
         .stat-card h3 {
-            color: var(--secondary);
+            color: var(--text-main);
             font-weight: 700;
-            font-size: 2rem;
-            margin: 0.5rem 0;
+            font-size: 2.2rem;
+            margin: 0.75rem 0 0;
+            letter-spacing: -1px;
         }
 
         .stat-card h6 {
             color: var(--text-dim);
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .table-section {
@@ -675,35 +680,35 @@ try {
 
         <!-- Welcome Banner -->
         <div class="welcome-banner">
-            <h2><i class="fas fa-wave-hand"></i> Welcome back, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>!</h2>
-            <p>You have full control over the SilentMultiPanel admin system. Manage mods, licenses, users, and more.</p>
+            <h2>Welcome back, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong></h2>
+            <p>Full administrative control over SilentMultiPanel. Manage mods, licensing, users, and transactions seamlessly.</p>
         </div>
 
         <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-box"></i></div>
+                <div class="stat-icon"><i class="fas fa-cube"></i></div>
                 <h6>Total Mods</h6>
                 <h3><?php echo $stats['total_mods']; ?></h3>
-                <span class="stat-label"><i class="fas fa-chart-line"></i> Active mods</span>
+                <span class="stat-label">Active in system</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-key"></i></div>
+                <div class="stat-icon"><i class="fas fa-lock"></i></div>
                 <h6>License Keys</h6>
                 <h3><?php echo $stats['total_keys']; ?></h3>
-                <span class="stat-label"><i class="fas fa-key"></i> Total generated</span>
+                <span class="stat-label">Generated licenses</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-icon"><i class="fas fa-user-group"></i></div>
                 <h6>Total Users</h6>
                 <h3><?php echo $stats['total_users']; ?></h3>
-                <span class="stat-label"><i class="fas fa-user-plus"></i> Registered users</span>
+                <span class="stat-label">Active accounts</span>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                <div class="stat-icon"><i class="fas fa-chart-simple"></i></div>
                 <h6>Sold Licenses</h6>
                 <h3><?php echo $stats['sold_keys']; ?></h3>
-                <span class="stat-label"><i class="fas fa-coins"></i> Revenue generated</span>
+                <span class="stat-label">License revenue</span>
             </div>
         </div>
 
