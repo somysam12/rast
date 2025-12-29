@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="silentmultipanel">
-    
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
+    package="com.silentmultipanel.app">
+
+    <uses-sdk
+        android:minSdkVersion="21"
+        android:targetSdkVersion="30" />
+
     <uses-permission android:name="android.permission.INTERNET" />
-    
-    <application android:label="silentmultipanel">
-        <activity android:name="silentmultipanel.main" android:exported="true">
+
+    <application
+        android:label="SilentMultiPanel"
+        android:hardwareAccelerated="true"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
     </application>
+
 </manifest>

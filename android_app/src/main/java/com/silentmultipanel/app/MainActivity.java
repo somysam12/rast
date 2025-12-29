@@ -1,4 +1,4 @@
-package silentmultipanel;
+package com.silentmultipanel.app;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -8,7 +8,7 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ProgressBar;
 
-public class main extends Activity {
+public class MainActivity extends Activity {
     
     private WebView view;
     private ProgressBar loader;
