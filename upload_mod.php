@@ -76,58 +76,237 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
     <title>Upload Mod APK</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --purple: #8b5cf6;
-            --dark: #0f172a;
-            --light: #f8fafc;
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --accent: #ec4899;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(139, 92, 246, 0.2);
         }
-        body { background: var(--light); font-family: 'Inter', sans-serif; }
-        .sidebar { background: white; border-right: 1px solid #e2e8f0; min-height: 100vh; position: fixed; width: 280px; padding: 2rem 0; }
-        .sidebar .nav-link { color: #64748b; padding: 12px 20px; margin: 4px 16px; border-radius: 8px; }
-        .sidebar .nav-link.active { background: var(--purple); color: white; }
-        .sidebar .nav-link:hover { background: var(--purple); color: white; }
-        .main { margin-left: 280px; padding: 2rem; }
-        .card { border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, var(--purple) 0%, #7c3aed 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }
-        .file-upload { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; }
-        .file-upload:hover { border-color: var(--purple); }
-        .file-upload.active { border-color: var(--purple); background: rgba(139,92,246,0.05); }
-        .alert { border-radius: 8px; border: none; }
-        .btn-primary { background: var(--purple); border: none; }
-        .btn-primary:hover { background: #7c3aed; }
-        .table { border-radius: 8px; overflow: hidden; }
-        .table thead { background: var(--purple); color: white; }
-        @media (max-width: 768px) { .sidebar { width: 100%; position: relative; min-height: auto; } .main { margin-left: 0; } }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .sidebar {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 1px solid var(--border-light);
+            min-height: 100vh;
+            position: fixed;
+            width: 280px;
+            padding: 2rem 0;
+            z-index: 100;
+        }
+
+        .sidebar h4 {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #f8fafc, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-dim);
+            padding: 12px 20px;
+            margin: 4px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar .nav-link:hover {
+            color: var(--text-main);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+        }
+
+        .main {
+            margin-left: 280px;
+            padding: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 2.5rem;
+            border-radius: 24px;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h2 {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .form-label {
+            color: var(--text-dim);
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .form-control, .form-select {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1.5px solid var(--border-light);
+            border-radius: 14px;
+            padding: 12px 16px;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(139, 92, 246, 0.05);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+            color: white;
+        }
+
+        .form-select option {
+            background: #0f172a;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 14px;
+            padding: 12px 30px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .table {
+            color: var(--text-main);
+            border-color: var(--border-light);
+        }
+
+        .table thead {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .table-hover tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-main);
+        }
+
+        .alert {
+            border-radius: 16px;
+            border: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; position: relative; min-height: auto; border-right: none; border-bottom: 1px solid var(--border-light); }
+            .main { margin-left: 0; padding: 1.5rem; }
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 sidebar">
-                <h4 style="color: var(--purple); font-weight: 700; padding: 0 20px; margin-bottom: 2rem;">
-                    <i class="fas fa-shield me-2"></i>Multi Panel
+                <h4 style="padding: 0 20px;">
+                    <i class="fas fa-bolt me-2"></i>Multi Panel
                 </h4>
                 <nav class="nav flex-column">
-                    <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
-                    <a class="nav-link" href="add_mod.php"><i class="fas fa-plus me-2"></i>Add Mod</a>
-                    <a class="nav-link active" href="upload_mod.php"><i class="fas fa-upload me-2"></i>Upload APK</a>
-                    <a class="nav-link" href="mod_list.php"><i class="fas fa-list me-2"></i>Mod List</a>
-                    <a class="nav-link" href="add_license.php"><i class="fas fa-key me-2"></i>Add License</a>
-                    <a class="nav-link" href="manage_users.php"><i class="fas fa-users me-2"></i>Manage Users</a>
-                    <a class="nav-link" href="settings.php"><i class="fas fa-cog me-2"></i>Settings</a>
-                    <hr>
-                    <a class="nav-link" href="logout.php"><i class="fas fa-sign-out me-2"></i>Logout</a>
+                    <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
+                    <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
+                    <a class="nav-link active" href="upload_mod.php"><i class="fas fa-upload"></i>Upload APK</a>
+                    <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i>Mod List</a>
+                    <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
+                    <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+                    <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
+                    <hr style="border-color: var(--border-light); margin: 1rem 16px;">
+                    <a class="nav-link" href="logout.php" style="color: #fca5a5;"><i class="fas fa-sign-out"></i>Logout</a>
                 </nav>
             </div>
             
             <div class="col-md-9 main">
                 <div class="header">
-                    <h2><i class="fas fa-upload me-2"></i>Upload Mod APK</h2>
-                    <p>Upload your APK files without any size restrictions</p>
+                    <h2><i class="fas fa-upload me-3"></i>Upload Mod APK</h2>
+                    <p class="mb-0 opacity-75">Upload your APK files without any size restrictions</p>
                 </div>
                 
-                <div class="card p-4 mb-4">
+                <div class="glass-card p-4 mb-4">
                     <?php if ($success): ?>
                         <div class="alert alert-success alert-dismissible fade show">
                             <strong><i class="fas fa-check-circle me-2"></i><?php echo $success; ?></strong>
@@ -420,8 +599,8 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
                     </form>
                 </div>
                 
-                <div class="card p-4">
-                    <h5 class="mb-4"><i class="fas fa-list me-2" style="color: var(--purple);"></i>Uploaded APKs</h5>
+                <div class="glass-card p-4">
+                    <h5 class="mb-4"><i class="fas fa-list me-2" style="color: var(--primary);"></i>Uploaded APKs</h5>
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
