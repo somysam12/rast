@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SilentMultiPanel" default="help">
-    <property name="target" value="android-34" />
+	<property name="target" value="android-34" />
 </project>
