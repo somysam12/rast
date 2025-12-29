@@ -130,7 +130,12 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
             position: fixed;
             width: 280px;
             padding: 2rem 0;
-            z-index: 100;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
         }
 
         .sidebar h4 {
@@ -152,6 +157,7 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
             display: flex;
             align-items: center;
             gap: 12px;
+            text-decoration: none;
         }
 
         .sidebar .nav-link:hover {
@@ -170,6 +176,22 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
             padding: 2.5rem;
             position: relative;
             z-index: 1;
+            transition: margin-left 0.3s ease;
+        }
+
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1100;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
         }
 
         .glass-card {
@@ -274,16 +296,31 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; position: relative; min-height: auto; border-right: none; border-bottom: 1px solid var(--border-light); }
-            .main { margin-left: 0; padding: 1.5rem; }
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 250px;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main {
+                margin-left: 0;
+                padding: 5rem 1.5rem 1.5rem;
+            }
+            .hamburger {
+                display: block;
+            }
         }
     </style>
 </head>
 <body>
+    <button class="hamburger" id="hamburgerBtn">
+        <i class="fas fa-bars"></i>
+    </button>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3 sidebar">
+            <div class="col-md-3 sidebar" id="sidebar">
                 <h4 style="padding: 0 20px;">
                     <i class="fas fa-bolt me-2"></i>Multi Panel
                 </h4>
@@ -789,5 +826,22 @@ $uploads = $pdo->query("SELECT ma.*, m.name FROM mod_apks ma LEFT JOIN mods m ON
     }
     </script>
     <script src="assets/js/scroll-restore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('hamburgerBtn').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburgerBtn');
+            if (window.innerWidth <= 992) {
+                if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+    </script>
 </body>
 </html>
