@@ -196,6 +196,7 @@ if (!$user) {
                     <select name="role" class="input-field" style="padding-left: 48px; -webkit-appearance: none;">
                         <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
                         <option value="reseller" <?php echo $user['role'] === 'reseller' ? 'selected' : ''; ?>>Reseller</option>
+                        <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
                     </select>
                 </div>
                 <div class="form-group">
