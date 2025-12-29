@@ -61,7 +61,7 @@ $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_co
 $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Statistics
-$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > datetime('now') OR expires_at > NOW()) THEN 1 END) as active FROM referral_codes");
+$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > datetime('now')) THEN 1 END) as active FROM referral_codes");
 $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
