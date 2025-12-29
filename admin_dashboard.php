@@ -212,29 +212,41 @@ try {
 
         .mobile-header {
             display: none;
-            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
+            background: transparent !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
             padding: 0.75rem 1rem;
             position: sticky;
             top: 0;
             z-index: 999;
-            border-bottom: none;
+            border: none !important;
+            border-bottom: none !important;
             width: 100%;
+            box-shadow: none !important;
+        }
+
+        .mobile-header .d-flex {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
         }
 
         .mobile-welcome-text {
             flex: 1;
             text-align: center;
             margin: 0 1rem;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
         }
 
         .mobile-toggle {
-            background: transparent;
-            border: none;
+            background: transparent !important;
+            border: none !important;
             color: #06b6d4;
-            padding: 0.75rem;
-            border-radius: 12px;
+            padding: 0 !important;
+            border-radius: 0 !important;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 700;
@@ -587,11 +599,15 @@ try {
 
         .admin-menu-container {
             position: relative;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
         }
 
         .admin-menu-btn {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: none !important;
             border-radius: 50%;
             width: 44px;
             height: 44px;
@@ -802,6 +818,15 @@ try {
                 justify-content: space-between;
                 align-items: center;
                 padding: 0.75rem 0.5rem;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            .mobile-header .d-flex {
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
             }
 
             .mobile-header h5 {
@@ -816,6 +841,8 @@ try {
             .mobile-welcome-text {
                 font-size: 0.8rem !important;
                 margin: 0 0.5rem;
+                background: transparent !important;
+                border: none !important;
             }
 
             .page-header {
@@ -1001,14 +1028,30 @@ try {
             }
 
             .mobile-toggle {
-                padding: 0.5rem;
+                padding: 0;
                 font-size: 1rem;
                 margin: 0;
                 margin-right: 0.5rem;
+                background: transparent !important;
+                border: none !important;
             }
 
             .mobile-welcome-text {
                 font-size: 0.75rem !important;
+                background: transparent !important;
+                border: none !important;
+            }
+
+            .admin-menu-container {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+
+            .admin-menu-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
             }
 
             .page-header {
