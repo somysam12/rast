@@ -33,10 +33,16 @@ try {
 // Pre-select user if provided in URL
 $selectedUserId = $_GET['user_id'] ?? '';
 
-// Get all users for dropdown
+// Get all users for dropdown or search
 $allUsers = [];
+$search = $_GET['search'] ?? '';
 try {
-    $stmt = $pdo->query("SELECT id, username, email, balance FROM users WHERE role = 'user' ORDER BY username");
+    if (!empty($search)) {
+        $stmt = $pdo->prepare("SELECT id, username, email, balance FROM users WHERE role = 'user' AND (username LIKE ? OR email LIKE ?) ORDER BY username");
+        $stmt->execute(['%' . $search . '%', '%' . $search . '%']);
+    } else {
+        $stmt = $pdo->query("SELECT id, username, email, balance FROM users WHERE role = 'user' ORDER BY username LIMIT 100");
+    }
     $allUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     $allUsers = [];
@@ -123,16 +129,28 @@ if ($_POST) {
             </div>
 
             <!-- Add Balance Form -->
-            <div style="background: white; padding: 30px; border-radius: 12px; border: 1px solid #e0e0e0; max-width: 500px;">
+            <div style="background: white; padding: 30px; border-radius: 12px; border: 1px solid #e0e0e0; max-width: 600px;">
                 <h4 style="margin-bottom: 20px;">Add Balance</h4>
+                
+                <!-- Search User -->
+                <form method="GET" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Search user by username or email..." value="<?php echo htmlspecialchars($search); ?>">
+                        <button class="btn btn-outline-primary" type="submit">Search</button>
+                        <?php if(!empty($search)): ?>
+                            <a href="add_balance.php" class="btn btn-outline-secondary">Clear</a>
+                        <?php endif; ?>
+                    </div>
+                </form>
+
                 <form method="POST">
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Select User</label>
                         <select name="user_id" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;" required>
-                            <option value="">-- Select User --</option>
+                            <option value="">-- <?php echo empty($allUsers) ? 'No users found' : 'Select User'; ?> --</option>
                             <?php foreach ($allUsers as $user): ?>
                                 <option value="<?php echo htmlspecialchars($user['id']); ?>" <?php echo $selectedUserId == $user['id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($user['username']); ?> (₹<?php echo number_format($user['balance'], 2); ?>)
+                                    <?php echo htmlspecialchars($user['username']); ?> (<?php echo formatCurrency($user['balance']); ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
