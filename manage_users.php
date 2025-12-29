@@ -153,6 +153,8 @@ $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body>
+    <?php include 'includes/admin_header.php'; ?>
+
     <div class="overlay" id="overlay"></div>
     <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
     <div class="sidebar" id="sidebar">

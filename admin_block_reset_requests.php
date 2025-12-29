@@ -600,6 +600,8 @@ try {
     </style>
 </head>
 <body>
+    <?php include 'includes/admin_header.php'; ?>
+
     <!-- Hamburger Button -->
     <button class="hamburger-btn" onclick="toggleMenu()" id="hamburgerBtn">
         <i class="fas fa-bars"></i>

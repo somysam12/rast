@@ -444,6 +444,8 @@ try {
     </style>
 </head>
 <body>
+    <?php include 'includes/admin_header.php'; ?>
+
     <div class="settings-wrapper">
         <div class="glass-card">
             <div class="brand-section">
