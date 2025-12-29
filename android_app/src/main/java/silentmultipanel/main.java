@@ -1,4 +1,4 @@
-package web.browser;
+package silentmultipanel;
 
 import android.app.Activity;
 import android.os.Bundle;
