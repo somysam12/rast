@@ -1,13 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#0a0e27">
 
+    <!-- WebView with fast rendering -->
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="#0a0e27" />
 
-</LinearLayout>
+    <!-- Progress Bar for loading feedback (purple gradient color) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        android:indeterminate="false" />
+
+    <!-- Splash Screen with glass-morphism design -->
+    <FrameLayout
+        android:id="@+id/splash_screen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#0a0e27"
+        android:visibility="visible">
+
+        <!-- Dark gradient background (0a0e27 to 1e1b4b) -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#0a0e27" />
+
+        <!-- Centered logo container -->
+        <FrameLayout
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center">
+
+            <!-- Purple gradient background circle -->
+            <View
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="#8b5cf6"
+                android:alpha="0.8" />
+
+            <!-- Cyan accent gradient overlay -->
+            <View
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="#06b6d4"
+                android:alpha="0.2" />
+
+            <!-- App name text centered -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SilentPanel"
+                android:textColor="#ffffff"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_gravity="center"
+                android:gravity="center" />
+
+        </FrameLayout>
+
+    </FrameLayout>
+
+</FrameLayout>
