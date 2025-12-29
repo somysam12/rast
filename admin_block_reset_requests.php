@@ -424,6 +424,152 @@ try {
             font-weight: 700;
         }
 
+        .hamburger-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+            transition: all 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .hamburger-btn:active {
+            transform: scale(0.95);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            z-index: 99;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .menu-overlay.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 280px;
+            height: 100vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 2px solid rgba(139, 92, 246, 0.3);
+            z-index: 100;
+            padding: 20px;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .nav-menu.show {
+            left: 0;
+        }
+
+        .nav-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .nav-menu-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--primary);
+            transform: rotate(90deg);
+        }
+
+        .nav-menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-dim);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .nav-menu-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .nav-menu-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: rgba(139, 92, 246, 0.2);
+            margin: 15px 0;
+        }
+
+        .nav-menu-item.logout {
+            color: #fca5a5;
+        }
+
+        .nav-menu-item.logout:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ff6b6b;
+        }
+
         @media (max-width: 480px) {
             .glass-card {
                 padding: 30px 20px;
@@ -440,10 +586,100 @@ try {
                 align-items: flex-start;
                 gap: 8px;
             }
+
+            .hamburger-btn {
+                display: flex;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .hamburger-btn {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Hamburger Button -->
+    <button class="hamburger-btn" onclick="toggleMenu()" id="hamburgerBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu" id="navMenu">
+        <div class="nav-menu-header">
+            <span class="nav-menu-title">Menu</span>
+            <button class="close-btn" onclick="closeMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="nav-menu-items">
+            <a href="admin_dashboard.php" class="nav-menu-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="add_mod.php" class="nav-menu-item">
+                <i class="fas fa-plus"></i>
+                <span>Add Mod Name</span>
+            </a>
+            <a href="manage_mods.php" class="nav-menu-item">
+                <i class="fas fa-edit"></i>
+                <span>Manage Mods</span>
+            </a>
+            <a href="upload_mod.php" class="nav-menu-item">
+                <i class="fas fa-upload"></i>
+                <span>Upload Mod APK</span>
+            </a>
+            <a href="mod_list.php" class="nav-menu-item">
+                <i class="fas fa-list"></i>
+                <span>Mod APK List</span>
+            </a>
+            <a href="add_license.php" class="nav-menu-item">
+                <i class="fas fa-key"></i>
+                <span>Add License Key</span>
+            </a>
+            <a href="licence_key_list.php" class="nav-menu-item">
+                <i class="fas fa-key"></i>
+                <span>License Key List</span>
+            </a>
+            <a href="available_keys.php" class="nav-menu-item">
+                <i class="fas fa-key"></i>
+                <span>Available Keys</span>
+            </a>
+            <a href="manage_users.php" class="nav-menu-item">
+                <i class="fas fa-users"></i>
+                <span>Manage Users</span>
+            </a>
+            <a href="add_balance.php" class="nav-menu-item">
+                <i class="fas fa-wallet"></i>
+                <span>Add Balance</span>
+            </a>
+            <a href="transactions.php" class="nav-menu-item">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Transactions</span>
+            </a>
+            <a href="referral_codes.php" class="nav-menu-item">
+                <i class="fas fa-tag"></i>
+                <span>Referral Code</span>
+            </a>
+            <a href="settings.php" class="nav-menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <a href="logout.php" class="nav-menu-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+
     <div class="requests-wrapper">
         <div class="glass-card">
             <div class="brand-section">
@@ -515,5 +751,33 @@ try {
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const menuOverlay = document.getElementById('menuOverlay');
+            navMenu.classList.toggle('show');
+            menuOverlay.classList.toggle('show');
+        }
+
+        function closeMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const menuOverlay = document.getElementById('menuOverlay');
+            navMenu.classList.remove('show');
+            menuOverlay.classList.remove('show');
+        }
+
+        // Close menu when clicking on a menu item
+        document.querySelectorAll('.nav-menu-item').forEach(item => {
+            item.addEventListener('click', closeMenu);
+        });
+
+        // Close menu when pressing Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeMenu();
+            }
+        });
+    </script>
 </body>
 </html>
