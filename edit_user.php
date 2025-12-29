@@ -39,8 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user_id) {
         // Update logout limit
         $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit) 
                               VALUES (?, ?, ?) 
-                              ON DUPLICATE KEY UPDATE logout_limit = ?");
-        $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit, $logout_limit]);
+                              ON DUPLICATE KEY UPDATE logout_limit = VALUES(logout_limit)");
+        $stmt->execute([$user_id, $_SESSION['user_id'], $logout_limit]);
 
         // Update balance
         if ($balance_amount > 0) {
