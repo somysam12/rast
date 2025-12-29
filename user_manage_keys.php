@@ -452,7 +452,7 @@ try {
                                         </div>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
+<?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -492,20 +492,27 @@ try {
                     }, 300);
                 }
 
-                Swal.fire({
-                    title: 'Copied!',
-                    text: 'Key copied to clipboard',
-                    icon: 'success',
-                    background: 'rgba(15, 23, 42, 0.95)',
-                    color: '#fff',
+                // Close any existing SweetAlerts first
+                Swal.close();
+
+                // Show the toast with a definite timer and explicit closing
+                const toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
                     showConfirmButton: false,
                     timer: 1000,
                     timerProgressBar: true,
-                    toast: true,
-                    position: 'top-end',
-                    customClass: {
-                        popup: 'cyber-swal'
+                    background: 'rgba(15, 23, 42, 0.95)',
+                    color: '#fff',
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
                     }
+                });
+
+                toast.fire({
+                    icon: 'success',
+                    title: 'Copied to clipboard'
                 });
             });
         }
