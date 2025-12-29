@@ -1,0 +1,143 @@
+/* Global Mobile Fixes for SilentMultiPanel */
+:root {
+    --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+/* Fix overlapping and spacing issues on mobile */
+@media (max-width: 768px) {
+    .main-content {
+        padding-top: 20px !important;
+        margin-left: 0 !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+    /* Header & Logo Overlap Fix */
+    .modern-header, .mobile-header {
+        height: 70px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0 15px !important;
+        background: var(--card) !important;
+        border-bottom: 1px solid var(--line) !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1002 !important;
+    }
+
+    /* Logo Text wrapping fix */
+    .modern-header h2, .mobile-header h5, .sidebar-brand h4, .sidebar h4, .logo-text {
+        font-size: 1.1rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 180px !important;
+        margin: 0 !important;
+    }
+
+    /* Back Button Spacing Fix */
+    .back-btn-container, div[style*="position: absolute"][style*="top: 20px"] {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin-bottom: 25px !important;
+        display: block !important;
+        z-index: 10 !important;
+    }
+    
+    .back-button {
+        display: inline-flex !important;
+        padding: 10px 20px !important;
+        font-size: 0.95rem !important;
+        margin-top: 10px !important;
+        width: auto !important;
+    }
+
+    /* Font Adjustments to prevent overlap */
+    .page-header h2 {
+        font-size: 1.5rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .amount-text, .balance-card h2, .stats-card h2, .stats-card h3 {
+        font-size: 1.6rem !important;
+        word-break: break-all !important;
+    }
+
+    /* Sidebar Fixes */
+    .sidebar {
+        width: 280px !important;
+        z-index: 1050 !important;
+        overflow-y: auto !important;
+        max-height: 100vh !important;
+        position: fixed !important;
+        background: var(--card) !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        transition: transform 0.3s ease !important;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0) !important;
+        box-shadow: 0 0 25px rgba(0,0,0,0.5) !important;
+    }
+
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1040;
+    }
+
+    .mobile-overlay.show {
+        display: block;
+    }
+
+    .back-btn-anim {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--purple-gradient, linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%));
+        color: white !important;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+        z-index: 10;
+        position: relative;
+    }
+
+    .back-btn-anim:hover {
+        transform: translateX(-3px);
+        box-shadow: 0 6px 15px rgba(124, 58, 237, 0.4);
+    }
+    
+    .sidebar .nav-link {
+        padding: 15px 20px !important;
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h2 {
+        font-size: 1.3rem !important;
+    }
+    
+    .modern-header h2, .mobile-header h5 {
+        font-size: 1.05rem !important;
+        max-width: 160px !important;
+    }
+}
