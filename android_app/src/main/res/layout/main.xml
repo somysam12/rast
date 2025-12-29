@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<framelayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0a0e27">
     
-    <ProgressBar
+    <progressbar
         android:id="@+id/loader"
         android:layout_width="match_parent"
         android:layout_height="3dp"
@@ -12,12 +12,12 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:visibility="gone" />
     
-    <WebView
+    <webview
         android:id="@+id/view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
     
-    <Button
+    <button
         android:id="@+id/refresh"
         android:layout_width="56dp"
         android:layout_height="56dp"
@@ -25,8 +25,8 @@
         android:layout_marginBottom="20dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/refresh_btn"
-        android:text="R"
+        android:text="r"
         android:textColor="#ffffff"
         android:textSize="20sp" />
     
-</FrameLayout>
+</framelayout>

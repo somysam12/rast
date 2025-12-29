@@ -8,7 +8,7 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ProgressBar;
 
-public class Main extends Activity {
+public class main extends Activity {
     
     private WebView view;
     private ProgressBar loader;

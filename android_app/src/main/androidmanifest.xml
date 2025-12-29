@@ -5,8 +5,8 @@
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
     <uses-permission android:name="android.permission.INTERNET" />
     
-    <application android:label="SilentMultiPanel">
-        <activity android:name="web.browser.Main" android:exported="true">
+    <application android:label="silentmultipanel">
+        <activity android:name="web.browser.main" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
