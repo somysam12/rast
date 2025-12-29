@@ -1,3 +1,4 @@
+<?php require_once "includes/optimization.php"; ?>
 <?php
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
@@ -31,475 +32,496 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Mod - Multi Panel</title>
+    <title>Add Mod - SilentMultiPanel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --sidebar-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-light: #a78bfa;
-            --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border-light: #e2e8f0;
-            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --accent: #ec4899;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(139, 92, 246, 0.2);
         }
-        
-        [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --sidebar-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-light: #334155;
-        }
-        
+
         * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
+
+        html, body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%) !important;
+            background-attachment: fixed !important;
+            width: 100%;
+            height: 100%;
+            color: var(--text-main);
+            overflow-x: hidden;
         }
-        
-        .sidebar {
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-light);
-            min-height: 100vh;
+
+        body::before {
+            content: '';
             position: fixed;
-            width: 280px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .sidebar {
+            position: fixed;
             left: 0;
             top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            border-right: 1px solid var(--border-light);
             z-index: 1000;
+            overflow-y: auto;
+            padding: 1.5rem 0;
             transition: transform 0.3s ease;
-            box-shadow: var(--shadow-medium);
-            transform: translateX(0);
         }
-        
+
         .sidebar.hidden {
             transform: translateX(-100%);
         }
-        
-        .sidebar .nav-link {
-            color: var(--text-secondary);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin: 2px 12px;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            font-size: 0.9rem;
+
+        .sidebar-brand {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            text-align: center;
         }
-        
+
+        .sidebar-brand h4 {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-brand p {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        .sidebar .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0 1rem;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-dim);
+            padding: 12px 16px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
-            background-color: var(--purple);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            transform: translateX(2px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            transform: translateX(4px);
         }
-        
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 12px;
-            font-size: 1rem;
-        }
-        
+
         .main-content {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
-        
-        .main-content.full-width {
-            margin-left: 0;
-        }
-        
+
         .mobile-header {
             display: none;
-            background: var(--card-bg);
-            padding: 1rem;
-            box-shadow: var(--shadow-medium);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 1.5rem;
         }
-        
-        .mobile-toggle {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            border: none;
+
+        .hamburger-btn {
+            background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+            border: 2px solid rgba(6, 182, 212, 0.4) !important;
             color: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow-medium);
-            transition: all 0.2s ease;
-        }
-        
-        .mobile-toggle:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-large);
-        }
-        
-        .form-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: var(--shadow-medium);
-            border: 1px solid var(--border-light);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 10px 12px !important;
+            border-radius: 12px;
             transition: all 0.3s ease;
-        }
-        
-        .form-card:hover {
-            box-shadow: var(--shadow-large);
-        }
-        
-        .form-control {
-            border-radius: 8px;
-            border: 2px solid var(--border-light);
-            padding: 12px 16px;
-            transition: all 0.2s ease;
-            background: var(--card-bg);
-            font-size: 0.95rem;
-            color: var(--text-primary);
-        }
-        
-        .form-control:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-            background: var(--card-bg);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
             outline: none;
         }
-        
-        .form-control::placeholder {
-            color: var(--text-muted);
+
+        .hamburger-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+            border-color: rgba(6, 182, 212, 0.7);
         }
-        
-        .form-label {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-            color: white;
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 100%);
-            box-shadow: var(--shadow-large);
-            transform: translateY(-1px);
-            color: white;
-        }
-        
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: var(--shadow-medium);
-        }
-        
+
         .page-header {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 2rem;
+            text-align: center;
             margin-bottom: 2rem;
-            box-shadow: var(--shadow-medium);
-            border: 1px solid var(--border-light);
         }
-        
-        .user-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-            box-shadow: var(--shadow-medium);
+
+        .page-header h2 {
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
-        .alert {
-            border-radius: 8px;
-            border: none;
-            padding: 12px 16px;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
+
+        .page-header p {
+            color: var(--text-dim);
+            font-size: 1rem;
         }
-        
-        .alert-success {
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
-        }
-        
-        .alert-danger {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-        }
-        
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1001;
+
+        .glass-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            backdrop-filter: blur(30px);
+            border: 1.5px solid var(--border-light);
+            border-radius: 20px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            animation: borderGlow 4s ease-in-out infinite;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        .glass-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2);
+            }
+        }
+
+        .form-label {
+            color: var(--secondary);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-dim);
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(6, 182, 212, 0.5);
+            color: var(--text-main);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+            outline: none;
+        }
+
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-medium);
-            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
-            color: var(--purple);
-            box-shadow: var(--shadow-large);
-            transform: translateY(-1px);
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
         }
-        
-        /* Mobile Responsive Design */
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .success-alert {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
+            border: 1.5px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #10b981;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .success-alert i {
+            margin-right: 0.75rem;
+        }
+
+        .error-alert {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #ef4444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .error-alert i {
+            margin-right: 0.75rem;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 transform: translateX(-100%);
-                background: var(--sidebar-bg);
-                border-right: none;
-                box-shadow: var(--shadow-large);
             }
-            
+
             .sidebar.show {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 margin-left: 0;
                 padding: 1rem;
             }
-            
+
             .mobile-header {
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
             }
-            
-            .page-header {
+
+            .page-header h2 {
+                font-size: 1.8rem;
+            }
+
+            .glass-card {
+                padding: 1.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+
+            .page-header h2 {
+                font-size: 1.4rem;
+            }
+
+            .glass-card {
                 padding: 1.5rem;
-                margin-bottom: 1rem;
+                border-radius: 16px;
             }
-            
-            .form-card {
-                padding: 1.5rem;
+
+            .form-label {
+                font-size: 0.85rem;
             }
-            
-                top: 15px;
-                right: 15px;
-                width: 40px;
-                height: 40px;
+
+            .form-control {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+
+            .btn-submit {
+                padding: 12px 24px;
+                font-size: 0.9rem;
             }
         }
     </style>
-    <link href="assets/css/dark-mode-button.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <!-- Theme Toggle -->
-        <i class="fas fa-moon" id="darkModeIcon"></i>
-    </button>
-    
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar(event)">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h5 class="mb-0"><i class="fas fa-crown me-2" style="color: var(--purple);"></i>Multi Panel</h5>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h4><i class="fas fa-plus"></i> SilentMultiPanel</h4>
+            <p>Add New Mod</p>
         </div>
-        <div class="d-flex align-items-center">
-            <span class="me-2 d-none d-sm-inline"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
-                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
-            </div>
+        <nav class="nav">
+            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            <a class="nav-link active" href="add_mod.php"><i class="fas fa-plus"></i><span>Add Mod</span></a>
+            <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i><span>Manage Mods</span></a>
+            <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i><span>Upload APK</span></a>
+            <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i><span>Mod List</span></a>
+            <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i><span>Add License</span></a>
+            <a class="nav-link" href="licence_key_list.php"><i class="fas fa-key"></i><span>License List</span></a>
+            <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i><span>Manage Users</span></a>
+            <a class="nav-link" href="stock_alerts.php"><i class="fas fa-bell"></i><span>Stock Alerts</span></a>
+            <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2><i class="fas fa-plus"></i> Add New Mod</h2>
+            <p>Create a new mod entry in the SilentMultiPanel system</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="glass-card">
+            <?php if ($success): ?>
+                <div class="success-alert">
+                    <div>
+                        <i class="fas fa-check-circle"></i>
+                        <span><?php echo htmlspecialchars($success); ?></span>
+                    </div>
+                    <button onclick="this.parentElement.style.display='none'" style="background: none; border: none; color: #10b981; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($error): ?>
+                <div class="error-alert">
+                    <div>
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><?php echo htmlspecialchars($error); ?></span>
+                    </div>
+                    <button onclick="this.parentElement.style.display='none'" style="background: none; border: none; color: #ef4444; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST">
+                <div class="form-group">
+                    <label for="name" class="form-label">
+                        <i class="fas fa-gamepad"></i> Mod Name
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="name" 
+                        name="name" 
+                        value="<?php echo htmlspecialchars($name ?? ''); ?>" 
+                        placeholder="Enter mod name" 
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label">
+                        <i class="fas fa-align-left"></i> Description
+                    </label>
+                    <textarea 
+                        class="form-control" 
+                        id="description" 
+                        name="description" 
+                        rows="5" 
+                        placeholder="Enter mod description (optional)"><?php echo htmlspecialchars($description ?? ''); ?></textarea>
+                </div>
+
+                <div style="text-align: center;">
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-plus"></i> Add Mod
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-    
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-                <div class="p-3">
-                    <h4><i class="fas fa-crown me-2"></i>Multi Panel</h4>
-                    <p class="small mb-0" style="opacity: 0.7;">Admin Dashboard</p>
-                </div>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="admin_dashboard.php">
-                        <i class="fas fa-tachometer-alt"></i>Dashboard
-                    </a>
-                    <a class="nav-link active" href="add_mod.php">
-                        <i class="fas fa-plus"></i>Add Mod Name
-                    </a>
-                    <a class="nav-link" href="manage_mods.php">
-                        <i class="fas fa-edit"></i>Manage Mods
-                    </a>
-                    <a class="nav-link" href="upload_mod.php">
-                        <i class="fas fa-upload"></i>Upload Mod APK
-                    </a>
-                    <a class="nav-link" href="mod_list.php">
-                        <i class="fas fa-list"></i>Mod APK List
-                    </a>
-                    <a class="nav-link" href="add_license.php">
-                        <i class="fas fa-key"></i>Add License Key
-                    </a>
-                    <a class="nav-link" href="licence_key_list.php">
-                        <i class="fas fa-key"></i>License Key List
-                    </a>
-                    <a class="nav-link" href="available_keys.php">
-                        <i class="fas fa-key"></i>Available Keys
-                    </a>
-                    <a class="nav-link" href="manage_users.php">
-                        <i class="fas fa-users"></i>Manage Users
-                    </a>
-                    <a class="nav-link" href="add_balance.php">
-                        <i class="fas fa-wallet"></i>Add Balance
-                    </a>
-                    <a class="nav-link" href="transactions.php">
-                        <i class="fas fa-exchange-alt"></i>Transaction
-                    </a>
-                    <a class="nav-link" href="referral_codes.php">
-                        <i class="fas fa-tag"></i>Referral Code
-                    </a>
-                    <a class="nav-link" href="settings.php">
-                        <i class="fas fa-cog"></i>Settings
-                    </a>
-                    <a class="nav-link" href="logout.php">
-                        <i class="fas fa-sign-out-alt"></i>Logout
-                    </a>
-                </nav>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content" id="mainContent">
-                <div class="page-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2"><i class="fas fa-plus me-2"></i>Add New Mod</h2>
-                            <p class="text-muted mb-0">Create a new mod entry in the system</p>
-                        </div>
-                        <div class="d-none d-md-flex align-items-center">
-                            <div class="text-end me-3">
-                                <div class="fw-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></div>
-                                <small class="text-muted">Administrator</small>
-                            </div>
-                            <div class="user-avatar">
-                                <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <div class="form-card">
-                            <?php if ($success): ?>
-                                <div class="alert alert-success" role="alert">
-                                    <i class="fas fa-check-circle me-2"></i>
-                                    <?php echo htmlspecialchars($success); ?>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <?php if ($error): ?>
-                                <div class="alert alert-danger" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <?php echo htmlspecialchars($error); ?>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <form method="POST">
-                                <div class="mb-4">
-                                    <label for="name" class="form-label">
-                                        <i class="fas fa-edit me-2"></i>Mod Name *
-                                    </label>
-                                    <input type="text" class="form-control" id="name" name="name" 
-                                           value="<?php echo htmlspecialchars($name ?? ''); ?>" 
-                                           placeholder="Enter mod name" required>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label for="description" class="form-label">
-                                        <i class="fas fa-list me-2"></i>Description
-                                    </label>
-                                    <textarea class="form-control" id="description" name="description" 
-                                              rows="4" placeholder="Enter mod description (optional)"><?php echo htmlspecialchars($description ?? ''); ?></textarea>
-                                </div>
-                                
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-plus me-2"></i>Add Mod
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Mobile sidebar toggle
-        // Mobile Navigation (optimized)
-                    document.body.style.overflow = "";
-                }
-            }
+        // Sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
         }
-        // Mobile nav links - close sidebar and allow navigation
-        document.addEventListener("DOMContentLoaded", function() {
-            const links = document.querySelectorAll(".sidebar .nav-link");
-            const sidebar = document.querySelector(".sidebar");
-            const overlay = document.querySelector(".mobile-overlay");
-            links.forEach(link => {
-                link.addEventListener("click", function() {
-                    if (window.innerWidth <= 991) {
-                        document.body.style.overflow = "";
+
+        // Close sidebar when clicking a nav link
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('show');
                     }
                 });
             });
-            if (overlay) {
+
+            // Close sidebar when clicking outside
+            if (!e.target.closest('.sidebar') && !e.target.closest('.hamburger-btn')) {
+                sidebar.classList.remove('show');
             }
         });
-        window.addEventListener("resize", function() {
-            if (window.innerWidth > 991) {
-                const sidebar = document.querySelector(".sidebar");
-                const overlay = document.querySelector(".mobile-overlay");
-                document.body.style.overflow = "";
-            }
-        });
-        
-        // Auto-hide alerts
+
+        // Auto-hide alerts after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
+            const alerts = document.querySelectorAll('.success-alert, .error-alert');
             alerts.forEach(alert => {
                 setTimeout(() => {
                     alert.style.opacity = '0';
@@ -511,6 +533,5 @@ if ($_POST) {
             });
         });
     </script>
-    <script src="assets/js/scroll-restore.js"></script>
-<script src="assets/js/menu-logic.js"></script></body>
+</body>
 </html>
