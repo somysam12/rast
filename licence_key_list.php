@@ -6,6 +6,16 @@ requireAdmin();
 
 $pdo = getDBConnection();
 
+// Handle bulk delete
+if (isset($_POST['bulk_delete']) && isset($_POST['selected_keys'])) {
+    $ids = $_POST['selected_keys'];
+    if (!empty($ids)) {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id IN ($placeholders)");
+        $stmt->execute($ids);
+    }
+}
+
 // Handle single delete
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
     $stmt = $pdo->prepare("DELETE FROM license_keys WHERE id = ?");
@@ -100,6 +110,10 @@ $mods = $pdo->query("SELECT id, name FROM mods ORDER BY name")->fetchAll(PDO::FE
         .form-select, .form-control { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); color: white; border-radius: 12px; }
 
         .btn-primary-custom { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; padding: 10px 20px; font-weight: 700; color: white; text-decoration: none; }
+        
+        .bulk-actions { margin-bottom: 1rem; display: none; }
+        
+        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
 
         @media (max-width: 992px) {
             .sidebar { transform: translateX(-100%); width: 250px; }
@@ -140,28 +154,66 @@ $mods = $pdo->query("SELECT id, name FROM mods ORDER BY name")->fetchAll(PDO::FE
             </form>
         </div>
         <div class="glass-card">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead><tr><th>Mod Name</th><th>License Key</th><th>Duration</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        <?php foreach ($licenseKeys as $key): ?>
-                        <tr>
-                            <td><strong><?php echo htmlspecialchars($key['mod_name']); ?></strong></td>
-                            <td><code><?php echo htmlspecialchars($key['license_key']); ?></code></td>
-                            <td><?php echo $key['duration'] . ' ' . $key['duration_type']; ?></td>
-                            <td>$<?php echo number_format($key['price'], 2); ?></td>
-                            <td><span class="badge bg-<?php echo $key['status'] === 'available' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($key['status']); ?></span></td>
-                            <td><a href="?delete_id=<?php echo $key['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this key?')"><i class="fas fa-trash"></i></a></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+            <form method="POST" id="bulkDeleteForm">
+                <div class="bulk-actions" id="bulkActions">
+                    <button type="submit" name="bulk_delete" class="btn btn-danger" onclick="return confirm('Delete all selected keys?')">
+                        <i class="fas fa-trash me-2"></i>Delete Selected (<span id="selectedCount">0</span>)
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" class="form-check-input" id="selectAll"></th>
+                                <th>Mod Name</th>
+                                <th>License Key</th>
+                                <th>Duration</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($licenseKeys as $key): ?>
+                            <tr>
+                                <td><input type="checkbox" name="selected_keys[]" value="<?php echo $key['id']; ?>" class="form-check-input key-checkbox"></td>
+                                <td><strong><?php echo htmlspecialchars($key['mod_name']); ?></strong></td>
+                                <td><code><?php echo htmlspecialchars($key['license_key']); ?></code></td>
+                                <td><?php echo $key['duration'] . ' ' . $key['duration_type']; ?></td>
+                                <td>₹<?php echo number_format($key['price'], 2); ?></td>
+                                <td><span class="badge bg-<?php echo $key['status'] === 'available' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($key['status']); ?></span></td>
+                                <td><a href="?delete_id=<?php echo $key['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this key?')"><i class="fas fa-trash"></i></a></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('hamburgerBtn').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('active'));
+        
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.key-checkbox');
+        const bulkActions = document.getElementById('bulkActions');
+        const selectedCount = document.getElementById('selectedCount');
+        
+        function updateBulkActions() {
+            const checkedCount = document.querySelectorAll('.key-checkbox:checked').length;
+            bulkActions.style.display = checkedCount > 0 ? 'block' : 'none';
+            selectedCount.textContent = checkedCount;
+        }
+        
+        selectAll.addEventListener('change', () => {
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateBulkActions();
+        });
+        
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkActions);
+        });
     </script>
 </body>
 </html>
