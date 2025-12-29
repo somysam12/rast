@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.app"
+    package="silent.owner"
     android:versionCode="1"
     android:versionName="1.0">
 
@@ -11,12 +11,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:allowBackup="true"
         android:icon="@drawable/logo"
-        android:label="@string/app_name">
+        android:label="SilentMultiPanel">
 
         <activity
-            android:name="com.app.MainActivity"
+            android:name="silent.owner.Main"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
