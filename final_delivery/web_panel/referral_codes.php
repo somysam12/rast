@@ -47,13 +47,15 @@ try {
             $bonusAmount = (float)($_POST['bonus_amount'] ?? 50.00);
             $usageLimit = (int)($_POST['usage_limit'] ?? 1);
             
-            $duration = match($expiryOption) {
-                '1h' => '+1 hour',
-                '1d' => '+1 day',
-                '1w' => '+7 days',
-                '1m' => '+30 days',
-                default => '+30 days'
-            };
+            if ($expiryOption === '1h') {
+                $duration = '+1 hour';
+            } elseif ($expiryOption === '1d') {
+                $duration = '+1 day';
+            } elseif ($expiryOption === '1w') {
+                $duration = '+7 days';
+            } else {
+                $duration = '+30 days';
+            }
 
             if ($bonusAmount < 0) {
                 $error = 'Bonus amount cannot be negative';
@@ -97,9 +99,14 @@ try {
         $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
         $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Statistics
-        $stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > NOW()) THEN 1 END) as active FROM referral_codes");
-        $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Statistics - simple query compatible with both SQLite and MySQL
+        $total = $pdo->query("SELECT COUNT(*) as cnt FROM referral_codes")->fetch(PDO::FETCH_ASSOC);
+        $active = $pdo->query("SELECT COUNT(*) as cnt FROM referral_codes WHERE status='active'")->fetch(PDO::FETCH_ASSOC);
+        
+        $stats = [
+            'total' => (int)($total['cnt'] ?? 0),
+            'active' => (int)($active['cnt'] ?? 0)
+        ];
     } catch (Exception $e) {
         error_log("Data load error: " . $e->getMessage());
     }

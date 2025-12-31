@@ -1,49 +1,63 @@
-<?php require_once "includes/optimization.php"; ?>
 <?php
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
-requireAdmin();
-
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit();
-}
-
-$pdo = getDBConnection();
 $success = '';
 $error = '';
-
-// Mark alert as resolved
-if (isset($_GET['resolve']) && is_numeric($_GET['resolve'])) {
-    $stmt = $pdo->prepare("UPDATE stock_alerts SET status = 'resolved' WHERE id = ?");
-    if ($stmt->execute([$_GET['resolve']])) {
-        $success = 'Alert marked as resolved!';
-    }
-}
-
-// Delete alert
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $stmt = $pdo->prepare("DELETE FROM stock_alerts WHERE id = ?");
-    if ($stmt->execute([$_GET['delete']])) {
-        $success = 'Alert deleted!';
-    }
-}
-
-// Get all pending alerts
 $alerts = [];
 $pendingCount = 0;
 
 try {
-    $stmt = $pdo->query("SELECT * FROM stock_alerts ORDER BY created_at DESC");
-    $alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    require_once "includes/optimization.php";
+    require_once 'includes/auth.php';
+    require_once 'includes/functions.php';
     
-    // Count pending vs resolved
-    $stmt = $pdo->query("SELECT COUNT(*) as total FROM stock_alerts WHERE status = 'pending'");
-    $pendingCount = $stmt->fetchColumn();
+    requireAdmin();
+    
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: login.php');
+        exit();
+    }
+    
+    $pdo = getDBConnection();
+    
+    // Mark alert as resolved
+    if (isset($_GET['resolve']) && is_numeric($_GET['resolve'])) {
+        try {
+            $stmt = $pdo->prepare("UPDATE stock_alerts SET status = 'resolved' WHERE id = ?");
+            $stmt->execute([$_GET['resolve']]);
+            $success = 'Alert marked as resolved!';
+        } catch (Exception $e) {
+            error_log("Resolve error: " . $e->getMessage());
+        }
+    }
+    
+    // Delete alert
+    if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+        try {
+            $stmt = $pdo->prepare("DELETE FROM stock_alerts WHERE id = ?");
+            $stmt->execute([$_GET['delete']]);
+            $success = 'Alert deleted!';
+        } catch (Exception $e) {
+            error_log("Delete error: " . $e->getMessage());
+        }
+    }
+    
+    // Get all pending alerts
+    try {
+        $stmt = $pdo->query("SELECT * FROM stock_alerts ORDER BY created_at DESC");
+        $alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Count pending alerts
+        $stmt = $pdo->query("SELECT COUNT(*) as total FROM stock_alerts WHERE status = 'pending'");
+        $pendingCount = $stmt->fetchColumn() ?: 0;
+    } catch (Exception $e) {
+        error_log("Stock alerts query error: " . $e->getMessage());
+    }
+
 } catch (Exception $e) {
-    error_log("Stock alerts query error: " . $e->getMessage());
-    $error = "Stock alerts table not found. Please ensure database is properly initialized.";
+    error_log("Stock alerts fatal error: " . $e->getMessage());
 }
 ?>
 <!DOCTYPE html>
