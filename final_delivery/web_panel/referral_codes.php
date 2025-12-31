@@ -78,12 +78,19 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 }
 
 // Initial data load
-$stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
-$referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$referralCodes = [];
+$stats = ['total' => 0, 'active' => 0];
 
-// Statistics
-$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > NOW()) THEN 1 END) as active FROM referral_codes");
-$stats = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
+    $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Statistics
+    $stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > NOW()) THEN 1 END) as active FROM referral_codes");
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    error_log("Referral codes query error: " . $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

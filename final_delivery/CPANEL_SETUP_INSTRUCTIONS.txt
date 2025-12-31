@@ -1,0 +1,109 @@
+═══════════════════════════════════════════════════════════════════════════
+                        CPANEL DATABASE SETUP GUIDE
+═══════════════════════════════════════════════════════════════════════════
+
+If you're getting HTTP 500 errors on referral_codes.php and stock_alerts.php, 
+you need to create the missing database tables on cPanel.
+
+QUICK FIX:
+═════════
+
+1. Go to cPanel → phpMyAdmin
+
+2. Select your database (silentmu_silentdb or your database name)
+
+3. Click "SQL" tab at the top
+
+4. Copy ALL the code from: web_panel/CREATE_TABLES.sql
+
+5. Paste it into the SQL window in phpMyAdmin
+
+6. Click "Go" button
+
+7. You should see: "2 queries executed successfully"
+
+8. Refresh both pages:
+   - referral_codes.php
+   - stock_alerts.php
+
+They should now work!
+
+═════════════════════════════════════════════════════════════════════════════
+
+STEP-BY-STEP WITH SCREENSHOTS:
+═════════════════════════════════════════════════════════════════════════════
+
+Step 1: Login to cPanel
+   └─ Go to: https://your-domain.com:2083
+   └─ Or: https://your-cpanel-ip:2083
+
+Step 2: Find and open phpMyAdmin
+   └─ Look for "phpMyAdmin" in cPanel
+   └─ Or scroll down to "Databases" section
+
+Step 3: Select your database
+   └─ On the left, click your database name
+   └─ Default: silentmu_silentdb
+
+Step 4: Click "SQL" tab
+   └─ It's at the top of the phpMyAdmin window
+
+Step 5: Paste the SQL code
+   └─ Click in the text area
+   └─ Paste all code from web_panel/CREATE_TABLES.sql
+
+Step 6: Execute query
+   └─ Click "Go" or "Execute" button
+   └─ Wait for confirmation
+
+Step 7: Test the pages
+   └─ Go to: https://silentmultipanel.vippanel.in/referral_codes.php
+   └─ Go to: https://silentmultipanel.vippanel.in/stock_alerts.php
+
+═════════════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING:
+═════════════════════════════════════════════════════════════════════════════
+
+Q: "Access Denied" error?
+A: You need admin access to phpMyAdmin. Contact your hosting provider.
+
+Q: "Table already exists" error?
+A: That's okay! It means the table is already there.
+   The pages should work now.
+
+Q: Still getting errors?
+A: Check the error by:
+   1. Enable error display in config/database.php (already enabled)
+   2. Check your server error logs in cPanel
+
+Q: Where is my database name?
+A: Go to cPanel → MySQL Databases
+   You should see it listed there (silentmu_silentdb)
+
+═════════════════════════════════════════════════════════════════════════════
+
+DATABASE CREDENTIALS:
+═════════════════════════════════════════════════════════════════════════════
+
+Your credentials are in: web_panel/config/database.php
+
+Default cPanel credentials (in config):
+- Host: localhost
+- Database: silentmu_silentdb
+- User: silentmu_isam
+- Password: 844121@LuvKush
+
+These are already configured in your application.
+
+═════════════════════════════════════════════════════════════════════════════
+
+SUPPORT:
+═════════════════════════════════════════════════════════════════════════════
+
+If you need help, check:
+1. Your hosting provider's documentation
+2. cPanel Help section (? icon in cPanel)
+3. phpMyAdmin Help tab
+
+═════════════════════════════════════════════════════════════════════════════

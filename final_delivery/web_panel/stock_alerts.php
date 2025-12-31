@@ -31,12 +31,20 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 }
 
 // Get all pending alerts
-$stmt = $pdo->query("SELECT * FROM stock_alerts ORDER BY created_at DESC");
-$alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$alerts = [];
+$pendingCount = 0;
 
-// Count pending vs resolved
-$stmt = $pdo->query("SELECT COUNT(*) as total FROM stock_alerts WHERE status = 'pending'");
-$pendingCount = $stmt->fetchColumn();
+try {
+    $stmt = $pdo->query("SELECT * FROM stock_alerts ORDER BY created_at DESC");
+    $alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Count pending vs resolved
+    $stmt = $pdo->query("SELECT COUNT(*) as total FROM stock_alerts WHERE status = 'pending'");
+    $pendingCount = $stmt->fetchColumn();
+} catch (Exception $e) {
+    error_log("Stock alerts query error: " . $e->getMessage());
+    $error = "Stock alerts table not found. Please ensure database is properly initialized.";
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
