@@ -289,6 +289,19 @@ function initializeDatabase() {
             setting_value LONGTEXT,
             description VARCHAR(255),
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        
+        "CREATE TABLE IF NOT EXISTS stock_alerts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mod_id INTEGER NOT NULL,
+            status VARCHAR(50) DEFAULT 'pending',
+            message TEXT,
+            alert_type VARCHAR(50),
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (mod_id) REFERENCES mods(id) ON DELETE CASCADE,
+            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
         )"
     ];
     
