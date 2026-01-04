@@ -63,3 +63,71 @@ CREATE TABLE IF NOT EXISTS `stock_alerts` (
   CONSTRAINT `stock_alerts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `stock_alerts_ibfk_2` FOREIGN KEY (`mod_id`) REFERENCES `mods` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 5. Create User Keys table
+CREATE TABLE IF NOT EXISTS `user_keys` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `key_value` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL UNIQUE,
+  `max_devices` int DEFAULT 1,
+  `is_active` tinyint DEFAULT 1,
+  `expiry` datetime DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `user_keys_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 6. Create Key Devices table
+CREATE TABLE IF NOT EXISTS `key_devices` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `key_id` int NOT NULL,
+  `device_fingerprint` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `country` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_type` enum('VPN','MOBILE','WIFI') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_active` datetime DEFAULT NULL,
+  `is_active` tinyint DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `key_id` (`key_id`),
+  CONSTRAINT `key_devices_ibfk_1` FOREIGN KEY (`key_id`) REFERENCES `user_keys` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. Create Key Resets table
+CREATE TABLE IF NOT EXISTS `key_resets` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `key_id` int NOT NULL,
+  `reset_count` int DEFAULT 0,
+  `last_reset` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `key_id` (`key_id`),
+  CONSTRAINT `key_resets_ibfk_1` FOREIGN KEY (`key_id`) REFERENCES `user_keys` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8. Create Device Activity table
+CREATE TABLE IF NOT EXISTS `device_activity` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `key_id` int NOT NULL,
+  `device_fingerprint` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `country` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `isp` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_type` enum('VPN','MOBILE','WIFI') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_seen` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `key_id` (`key_id`),
+  CONSTRAINT `device_activity_ibfk_1` FOREIGN KEY (`key_id`) REFERENCES `user_keys` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9. Create Admin Commands table
+CREATE TABLE IF NOT EXISTS `admin_commands` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `command` enum('CLEAR_COOKIES','CLEAR_SESSION','FORCE_LOGOUT','DISABLE_APP') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `target` enum('ALL','KEY','USER') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `target_id` int DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `is_executed` tinyint DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
