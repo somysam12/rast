@@ -22,18 +22,44 @@ if ($_POST) {
     if (empty($username) || empty($password)) {
         $error = 'Please fill in all fields';
     } else {
-        $loginResult = login($username, $password, $forceLogout);
-        if ($loginResult === true) {
-            if (isAdmin()) {
-                header('Location: admin_dashboard.php');
-            } else {
-                header('Location: user_dashboard.php');
+        // First check 2FA requirement
+        require_once 'config/database.php';
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare("SELECT id, username, password, two_factor_enabled, two_factor_secret FROM users WHERE username = ? LIMIT 1");
+        $stmt->execute([$username]);
+        $user_row = $stmt->fetch();
+
+        if ($user_row && password_verify($password, $user_row['password'])) {
+            if ($user_row['two_factor_enabled']) {
+                if (isset($_POST['otp_code'])) {
+                    require_once 'includes/GoogleAuthenticator.php';
+                    $ga = new PHPGangsta_GoogleAuthenticator();
+                    if ($ga->verifyCode($user_row['two_factor_secret'], $_POST['otp_code'], 2)) {
+                        // Proceed to login
+                    } else {
+                        $error = 'Invalid 2FA code';
+                        $show_2fa = true;
+                    }
+                } else {
+                    $show_2fa = true;
+                }
             }
-            exit();
-        } else if ($loginResult === 'already_logged_in') {
-            $error = 'You are already logged in from another device. Check the force logout option.';
-        } else {
-            $error = 'Invalid username or password';
+        }
+
+        if (!$error && (!isset($show_2fa) || !$show_2fa)) {
+            $loginResult = login($username, $password, $forceLogout);
+            if ($loginResult === true) {
+                if (isAdmin()) {
+                    header('Location: admin_dashboard.php');
+                } else {
+                    header('Location: user_dashboard.php');
+                }
+                exit();
+            } else if ($loginResult === 'already_logged_in') {
+                $error = 'You are already logged in from another device. Check the force logout option.';
+            } else {
+                $error = 'Invalid username or password';
+            }
         }
     }
 }
@@ -419,25 +445,44 @@ if ($_POST) {
             <?php endif; ?>
 
             <form method="POST">
-                <div class="form-group">
-                    <i class="fas fa-user field-icon"></i>
-                    <input type="text" name="username" class="input-field" placeholder="Username" required 
-                           value="<?php echo htmlspecialchars($username ?? ''); ?>">
-                </div>
+                <?php if (isset($show_2fa) && $show_2fa): ?>
+                    <input type="hidden" name="username" value="<?php echo htmlspecialchars($username); ?>">
+                    <input type="hidden" name="password" value="<?php echo htmlspecialchars($password); ?>">
+                    <?php if (isset($forceLogout) && $forceLogout): ?>
+                        <input type="hidden" name="force_logout" value="1">
+                    <?php endif; ?>
+                    <div class="brand-section">
+                        <p class="text-white">Enter the 6-digit code from your authenticator app</p>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-shield-alt field-icon"></i>
+                        <input type="text" name="otp_code" class="input-field" placeholder="000000" maxlength="6" required autofocus>
+                    </div>
+                    <button type="submit" class="btn-submit">Verify 2FA</button>
+                    <div class="footer-text">
+                        <a href="login.php">← Back to login</a>
+                    </div>
+                <?php else: ?>
+                    <div class="form-group">
+                        <i class="fas fa-user field-icon"></i>
+                        <input type="text" name="username" class="input-field" placeholder="Username" required 
+                               value="<?php echo htmlspecialchars($username ?? ''); ?>">
+                    </div>
 
-                <div class="form-group">
-                    <i class="fas fa-lock field-icon"></i>
-                    <input type="password" name="password" class="input-field" placeholder="Password" required>
-                </div>
+                    <div class="form-group">
+                        <i class="fas fa-lock field-icon"></i>
+                        <input type="password" name="password" class="input-field" placeholder="Password" required>
+                    </div>
 
-                <div class="form-group">
-                    <label class="custom-check">
-                        <input type="checkbox" name="force_logout">
-                        Force logout from other devices
-                    </label>
-                </div>
+                    <div class="form-group">
+                        <label class="custom-check">
+                            <input type="checkbox" name="force_logout">
+                            Force logout from other devices
+                        </label>
+                    </div>
 
-                <button type="submit" class="btn-submit">Sign In</button>
+                    <button type="submit" class="btn-submit">Sign In</button>
+                <?php endif; ?>
             </form>
 
             <div class="footer-text">

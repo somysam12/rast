@@ -9,9 +9,46 @@ $success = '';
 $error = '';
 
 $pdo = getDBConnection();
-$user = getUserData();
+    $user = getUserData();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
+    // 2FA Logic
+    require_once 'includes/GoogleAuthenticator.php';
+    $ga = new PHPGangsta_GoogleAuthenticator();
+    
+    $stmt = $pdo->prepare("SELECT two_factor_secret, two_factor_enabled FROM users WHERE id = ?");
+    $stmt->execute([$user['id']]);
+    $user_2fa = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (isset($_POST['setup_2fa'])) {
+        $secret = $ga->createSecret();
+        $stmt = $pdo->prepare("UPDATE users SET two_factor_secret = ? WHERE id = ?");
+        $stmt->execute([$secret, $user['id']]);
+        $success = '2FA Secret generated. Scan the QR code to finish setup.';
+        $user_2fa['two_factor_secret'] = $secret;
+    }
+
+    if (isset($_POST['verify_2fa'])) {
+        $code = $_POST['otp_code'] ?? '';
+        $secret = $user_2fa['two_factor_secret'];
+        if ($ga->verifyCode($secret, $code, 2)) {
+            $stmt = $pdo->prepare("UPDATE users SET two_factor_enabled = 1 WHERE id = ?");
+            $stmt->execute([$user['id']]);
+            $success = '2FA enabled successfully!';
+            $user_2fa['two_factor_enabled'] = 1;
+        } else {
+            $error = 'Invalid OTP code.';
+        }
+    }
+
+    if (isset($_POST['disable_2fa'])) {
+        $stmt = $pdo->prepare("UPDATE users SET two_factor_enabled = 0, two_factor_secret = NULL WHERE id = ?");
+        $stmt->execute([$user['id']]);
+        $success = '2FA disabled.';
+        $user_2fa['two_factor_enabled'] = 0;
+        $user_2fa['two_factor_secret'] = null;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo && $user) {
     if (isset($_POST['reset_device'])) {
         $password = $_POST['password'] ?? '';
         if (empty($password)) {
@@ -277,6 +314,39 @@ if (!function_exists('formatDateLocal')) {
                         </div>
                         <button type="submit" class="settings-btn w-100">Change Password</button>
                     </form>
+                </div>
+
+                <div class="settings-card">
+                    <h5 class="text-white mb-4"><i class="fas fa-shield-alt text-primary me-2"></i> Two-Factor Authentication</h5>
+                    <?php if (!$user_2fa['two_factor_enabled']): ?>
+                        <?php if (!$user_2fa['two_factor_secret']): ?>
+                            <p class="text-secondary small">Add an extra layer of security to your account.</p>
+                            <form method="POST">
+                                <button type="submit" name="setup_2fa" class="settings-btn w-100">Setup 2FA</button>
+                            </form>
+                        <?php else: ?>
+                            <div class="text-center mb-3">
+                                <p class="text-white small">Scan this QR code with your TOTP app:</p>
+                                <img src="<?php echo $ga->getQRCodeGoogleUrl('SilentPanel_'.urlencode($user['username']), $user_2fa['two_factor_secret'], 'SilentPanel'); ?>" alt="QR Code" class="img-fluid rounded border border-secondary border-opacity-25 mb-3" style="max-width: 150px;">
+                                <p class="text-secondary" style="font-size: 0.7rem;">Manual Secret: <code><?php echo $user_2fa['two_factor_secret']; ?></code></p>
+                            </div>
+                            <form method="POST">
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small fw-bold">ENTER 6-DIGIT CODE</label>
+                                    <input type="text" name="otp_code" class="form-control text-center" placeholder="000000" maxlength="6" required>
+                                </div>
+                                <button type="submit" name="verify_2fa" class="settings-btn w-100">Verify & Enable</button>
+                            </form>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="p-3 bg-success bg-opacity-10 border border-success border-opacity-20 rounded-3 mb-3 text-center">
+                            <i class="fas fa-check-circle text-success mb-2" style="font-size: 1.5rem;"></i>
+                            <div class="text-success small fw-bold">2FA is currently active</div>
+                        </div>
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to disable 2FA?');">
+                            <button type="submit" name="disable_2fa" class="btn btn-outline-danger w-100 rounded-pill">Disable 2FA</button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
 
