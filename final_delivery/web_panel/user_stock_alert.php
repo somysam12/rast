@@ -48,9 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_stock_alert'])
                 $pdo->exec("SELECT 1 FROM stock_alerts LIMIT 1");
             } catch (Exception $e) {
                 $pdo->exec("CREATE TABLE IF NOT EXISTS stock_alerts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER NOT NULL,
-                    mod_id INTEGER NOT NULL,
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    mod_id INT NOT NULL,
                     mod_name VARCHAR(150),
                     username VARCHAR(100),
                     status VARCHAR(50) DEFAULT 'pending',

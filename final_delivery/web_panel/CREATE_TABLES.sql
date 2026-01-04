@@ -20,16 +20,15 @@ CREATE TABLE IF NOT EXISTS `referral_codes` (
 -- Create Stock Alerts table
 CREATE TABLE IF NOT EXISTS `stock_alerts` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
   `mod_id` int NOT NULL,
+  `mod_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `username` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
-  `message` text COLLATE utf8mb4_unicode_ci,
-  `alert_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_by` int DEFAULT NULL,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
   KEY `mod_id` (`mod_id`),
-  KEY `created_by` (`created_by`),
-  CONSTRAINT `stock_alerts_ibfk_1` FOREIGN KEY (`mod_id`) REFERENCES `mods` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `stock_alerts_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+  CONSTRAINT `stock_alerts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `stock_alerts_ibfk_2` FOREIGN KEY (`mod_id`) REFERENCES `mods` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
