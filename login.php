@@ -32,13 +32,17 @@ if ($_POST) {
         if ($user_row && password_verify($password, $user_row['password'])) {
             if ($user_row['two_factor_enabled']) {
                 if (isset($_POST['otp_code'])) {
-                    require_once 'includes/GoogleAuthenticator.php';
-                    $ga = new PHPGangsta_GoogleAuthenticator();
-                    if ($ga->verifyCode($user_row['two_factor_secret'], $_POST['otp_code'], 2)) {
-                        // Proceed to login
+                    if (file_exists('includes/GoogleAuthenticator.php')) {
+                        require_once 'includes/GoogleAuthenticator.php';
+                        $ga = new PHPGangsta_GoogleAuthenticator();
+                        if ($ga->verifyCode($user_row['two_factor_secret'], $_POST['otp_code'], 2)) {
+                            // Proceed to login
+                        } else {
+                            $error = 'Invalid 2FA code';
+                            $show_2fa = true;
+                        }
                     } else {
-                        $error = 'Invalid 2FA code';
-                        $show_2fa = true;
+                        $error = '2FA system error';
                     }
                 } else {
                     $show_2fa = true;

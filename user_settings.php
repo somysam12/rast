@@ -12,8 +12,12 @@ $pdo = getDBConnection();
     $user = getUserData();
 
     // 2FA Logic
-    require_once 'includes/GoogleAuthenticator.php';
-    $ga = new PHPGangsta_GoogleAuthenticator();
+    if (file_exists('includes/GoogleAuthenticator.php')) {
+        require_once 'includes/GoogleAuthenticator.php';
+        $ga = new PHPGangsta_GoogleAuthenticator();
+    } else {
+        $ga = null;
+    }
     
     $stmt = $pdo->prepare("SELECT two_factor_secret, two_factor_enabled FROM users WHERE id = ?");
     $stmt->execute([$user['id']]);

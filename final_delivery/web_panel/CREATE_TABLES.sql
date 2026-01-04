@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS `referral_codes` (
   `usage_count` int DEFAULT '0',
   `expires_at` timestamp NULL DEFAULT NULL,
   `status` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'active',
+  `two_factor_secret` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `two_factor_enabled` boolean DEFAULT FALSE,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `created_by` (`created_by`),
