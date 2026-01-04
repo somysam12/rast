@@ -13,6 +13,43 @@ try {
     // Get current user data
     $user = getUserData();
     
+    // 2FA Logic
+    require_once 'includes/GoogleAuthenticator.php';
+    $ga = new PHPGangsta_GoogleAuthenticator();
+    
+    $stmt = $pdo->prepare("SELECT two_factor_secret, two_factor_enabled FROM users WHERE id = ?");
+    $stmt->execute([$user['id']]);
+    $user_2fa = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (isset($_POST['setup_2fa'])) {
+        $secret = $ga->createSecret();
+        $stmt = $pdo->prepare("UPDATE users SET two_factor_secret = ? WHERE id = ?");
+        $stmt->execute([$secret, $user['id']]);
+        $success = "2FA Secret generated. Scan the QR code to finish setup.";
+        $user_2fa['two_factor_secret'] = $secret;
+    }
+
+    if (isset($_POST['verify_2fa'])) {
+        $code = $_POST['otp_code'];
+        $secret = $user_2fa['two_factor_secret'];
+        if ($ga->verifyCode($secret, $code, 2)) {
+            $stmt = $pdo->prepare("UPDATE users SET two_factor_enabled = 1 WHERE id = ?");
+            $stmt->execute([$user['id']]);
+            $success = "2FA enabled successfully!";
+            $user_2fa['two_factor_enabled'] = 1;
+        } else {
+            $error = "Invalid OTP code.";
+        }
+    }
+
+    if (isset($_POST['disable_2fa'])) {
+        $stmt = $pdo->prepare("UPDATE users SET two_factor_enabled = 0, two_factor_secret = NULL WHERE id = ?");
+        $stmt->execute([$user['id']]);
+        $success = "2FA disabled.";
+        $user_2fa['two_factor_enabled'] = 0;
+        $user_2fa['two_factor_secret'] = null;
+    }
+
     // Get account statistics
     $stmt = $pdo->prepare("SELECT 
         COUNT(CASE WHEN date(created_at) = date('now') THEN 1 END) as logins_today,
@@ -473,6 +510,7 @@ try {
             <div class="tabs-container">
                 <button class="tab-btn active" onclick="switchTab(event, 'profile')">Profile</button>
                 <button class="tab-btn" onclick="switchTab(event, 'password')">Password</button>
+                <button class="tab-btn" onclick="switchTab(event, 'twofa')">2FA Security</button>
             </div>
 
             <!-- Profile Tab -->
@@ -518,6 +556,40 @@ try {
 
                     <button type="submit" class="btn-submit">Change Password</button>
                 </form>
+            </div>
+
+            <!-- 2FA Tab -->
+            <div id="twofa" class="tab-content">
+                <h5 class="text-white mb-3">Two-Factor Authentication</h5>
+                <?php if (!$user_2fa['two_factor_enabled']): ?>
+                    <?php if (!$user_2fa['two_factor_secret']): ?>
+                        <p class="text-dim small">Secure your account by adding an extra layer of security. You will need a TOTP app like Google Authenticator or Authy.</p>
+                        <form method="POST">
+                            <button type="submit" name="setup_2fa" class="btn-submit">Setup 2FA</button>
+                        </form>
+                    <?php else: ?>
+                        <div class="text-center mb-4">
+                            <p class="text-white">Scan this QR code with your authenticator app:</p>
+                            <img src="<?php echo $ga->getQRCodeGoogleUrl('SilentPanel_Admin', $user_2fa['two_factor_secret'], 'SilentPanel'); ?>" alt="QR Code" class="img-fluid rounded border mb-3">
+                            <p class="text-dim small">Or enter secret manually: <code><?php echo $user_2fa['two_factor_secret']; ?></code></p>
+                        </div>
+                        <form method="POST">
+                            <div class="form-group">
+                                <label class="form-label">Enter 6-Digit Code</label>
+                                <input type="text" name="otp_code" class="input-field" placeholder="123456" maxlength="6" required>
+                            </div>
+                            <button type="submit" name="verify_2fa" class="btn-submit">Verify & Enable</button>
+                        </form>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <div class="alert-success">
+                        <i class="fas fa-shield-alt"></i>
+                        2FA is currently enabled on your account.
+                    </div>
+                    <form method="POST" onsubmit="return confirm('Are you sure you want to disable 2FA?');">
+                        <button type="submit" name="disable_2fa" class="btn-submit" style="background: #ef4444;">Disable 2FA</button>
+                    </form>
+                <?php endif; ?>
             </div>
 
             <div class="footer-text">
