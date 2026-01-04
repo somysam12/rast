@@ -762,6 +762,7 @@ try {
         </div>
         <nav class="nav">
             <a class="nav-link active" href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            <a class="nav-link" href="devices.php"><i class="fas fa-mobile-alt"></i><span>Device Management</span></a>
             <a class="nav-link" href="stock_alerts.php"><i class="fas fa-bell"></i><span>Stock Alerts</span></a>
             <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i><span>Add Mod</span></a>
             <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i><span>Manage Mods</span></a>
