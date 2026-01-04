@@ -289,60 +289,6 @@ function initializeDatabase() {
             setting_value LONGTEXT,
             description VARCHAR(255),
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )",
-        
-        "CREATE TABLE IF NOT EXISTS user_keys (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            key_value VARCHAR(255) UNIQUE NOT NULL,
-            max_devices INTEGER DEFAULT 1,
-            is_active TINYINT DEFAULT 1,
-            expiry DATETIME,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )",
-        
-        "CREATE TABLE IF NOT EXISTS key_devices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            key_id INTEGER NOT NULL,
-            device_fingerprint VARCHAR(255),
-            ip_address VARCHAR(45),
-            country VARCHAR(50),
-            city VARCHAR(50),
-            ip_type VARCHAR(20), -- VPN, MOBILE, WIFI
-            last_active DATETIME,
-            is_active TINYINT DEFAULT 1,
-            FOREIGN KEY (key_id) REFERENCES user_keys(id) ON DELETE CASCADE
-        )",
-        
-        "CREATE TABLE IF NOT EXISTS key_resets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            key_id INTEGER NOT NULL,
-            reset_count INTEGER DEFAULT 0,
-            last_reset DATETIME,
-            FOREIGN KEY (key_id) REFERENCES user_keys(id) ON DELETE CASCADE
-        )",
-        
-        "CREATE TABLE IF NOT EXISTS device_activity (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            key_id INTEGER NOT NULL,
-            device_fingerprint VARCHAR(255),
-            ip_address VARCHAR(45),
-            country VARCHAR(50),
-            city VARCHAR(50),
-            isp VARCHAR(150),
-            ip_type VARCHAR(20),
-            last_seen DATETIME,
-            FOREIGN KEY (key_id) REFERENCES user_keys(id) ON DELETE CASCADE
-        )",
-        
-        "CREATE TABLE IF NOT EXISTS admin_commands (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            command VARCHAR(50), -- CLEAR_COOKIES, CLEAR_SESSION, FORCE_LOGOUT, DISABLE_APP
-            target VARCHAR(20), -- ALL, KEY, USER
-            target_id INTEGER NULL,
-            created_at DATETIME,
-            is_executed TINYINT DEFAULT 0
         )"
     ];
     
