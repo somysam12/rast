@@ -88,15 +88,17 @@ try {
     $isSQLite = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite';
     $timeFunc = $isSQLite ? "datetime('now')" : "NOW()";
     
-    // Check if status column exists or use a safer query
-    $stmt = $pdo->query("SELECT COUNT(*) as total FROM referral_codes");
-    $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
+    // Completely safe statistics query
+    $total = 0;
+    $active = 0;
     try {
-        $stmt = $pdo->query("SELECT COUNT(*) as active FROM referral_codes WHERE expires_at > $timeFunc");
-        $active = $stmt->fetch(PDO::FETCH_ASSOC)['active'];
+        $stmt = $pdo->query("SELECT COUNT(*) FROM referral_codes");
+        $total = (int)$stmt->fetchColumn();
+        
+        $stmt = $pdo->query("SELECT COUNT(*) FROM referral_codes WHERE expires_at > $timeFunc");
+        $active = (int)$stmt->fetchColumn();
     } catch (Exception $e) {
-        $active = 0;
+        // Fallback if table or columns missing
     }
     
     $stats = ['total' => $total, 'active' => $active];
