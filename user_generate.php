@@ -118,9 +118,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
                     const keys = " . json_encode($keysString) . ";
                     
                     function copyToClipboard(text) {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+                        } else {
+                            return fallbackCopy(text);
+                        }
+                    }
+
+                    function fallbackCopy(text) {
                         const textArea = document.createElement('textarea');
                         textArea.value = text;
+                        textArea.style.position = 'fixed';
+                        textArea.style.left = '-9999px';
+                        textArea.style.top = '0';
                         document.body.appendChild(textArea);
+                        textArea.focus();
                         textArea.select();
                         try {
                             document.execCommand('copy');
