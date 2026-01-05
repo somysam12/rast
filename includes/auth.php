@@ -66,10 +66,34 @@ function login($username, $password, $forceLogout = false) {
         if ($user['role'] === 'user') {
             if (!empty($user['device_id']) && $user['device_id'] !== $deviceId) {
                 if ($forceLogout) {
-                    if ($user['device_locked_until'] && $currentTime < $user['device_locked_until']) {
+                    // Check force logout limit
+                    $stmt = $pdo->prepare("SELECT logout_limit, logout_count, last_logout_at FROM force_logouts WHERE user_id = ?");
+                    $stmt->execute([$user['id']]);
+                    $fLog = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    $limit = $fLog ? (int)$fLog['logout_limit'] : 1;
+                    $count = $fLog ? (int)$fLog['logout_count'] : 0;
+                    $last = $fLog ? $fLog['last_logout_at'] : null;
+                    
+                    // Reset count if 24 hours passed
+                    if ($last && (strtotime($currentTime) - strtotime($last)) > 86400) {
+                        $count = 0;
+                    }
+                    
+                    if ($count >= $limit) {
                         return 'device_locked';
                     }
-                    // Allow reset and bind new device
+
+                    // Update count and last logout time
+                    if ($fLog) {
+                        $stmt = $pdo->prepare("UPDATE force_logouts SET logout_count = ?, last_logout_at = ? WHERE user_id = ?");
+                        $stmt->execute([$count + 1, $currentTime, $user['id']]);
+                    } else {
+                        $stmt = $pdo->prepare("INSERT INTO force_logouts (user_id, logged_out_by, logout_limit, logout_count, last_logout_at) VALUES (?, ?, ?, ?, ?)");
+                        $stmt->execute([$user['id'], $user['id'], $limit, 1, $currentTime]);
+                    }
+
+                    // Bind new device
                     $stmt = $pdo->prepare("UPDATE users SET device_id = ?, device_locked_until = ? WHERE id = ?");
                     $stmt->execute([$deviceId, date('Y-m-d H:i:s', strtotime('+24 hours')), $user['id']]);
                 } else {
@@ -218,6 +242,10 @@ function resetDevice($username, $password = null, $isAdminReset = false) {
     $stmt->execute([$user['id']]);
     
     $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = ?");
+    $stmt->execute([$user['id']]);
+
+    // Reset force logout count on manual reset
+    $stmt = $pdo->prepare("UPDATE force_logouts SET logout_count = 0 WHERE user_id = ?");
     $stmt->execute([$user['id']]);
     
     return 'success';
