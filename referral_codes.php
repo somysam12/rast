@@ -331,13 +331,22 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/menu-logic.js"></script>
     <script>
-        const sidebar = document.getElementById('sidebar');
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const overlay = document.getElementById('overlay');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hamburger click handler is already in menu-logic.js
+            // This ensures the local elements are synced
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
 
-        hamburgerBtn.onclick = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
-        overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
+            if (hamburgerBtn) {
+                hamburgerBtn.classList.add('hamburger-menu');
+                hamburgerBtn.onclick = (e) => window.toggleSidebar(e);
+            }
+            if (overlay) overlay.id = 'mobile-overlay';
+        });
 
         document.addEventListener('DOMContentLoaded', function() {
             if (localStorage.getItem('clipboardAllowed') !== 'yes') {

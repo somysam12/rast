@@ -1,0 +1,126 @@
+🚨 ADMIN PANEL – HAMBURGER MENU NOT WORKING ON SPECIFIC PAGES
+❌ Problem Description (Very Specific)
+
+In the Admin Panel, the hamburger (☰) menu is NOT working on the following pages:
+
+Referral Codes Page
+
+Block Users Page
+
+Reset / Device Reset Page
+
+Current behavior:
+
+Hamburger button is visible and clickable
+
+On tapping the hamburger button:
+
+No menu items appear
+
+Sidebar does not open OR opens empty
+
+Navigation works correctly on other admin pages
+
+🔍 Root Cause (Why This Happens)
+
+These pages are using a different layout or wrapper compared to other admin pages, such as:
+
+Missing sidebar HTML include
+
+Sidebar placed outside the page wrapper
+
+Different position, z-index, or overflow rules
+
+Page container using:
+
+overflow: hidden;
+height: 100vh;
+position: fixed;
+
+
+Hamburger JS targeting a class or ID that is not present on these pages
+
+Because of this:
+
+Hamburger toggle fires
+
+Sidebar either stays hidden or renders behind the page
+
+No pages are visible
+
+✅ Required Fix (STRICT RULES)
+
+⚠️ DO NOT:
+
+Change UI of any page
+
+Change layout, colors, spacing, fonts, or icons
+
+Modify page content of referral, block, or reset pages
+
+Change routing, permissions, or business logic
+
+✔ ONLY:
+
+Make hamburger menu show all admin pages
+
+Ensure sidebar opens correctly on:
+
+Referral page
+
+Block page
+
+Reset page
+
+Apply same working sidebar behavior as other admin pages
+
+✅ Correct Fix Strategy (MANDATORY)
+
+Ensure the same sidebar include / component is loaded on:
+
+Referral page
+
+Block page
+
+Reset page
+
+Ensure hamburger button targets the same sidebar class or ID on all admin pages
+
+Ensure sidebar:
+
+height: 100vh;
+overflow-y: auto;
+overflow-x: hidden;
+z-index: 9999;
+
+
+Remove or override any page-specific CSS that blocks sidebar visibility:
+
+overflow: hidden
+
+position: fixed on body wrappers
+
+✅ JavaScript Consistency Rule
+
+The same hamburger toggle JS must be used on all admin pages
+
+No page should redefine or override the toggle function
+
+Sidebar open/close must rely on a single shared script
+
+🧪 Testing Checklist (Must Pass)
+
+✔ Hamburger opens on Referral page
+✔ Hamburger opens on Block page
+✔ Hamburger opens on Reset page
+✔ All admin pages visible
+✔ No UI changes anywhere
+✔ Works on mobile + desktop
+
+🧠 FINAL COPY-PASTE PROMPT (ADMIN PANEL)
+
+Fix the hamburger menu issue in the Admin Panel where the menu does not open on the Referral Codes, Block Users, and Reset pages.
+These pages currently do not show any admin pages when the hamburger button is tapped.
+Ensure the same sidebar component, CSS, and JavaScript used on other working admin pages is consistently applied to these pages.
+Enable proper sidebar visibility and scrolling without changing any UI, layout, colors, or business logic of any page, including referral, block, and reset pages.
+The fix must strictly address the hamburger menu behavior only and ensure all admin pages are accessible.
