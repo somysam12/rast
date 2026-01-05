@@ -1,4 +1,5 @@
 <?php
+require_once "includes/optimization.php";
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
@@ -20,7 +21,7 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mod APK List - SilentMultiPanel</title>
+    <title>Mod APK List - Silent Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,10 +46,14 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
+        html, body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%) !important;
+            background-attachment: fixed !important;
+            width: 100%;
+            height: 100%;
+        }
+
         body {
-            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
             color: var(--text-main);
             overflow-x: hidden;
             position: relative;
@@ -69,291 +74,402 @@ $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
             background: var(--card-bg);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
-            border-right: 1px solid var(--border-light);
-            min-height: 100vh;
-            position: fixed;
-            width: 280px;
-            padding: 2rem 0;
+            border-right: 1.5px solid var(--border-light);
             z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
             transition: transform 0.3s ease;
+            padding: 1.5rem 0;
         }
 
-        .sidebar.active {
-            transform: translateX(0);
+        .sidebar-brand {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            text-align: center;
         }
 
-        .sidebar h4 {
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #f8fafc, var(--primary));
+        .sidebar-brand h4 {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 2rem;
+            background-clip: text;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-size: 1.4rem;
+        }
+
+        .sidebar .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0 1rem;
         }
 
         .sidebar .nav-link {
             color: var(--text-dim);
-            padding: 12px 20px;
-            margin: 4px 16px;
+            padding: 12px 16px;
             border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 12px;
+            border: 1px solid transparent;
             text-decoration: none;
         }
 
-        .sidebar .nav-link:hover {
-            color: var(--text-main);
-            background: rgba(139, 92, 246, 0.1);
-        }
-
+        .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            transform: translateX(4px);
         }
 
         .main-content {
             margin-left: 280px;
-            padding: 2.5rem;
+            padding: 1.5rem;
+            min-height: 100vh;
             position: relative;
             z-index: 1;
-            transition: margin-left 0.3s ease;
         }
 
-        .hamburger {
+        .top-bar {
             display: none;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1100;
-            background: var(--primary);
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hamburger-btn {
+            background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+            border: 2px solid rgba(6, 182, 212, 0.4) !important;
             color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 10px;
+            font-size: 1.2rem;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+            padding: 10px 12px !important;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
         }
 
         .glass-card {
             background: var(--card-bg);
             backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 2px solid;
-            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border: 1.5px solid var(--border-light);
             border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
             margin-bottom: 2rem;
+            transition: all 0.3s ease;
         }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            padding: 2.5rem;
+        .glass-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.25));
+            border: 2px solid var(--border-light);
             border-radius: 24px;
+            padding: 2rem;
             margin-bottom: 2.5rem;
-            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
         }
 
-        .header h2 {
-            font-weight: 800;
-            letter-spacing: -0.03em;
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
             color: white;
         }
 
         .table {
             color: var(--text-main);
-            border-color: var(--border-light);
+            vertical-align: middle;
         }
 
         .table thead th {
             background: rgba(139, 92, 246, 0.1);
             color: var(--primary);
-            border-bottom: 2px solid var(--border-light);
-            padding: 15px;
+            border: none;
+            padding: 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .table tbody td {
-            padding: 15px;
-            vertical-align: middle;
+            padding: 1.25rem;
             border-bottom: 1px solid var(--border-light);
+            font-size: 0.95rem;
         }
 
-        .table-hover tbody tr:hover {
-            background: rgba(255, 255, 255, 0.02);
-            color: var(--text-main);
+        .mod-icon-placeholder {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
         }
 
-        .badge {
+        .badge-status {
             padding: 6px 12px;
             border-radius: 8px;
-            font-weight: 600;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            border-radius: 12px;
-            padding: 10px 20px;
             font-weight: 700;
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
-            transition: all 0.3s;
-            color: white;
-            text-decoration: none;
-            display: inline-block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
-            color: white;
+        .badge-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .download-link {
+            color: var(--secondary);
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+
+        .download-link:hover {
+            color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: none;
+        }
+
+        .mobile-overlay.show {
+            display: block;
         }
 
         @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-100%);
-                width: 250px;
             }
-            .sidebar.active {
+
+            .sidebar.show {
                 transform: translateX(0);
             }
+
             .main-content {
                 margin-left: 0;
-                padding: 5rem 1.5rem 1.5rem;
+                padding: 1rem;
             }
-            .hamburger {
-                display: block;
+
+            .top-bar {
+                display: flex;
+            }
+
+            .header-card {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .header-card .d-flex {
+                flex-direction: column;
+                gap: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <button class="hamburger" id="hamburgerBtn">
-        <i class="fas fa-bars"></i>
-    </button>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 sidebar" id="sidebar">
-                <h4 style="padding: 0 20px;">
-                    <i class="fas fa-bolt me-2"></i>Multi Panel
-                </h4>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
-                    <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
-                    <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload APK</a>
-                    <a class="nav-link active" href="mod_list.php"><i class="fas fa-list"></i>Mod List</a>
-                    <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
-                    <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
-                    <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
-                    <hr style="border-color: var(--border-light); margin: 1rem 16px;">
-                    <a class="nav-link" href="logout.php" style="color: #fca5a5;"><i class="fas fa-sign-out"></i>Logout</a>
-                </nav>
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h4><i class="fas fa-shield-alt"></i> SILENT PANEL</h4>
+        </div>
+        <nav class="nav">
+            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
+            <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
+            <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
+            <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload APK</a>
+            <a class="nav-link active" href="mod_list.php"><i class="fas fa-list"></i>Mod List</a>
+            <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
+            <a class="nav-link" href="licence_key_list.php"><i class="fas fa-list"></i>License List</a>
+            <a class="nav-link" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
+            <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+            <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
+            <a class="nav-link" href="admin_block_reset_requests.php"><i class="fas fa-ban"></i>Requests</a>
+            <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
+            <hr style="border-color: var(--border-light); margin: 1rem 0;">
+            <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <button class="hamburger-btn" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+            <h4 style="margin: 0; font-weight: 800; background: linear-gradient(135deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MOD LIST</h4>
+            <div style="width: 44px;"></div>
+        </div>
+
+        <div class="header-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1" style="font-weight: 800; color: white;">Mod Repository</h2>
+                    <p class="mb-0 text-white opacity-75">Manage and monitor all mod APK releases</p>
+                </div>
+                <a href="add_mod.php" class="btn-action btn-primary-gradient">
+                    <i class="fas fa-plus"></i> Create New Mod
+                </a>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-box-open me-2 text-primary"></i>Installed Modules</h5>
+                <span class="badge bg-primary rounded-pill px-3 py-2"><?php echo count($mods); ?> Total</span>
             </div>
             
-            <!-- Main Content -->
-            <div class="col-md-9 main-content">
-                <div class="header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2><i class="fas fa-list me-3"></i>All Mod APKs</h2>
-                            <p class="mb-0 opacity-75 text-white">Manage and view all mod APK files</p>
-                        </div>
-                        <div>
-                            <a href="add_mod.php" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Add New Mod
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="glass-card">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="mb-0"><i class="fas fa-table me-2" style="color: var(--primary);"></i>Mod APK Overview</h5>
-                        <span class="badge bg-primary"><?php echo count($mods); ?> Total Mods</span>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>APK File</th>
-                                    <th>Upload Date</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($mods)): ?>
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">
-                                        <i class="fas fa-box fa-3x mb-3 opacity-25"></i><br>
-                                        <h6>No mods found</h6>
-                                        <a href="add_mod.php" class="btn btn-primary mt-3">
-                                            <i class="fas fa-plus me-2"></i>Add First Mod
-                                        </a>
-                                    </td>
-                                </tr>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Module</th>
+                            <th>Description</th>
+                            <th>Release Data</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($mods)): ?>
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                                <h6 class="text-dim">No modules detected in system</h6>
+                                <a href="add_mod.php" class="btn btn-primary btn-sm mt-3">Initialize First Module</a>
+                            </td>
+                        </tr>
+                        <?php else: ?>
+                        <?php foreach ($mods as $mod): ?>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="mod-icon-placeholder">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold"><?php echo htmlspecialchars($mod['name']); ?></div>
+                                        <small class="text-dim">ID: #<?php echo $mod['id']; ?></small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-dim small" style="max-width: 250px;">
+                                    <?php echo htmlspecialchars($mod['description'] ?: 'No functional documentation provided.'); ?>
+                                </div>
+                            </td>
+                            <td>
+                                <?php if ($mod['file_name']): ?>
+                                    <a href="<?php echo htmlspecialchars($mod['file_path']); ?>" class="download-link">
+                                        <i class="fas fa-download"></i> Latest APK
+                                    </a>
+                                    <small class="text-dim d-block mt-1">
+                                        <i class="far fa-clock me-1"></i> <?php echo date('d M Y', strtotime($mod['apk_uploaded_at'])); ?>
+                                    </small>
                                 <?php else: ?>
-                                <?php foreach ($mods as $mod): ?>
-                                <tr>
-                                    <td><strong>#<?php echo $mod['id']; ?></strong></td>
-                                    <td><strong><?php echo htmlspecialchars($mod['name']); ?></strong></td>
-                                    <td class="text-dim"><?php echo htmlspecialchars($mod['description'] ?: 'No description'); ?></td>
-                                    <td>
-                                        <?php if ($mod['file_name']): ?>
-                                            <a href="<?php echo htmlspecialchars($mod['file_path']); ?>" class="badge bg-success" target="_blank">Download APK</a>
-                                        <?php else: ?>
-                                            <span class="badge bg-warning text-dark">Not uploaded</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-dim"><?php echo $mod['apk_uploaded_at'] ? date('d M Y', strtotime($mod['apk_uploaded_at'])) : 'Not uploaded'; ?></td>
-                                    <td>
-                                        <span class="badge bg-<?php echo $mod['status'] === 'active' ? 'success' : 'danger'; ?>">
-                                            <?php echo ucfirst($mod['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="upload_mod.php?mod_id=<?php echo $mod['id']; ?>" 
-                                           class="btn btn-sm btn-primary me-1" title="Upload APK">
-                                            <i class="fas fa-upload"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
+                                    <span class="text-warning small fw-bold">
+                                        <i class="fas fa-exclamation-triangle me-1"></i> No APK Uploaded
+                                    </span>
                                 <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            </td>
+                            <td>
+                                <span class="badge-status <?php echo $mod['status'] === 'active' ? 'badge-active' : 'badge-inactive'; ?>">
+                                    <?php echo $mod['status']; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="upload_mod.php?mod_id=<?php echo $mod['id']; ?>" class="btn btn-sm btn-outline-primary border-2 rounded-pill px-3" title="Update Binary">
+                                        <i class="fas fa-upload me-1"></i> Update
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById('hamburgerBtn').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
 
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const hamburger = document.getElementById('hamburgerBtn');
-            if (window.innerWidth <= 992) {
-                if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
-                }
-            }
-        });
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        if (hamburgerBtn) hamburgerBtn.onclick = toggleSidebar;
+        if (overlay) overlay.onclick = toggleSidebar;
     </script>
 </body>
 </html>
