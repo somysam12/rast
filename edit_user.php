@@ -36,6 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user_id) {
             $stmt->execute([$hashed, $user_id]);
         }
 
+        // Handle Admin Reset Device
+        if (isset($_POST['reset_device'])) {
+            $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $u = $stmt->fetchColumn();
+            if ($u) {
+                resetDevice($u, null, true);
+            }
+        }
+
         // Check if user exists in force_logouts
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM force_logouts WHERE user_id = ?");
         $stmt->execute([$user_id]);
@@ -230,6 +240,13 @@ if (!$user) {
                             </select>
                         </div>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="custom-check">
+                        <input type="checkbox" name="reset_device">
+                        Reset device binding (admin only)
+                    </label>
                 </div>
 
                 <button type="submit" class="btn-submit">Update User Profile</button>

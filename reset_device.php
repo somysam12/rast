@@ -19,7 +19,9 @@ if ($_POST) {
     } else {
         $resetResult = resetDevice($username, $password);
         if ($resetResult === 'success') {
-            $success = 'Successfully logged out from all devices. You can now login from any device.';
+            $success = 'Successfully logged out from all devices and reset device binding.';
+        } else if ($resetResult === 'device_locked') {
+            $error = 'Cannot reset device yet. 24-hour lockout is active.';
         } else if ($resetResult === 'user_not_found') {
             $error = 'Username or email not found';
         } else if ($resetResult === 'invalid_password') {

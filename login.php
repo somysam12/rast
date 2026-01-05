@@ -47,6 +47,8 @@ if ($_POST) {
                                 exit();
                             } else if ($loginResult === 'already_logged_in') {
                                 $error = 'You are already logged in from another device. Check the force logout option.';
+                            } else if ($loginResult === 'device_locked') {
+                                $error = 'Your account is locked for 24 hours due to a device change. Please wait.';
                             } else {
                                 $error = 'Invalid username or password';
                             }
@@ -74,6 +76,8 @@ if ($_POST) {
                 exit();
             } else if ($loginResult === 'already_logged_in') {
                 $error = 'You are already logged in from another device. Check the force logout option.';
+            } else if ($loginResult === 'device_locked') {
+                $error = 'Your account is locked for 24 hours due to a device change. Please wait.';
             } else {
                 $error = 'Invalid username or password';
             }

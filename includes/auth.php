@@ -60,24 +60,33 @@ function login($username, $password, $forceLogout = false) {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user && password_verify($password, $user['password'])) {
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND session_id != ? LIMIT 1");
-        $stmt->execute([$user['id'], session_id()]);
-        $activeSessions = $stmt->fetchColumn();
-        
-        if ($activeSessions > 0 && !$forceLogout) {
-            return 'already_logged_in';
+        $deviceId = $_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR'];
+        $currentTime = date('Y-m-d H:i:s');
+
+        if ($user['role'] === 'user') {
+            if (!empty($user['device_id']) && $user['device_id'] !== $deviceId) {
+                if ($forceLogout) {
+                    if ($user['device_locked_until'] && $currentTime < $user['device_locked_until']) {
+                        return 'device_locked';
+                    }
+                    // Allow reset and bind new device
+                    $stmt = $pdo->prepare("UPDATE users SET device_id = ?, device_locked_until = ? WHERE id = ?");
+                    $stmt->execute([$deviceId, date('Y-m-d H:i:s', strtotime('+24 hours')), $user['id']]);
+                } else {
+                    return 'already_logged_in';
+                }
+            } else if (empty($user['device_id'])) {
+                // First time binding
+                $stmt = $pdo->prepare("UPDATE users SET device_id = ?, device_locked_until = ? WHERE id = ?");
+                $stmt->execute([$deviceId, date('Y-m-d H:i:s', strtotime('+24 hours')), $user['id']]);
+            }
         }
+
+        // Kill all other sessions for this user (Server-side enforcement)
+        $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = ?");
+        $stmt->execute([$user['id']]);
         
-        if ($forceLogout && $activeSessions > 0) {
-            $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = ? AND session_id != ?");
-            $stmt->execute([$user['id'], session_id()]);
-        }
-        
-        // Delete old session first (works on both SQLite and MySQL)
-        $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE session_id = ?");
-        $stmt->execute([session_id()]);
-        
-        // Insert new session
+        // Create new session
         $stmt = $pdo->prepare("INSERT INTO user_sessions (user_id, session_id, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
         $stmt->execute([$user['id'], session_id(), $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '']);
         
@@ -186,24 +195,27 @@ function hasActiveSession($userId) {
     return $stmt->fetchColumn() > 0;
 }
 
-function resetDevice($username, $password) {
+function resetDevice($username, $password = null, $isAdminReset = false) {
     $pdo = getDBConnection();
     
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1");
     $stmt->execute([$username, $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if (!$user) {
-        return 'user_not_found';
+    if (!$user) return 'user_not_found';
+    
+    if (!$isAdminReset) {
+        if (!$password || !password_verify($password, $user['password'])) {
+            return 'invalid_password';
+        }
+        $currentTime = date('Y-m-d H:i:s');
+        if ($user['device_locked_until'] && $currentTime < $user['device_locked_until']) {
+            return 'device_locked';
+        }
     }
     
-    $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ? LIMIT 1");
+    $stmt = $pdo->prepare("UPDATE users SET device_id = NULL, device_locked_until = NULL WHERE id = ?");
     $stmt->execute([$user['id']]);
-    $hashedPassword = $stmt->fetchColumn();
-    
-    if (!password_verify($password, $hashedPassword)) {
-        return 'invalid_password';
-    }
     
     $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id = ?");
     $stmt->execute([$user['id']]);

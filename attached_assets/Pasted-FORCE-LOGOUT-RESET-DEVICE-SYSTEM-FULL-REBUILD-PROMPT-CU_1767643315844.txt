@@ -1,0 +1,194 @@
+FORCE LOGOUT / RESET DEVICE SYSTEM – FULL REBUILD PROMPT
+❌ CURRENT ISSUE (CLEAR STATEMENT)
+
+Even after enhancing reset_device.php with the modern Silent Panel design system (glassmorphism, dark mode, mobile-first):
+
+Users can still force logout multiple times
+
+Users can switch devices unlimited times
+
+The existing force logout / reset device logic is bypassable
+
+Reset Device and Force Logout are behaving like client-side actions
+
+The restriction is not enforced server-side
+
+As a result, the single-device login rule is completely broken.
+
+🎯 REQUIRED DECISION (IMPORTANT)
+
+🚫 REMOVE ALL EXISTING IMPLEMENTATIONS of:
+
+Force Logout logic
+
+Reset Device logic
+
+Any duplicate or legacy checks
+
+✅ REBUILD THE FEATURE FROM SCRATCH, cleanly and correctly.
+
+This is required because partial fixes will never work.
+
+🔁 CORE REQUIREMENT (NON-NEGOTIABLE)
+
+There must be ONE single source of truth for device control:
+
+The Force Logout checkbox on the LOGIN PAGE
+must be the only mechanism that resets device binding.
+
+No other page should independently override it.
+
+🔒 EXPECTED FINAL BEHAVIOR
+
+User logs in from Device A
+
+Device is bound
+
+Login locked for 24 hours
+
+User tries Device B
+
+❌ Blocked (even after logout)
+
+User ticks “Force Logout” checkbox on login page
+
+Old device binding is reset
+
+New device becomes active
+
+24-hour lock restarts
+
+Admin reset does the same thing internally
+
+No special bypass
+
+Same logic path
+
+User cannot:
+
+Spam reset
+
+Switch devices repeatedly
+
+Bypass using logout or refresh
+
+🗄️ DATABASE (SINGLE SOURCE OF TRUTH)
+
+Use ONLY ONE SET of fields (remove others if duplicated):
+
+device_id
+_attach device identifier_
+
+device_locked_until
+_datetime when next reset is allowed_
+
+
+❌ Remove:
+
+Old force_logout flags
+
+Temporary session resets
+
+Client-side-only markers
+
+🔐 BACKEND LOGIC (AUTHORITATIVE)
+Login flow must work like this:
+IF no device_id
+→ bind device
+
+ELSE IF same device_id
+→ allow login
+
+ELSE IF force_logout_checkbox == true
+     AND current_time > device_locked_until
+→ reset device_id
+→ bind new device
+→ reset timer
+
+ELSE
+→ block login
+
+
+⛔ Logout action must NOT reset device binding.
+
+⏱️ RESET TIMER (ANTI-ABUSE)
+
+Default reset window: 24 hours
+
+Admin can modify duration
+
+User cannot bypass by repeated force logout
+
+Force logout checkbox should be disabled or rejected if timer not expired.
+
+👑 ADMIN RESET RULES (STRICT)
+
+Admin reset must:
+
+Use the same backend logic
+
+Reset device_id + device_locked_until
+
+NOT create a parallel reset path
+
+NOT bypass cooldown unless explicitly allowed
+
+🎨 UI RULES (VERY IMPORTANT)
+
+❌ DO NOT:
+
+Change UI design
+
+Change glassmorphism / dark mode
+
+Change layout of reset_device.php
+
+Change login page UI
+
+Change checkbox appearance or placement
+
+✔ ONLY:
+
+Rewire backend logic
+
+Remove broken logic
+
+Connect everything to one system
+
+🧪 TEST CASES (MUST PASS)
+
+✔ Device A login → success
+✔ Device B login → blocked
+✔ Logout → still blocked
+✔ Force logout (before 24h) → rejected
+✔ Force logout (after 24h) → allowed
+✔ Admin reset → allowed
+✔ No UI changes anywhere
+
+🧠 FINAL COPY-PASTE PROMPT
+
+Remove all existing force logout and reset device implementations and rebuild the system from scratch.
+The current logic allows users to force logout and switch devices multiple times, which breaks single-device enforcement.
+Implement a single, server-side device binding system using device_id and device_locked_until.
+The Force Logout checkbox on the login page must be the only user-controlled reset mechanism and must respect a 24-hour cooldown.
+Admin reset must follow the same backend logic.
+Do NOT change any UI design, layout, or styling, including reset_device.php and login page UI.
+Only fix and unify the backend logic to make device enforcement non-bypassable.
+
+🔒 FINAL NOTE (IMPORTANT)
+
+This approach:
+
+Eliminates all loopholes
+
+Prevents abuse
+
+Matches professional SaaS security
+
+Keeps your UI exactly as it is
+
+If you want next:
+
+I can audit your current reset_device.php logic
+
+Or write drop-in PHP code to replace everything safely
