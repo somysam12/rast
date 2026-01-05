@@ -82,7 +82,7 @@ $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_co
 $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Statistics
-$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > datetime('now')) THEN 1 END) as active FROM referral_codes");
+$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > NOW()) THEN 1 END) as active FROM referral_codes");
 $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -133,8 +133,11 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
             transform: translateX(-280px);
         }
 
-        .sidebar.active { transform: translateX(0); }
-        .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; }
+        .sidebar.show { transform: translateX(0); }
+        .sidebar-brand { padding: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); text-align: center; }
+        .sidebar-brand h4 { background: linear-gradient(135deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-size: 1.4rem; }
+        .sidebar-brand .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+        .sidebar-brand p { color: var(--text-dim); font-size: 0.8rem; margin: 0; font-weight: 500; }
         .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
         .sidebar .nav-link.active { background: var(--primary); color: white; }
@@ -144,56 +147,36 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         @media (min-width: 993px) {
             .sidebar { transform: translateX(0); }
             .main-content { margin-left: 280px; }
-            .hamburger { display: none !important; }
+            .hamburger-btn { display: none !important; }
         }
 
-        .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
-        @media (max-width: 992px) { .hamburger { display: block; } }
+        .hamburger-btn { position: fixed; top: 20px; left: 20px; z-index: 1100; background: linear-gradient(135deg, #06b6d4, #0891b2); border: 2px solid rgba(6, 182, 212, 0.4); color: white; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
+        @media (max-width: 992px) { .hamburger-btn { display: block; } }
 
         .glass-card { background: var(--card-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--border-light); border-radius: 24px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); margin-bottom: 2rem; }
-
         .header-card { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); padding: 1.5rem; border-radius: 24px; margin-bottom: 2rem; position: relative; overflow: hidden; }
-
         .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); border-radius: 18px; padding: 12px 8px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 80px; }
         .stat-card h3 { color: var(--secondary); font-weight: 800; margin-bottom: 2px; font-size: 1.2rem; }
         .stat-card p { color: var(--text-dim); font-size: 0.7rem; margin-bottom: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-
         .form-control, .form-select { background: rgba(15, 23, 42, 0.5); border: 1.5px solid var(--border-light); border-radius: 12px; padding: 12px; color: white; }
-        .form-control:focus, .form-select:focus { outline: none; border-color: var(--primary); background: rgba(15, 23, 42, 0.7); color: white; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
-
         .btn-submit { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; padding: 12px 24px; color: white; font-weight: 700; transition: all 0.3s; width: 100%; }
-        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3); }
-
         .table { color: var(--text-main); vertical-align: middle; }
         .table thead th { background: rgba(139, 92, 246, 0.1); color: var(--primary); border: none; padding: 12px; font-size: 0.9rem; }
         .table tbody td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.85rem; }
-        
-        .code-badge-wrapper { position: relative; display: inline-flex; align-items: center; gap: 8px; }
-        .code-badge { font-family: 'Courier New', monospace; background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; letter-spacing: 1px; border: 1px solid rgba(139, 92, 246, 0.2); cursor: pointer; position: relative; }
-        
-        .copy-btn { color: var(--primary); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
-        .copy-btn:hover { color: var(--secondary); transform: scale(1.2); }
-        .copy-btn.copied { color: #10b981; transform: scale(1.3); }
-
-        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .status-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .status-inactive { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
         .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
         .overlay.active { display: block; }
-
-        .checkbox-custom { width: 18px; height: 18px; border: 2px solid var(--primary); border-radius: 4px; appearance: none; cursor: pointer; position: relative; transition: all 0.2s; }
-        .checkbox-custom:checked { background: var(--primary); }
-        .checkbox-custom:checked::after { content: '\f00c'; font-family: 'Font Awesome 5 Free'; font-weight: 900; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; }
     </style>
 </head>
 <body>
     <?php include 'includes/admin_header.php'; ?>
-
     <div class="overlay" id="overlay"></div>
-    <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+    <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
     <div class="sidebar" id="sidebar">
-        <h4>SILENT PANEL</h4>
+        <div class="sidebar-brand">
+            <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+            <h4>SILENT PANEL</h4>
+            <p>Admin Control Center</p>
+        </div>
         <nav class="nav flex-column">
             <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
             <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
@@ -205,6 +188,7 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
             <a class="nav-link active" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
             <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
             <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
+            <a class="nav-link" href="admin_block_reset_requests.php"><i class="fas fa-ban"></i>Block & Reset</a>
             <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
             <hr style="border-color: var(--border-light); margin: 1.5rem 16px;">
             <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
@@ -220,18 +204,8 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                 </div>
                 <div class="col-md-5 mt-3 mt-md-0">
                     <div class="row g-2">
-                        <div class="col-6">
-                            <div class="stat-card">
-                                <h3><?php echo (int)$stats['total']; ?></h3>
-                                <p>Total Codes</p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="stat-card">
-                                <h3><?php echo (int)$stats['active']; ?></h3>
-                                <p>Active Now</p>
-                            </div>
-                        </div>
+                        <div class="col-6"><div class="stat-card"><h3><?php echo (int)$stats['total']; ?></h3><p>Total Codes</p></div></div>
+                        <div class="col-6"><div class="stat-card"><h3><?php echo (int)$stats['active']; ?></h3><p>Active Now</p></div></div>
                     </div>
                 </div>
             </div>
@@ -292,31 +266,13 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                                 <tbody>
                                     <?php foreach ($referralCodes as $code): ?>
                                     <tr>
-                                        <td>
-                                            <input type="checkbox" name="selected_codes[]" value="<?php echo $code['id']; ?>" class="checkbox-custom code-checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="code-badge-wrapper">
-                                                <span class="code-badge" onclick="copyCode('<?php echo $code['code']; ?>', this)"><?php echo $code['code']; ?></span>
-                                                <i class="fas fa-copy copy-btn" onclick="copyCode('<?php echo $code['code']; ?>', this)"></i>
-                                            </div>
-                                        </td>
+                                        <td><input type="checkbox" name="selected_codes[]" value="<?php echo $code['id']; ?>" class="checkbox-custom code-checkbox"></td>
+                                        <td><span class="code-badge" onclick="copyCode('<?php echo $code['code']; ?>', this)"><?php echo $code['code']; ?></span></td>
                                         <td><span class="text-success fw-bold">₹<?php echo number_format($code['bonus_amount'], 2); ?></span></td>
                                         <td><span class="text-dim"><?php echo $code['usage_count']; ?> / <?php echo $code['usage_limit']; ?></span></td>
-                                        <td>
-                                            <?php 
-                                            $isExpired = strtotime($code['expires_at']) < time();
-                                            ?>
-                                            <span class="small <?php echo $isExpired ? 'text-danger fw-bold' : 'text-dim'; ?>">
-                                                <?php echo date('M d, H:i', strtotime($code['expires_at'])); ?>
-                                                <?php if($isExpired): ?> <i class="fas fa-exclamation-circle"></i> <?php endif; ?>
-                                            </span>
-                                        </td>
+                                        <td><span class="small"><?php echo date('M d, H:i', strtotime($code['expires_at'])); ?></span></td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <?php if ($code['status'] === 'active' && !$isExpired): ?>
-                                                    <a href="?deactivate=<?php echo $code['id']; ?>" class="btn btn-warning btn-sm" title="Deactivate"><i class="fas fa-ban"></i></a>
-                                                <?php endif; ?>
                                                 <button type="button" onclick="confirmDelete(<?php echo $code['id']; ?>)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                                             </div>
                                         </td>
@@ -332,148 +288,28 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
     </div>
 
     <script>
-        const sidebar = document.getElementById('sidebar');
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const overlay = document.getElementById('overlay');
-
-        hamburgerBtn.onclick = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
-        overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('clipboardAllowed') !== 'yes') {
-                Swal.fire({
-                    title: 'Enable Magic Copy',
-                    text: 'Enable one-touch automatic copying for your future referral codes?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Enable',
-                    cancelButtonText: 'No Thanks',
-                    background: '#0a0f19',
-                    color: '#fff',
-                    confirmButtonColor: '#8b5cf6'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const dummyBtn = document.createElement('button');
-                        dummyBtn.style.display = 'none';
-                        document.body.appendChild(dummyBtn);
-                        navigator.clipboard.writeText('Permission Granted').then(() => {
-                            localStorage.setItem('clipboardAllowed', 'yes');
-                            document.body.removeChild(dummyBtn);
-                        }).catch(() => {
-                            document.body.removeChild(dummyBtn);
-                        });
-                    }
-                });
-            }
-        });
-
-        selectAll.onchange = (e) => {
-            codeCheckboxes.forEach(cb => cb.checked = e.target.checked);
-        };
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('active');
+        }
 
         async function copyCode(text, el) {
-            try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(text);
-                } else {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    textArea.style.position = 'fixed';
-                    textArea.style.left = '-9999px';
-                    textArea.style.top = '0';
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-                
-                const btn = el.parentElement.querySelector('.copy-btn') || el;
-                btn.classList.add('copied');
-                const oldClass = btn.classList.contains('fa-copy') ? 'fa-copy' : 'fa-check-circle';
-                btn.classList.replace(oldClass, 'fa-check-circle');
-                
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'Code Copied!',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    background: '#1e293b',
-                    color: '#f8fafc'
-                });
-
-                setTimeout(() => {
-                    btn.classList.remove('copied');
-                    btn.classList.replace('fa-check-circle', 'fa-copy');
-                }, 2000);
-            } catch (err) {
-                console.error('Failed to copy: ', err);
-            }
+            await navigator.clipboard.writeText(text);
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Code Copied!', showConfirmButton: false, timer: 1500 });
         }
 
         function confirmDelete(id) {
-            Swal.fire({
-                title: 'Delete Code?',
-                text: "This action cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#7c3aed',
-                cancelButtonColor: '#ef4444',
-                confirmButtonText: 'Yes, delete!',
-                background: '#111827',
-                color: '#ffffff'
-            }).then((result) => { if (result.isConfirmed) window.location.href = '?delete=' + id; })
+            Swal.fire({ title: 'Delete Code?', text: "This action cannot be undone!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#7c3aed', cancelButtonColor: '#ef4444', confirmButtonText: 'Yes, delete!' }).then((result) => { if (result.isConfirmed) window.location.href = '?delete=' + id; })
         }
 
         function confirmBulkDelete(e) {
             e.preventDefault();
             const selected = document.querySelectorAll('.code-checkbox:checked').length;
-            if (selected === 0) {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'No codes selected!', background: '#111827', color: '#ffffff' });
-                return false;
-            }
-
-            Swal.fire({
-                title: 'Bulk Delete?',
-                text: `Are you sure you want to delete ${selected} codes?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, delete all!',
-                background: '#111827',
-                color: '#ffffff'
-            }).then((result) => { if (result.isConfirmed) document.getElementById('bulkDeleteForm').submit(); })
+            if (selected === 0) { Swal.fire({ icon: 'error', title: 'Error', text: 'No codes selected!' }); return false; }
+            Swal.fire({ title: 'Bulk Delete?', text: `Are you sure you want to delete ${selected} codes?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', confirmButtonText: 'Yes, delete all!' }).then((result) => { if (result.isConfirmed) document.getElementById('bulkDeleteForm').submit(); })
         }
-
-        <?php if ($success): ?>
-        <script>
-            window.addEventListener('load', async () => {
-                if (localStorage.getItem('clipboardAllowed') === 'yes') {
-                    const code = "<?php echo explode(': ', $success)[1] ?? ''; ?>";
-                    if (code) {
-                        await navigator.clipboard.writeText(code);
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Code Auto-Copied!',
-                            showConfirmButton: false,
-                            timer: 2000,
-                            background: '#1e293b',
-                            color: '#f8fafc'
-                        });
-                    }
-                }
-            });
-        </script>
-        Swal.fire({ icon: 'success', title: 'Success!', text: '<?php echo $success; ?>', background: '#111827', color: '#ffffff' });
-        <?php endif; ?>
-        <?php if ($error): ?>
-        Swal.fire({ icon: 'error', title: 'Error!', text: '<?php echo $error; ?>', background: '#111827', color: '#ffffff' });
-        <?php endif; ?>
     </script>
 </body>
 </html>
