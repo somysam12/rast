@@ -88,8 +88,18 @@ try {
     $isSQLite = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite';
     $timeFunc = $isSQLite ? "datetime('now')" : "NOW()";
     
-    $stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > $timeFunc) THEN 1 END) as active FROM referral_codes");
-    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Check if status column exists or use a safer query
+    $stmt = $pdo->query("SELECT COUNT(*) as total FROM referral_codes");
+    $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) as active FROM referral_codes WHERE expires_at > $timeFunc");
+        $active = $stmt->fetch(PDO::FETCH_ASSOC)['active'];
+    } catch (Exception $e) {
+        $active = 0;
+    }
+    
+    $stats = ['total' => $total, 'active' => $active];
 } catch (Exception $e) {
     $stats = ['total' => 0, 'active' => 0];
 }
