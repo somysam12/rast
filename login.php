@@ -39,7 +39,7 @@ if ($_POST) {
                             // Valid 2FA code, proceed to login using the auth.php function
                             $loginResult = login($user_row['username'], $password, $forceLogout);
                             if ($loginResult === true) {
-                                if (isAdmin()) {
+                                if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
                                     header('Location: admin_dashboard.php');
                                 } else {
                                     header('Location: user_dashboard.php');
