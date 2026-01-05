@@ -548,50 +548,40 @@ try {
         </div>
     </header>
 
-    <div id="clipboardPriming" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 10000; background: rgba(5, 7, 12, 0.9); display: flex !important; backdrop-filter: blur(10px);">
-        <div class="cyber-card text-center p-5" style="max-width: 400px; border: 1px solid #8b5cf6;">
-            <i class="fas fa-magic text-neon fs-1 mb-4"></i>
-            <h3 class="text-white mb-3">Enable Magic Copy</h3>
-            <p class="text-secondary mb-4">Click below to enable one-touch automatic key copying for your future purchases.</p>
-            <button id="enableCopyBtn" class="cyber-btn w-100 py-3">
-                <i class="fas fa-check-circle me-2"></i> Enable Auto Copy
-            </button>
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const primingDiv = document.getElementById('clipboardPriming');
-            const enableBtn = document.getElementById('enableCopyBtn');
-            
-            if (localStorage.getItem('clipboardAllowed') === 'yes') {
-                primingDiv.style.setProperty('display', 'none', 'important');
+            if (localStorage.getItem('clipboardAllowed') !== 'yes') {
+                Swal.fire({
+                    title: 'Enable Magic Copy',
+                    text: 'Would you like to enable one-touch automatic key copying for your future purchases?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Enable Auto Copy',
+                    cancelButtonText: 'Not Now',
+                    background: '#0a0f19',
+                    color: '#fff',
+                    confirmButtonColor: '#8b5cf6',
+                    cancelButtonColor: '#334155',
+                    customClass: { popup: 'cyber-swal' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        navigator.clipboard.writeText('Permission Granted').then(() => {
+                            localStorage.setItem('clipboardAllowed', 'yes');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Magic Enabled!',
+                                text: 'Auto copy is now active.',
+                                background: '#0a0f19',
+                                color: '#fff',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }).catch(err => {
+                            console.error('Permission error:', err);
+                        });
+                    }
+                });
             }
-
-            enableBtn.addEventListener('click', async () => {
-                try {
-                    await navigator.clipboard.writeText('Permission Granted');
-                    localStorage.setItem('clipboardAllowed', 'yes');
-                    primingDiv.style.setProperty('display', 'none', 'important');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Magic Enabled!',
-                        text: 'Auto copy is now active for your account.',
-                        background: '#0a0f19',
-                        color: '#fff',
-                        confirmButtonColor: '#8b5cf6'
-                    });
-                } catch (err) {
-                    console.error('Permission error:', err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Permission Denied',
-                        text: 'Please allow clipboard access when prompted by your browser.',
-                        background: '#0a0f19',
-                        color: '#fff'
-                    });
-                }
-            });
         });
     </script>
         <nav class="nav flex-column gap-2">
