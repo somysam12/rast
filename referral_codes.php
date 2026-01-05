@@ -9,6 +9,30 @@ require_once 'includes/functions.php';
 requireAdmin();
 
 $pdo = getDBConnection();
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+// Completely silent table setup
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `referral_codes` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `code` varchar(50) NOT NULL,
+        `created_by` int(11) NOT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `expires_at` timestamp NULL DEFAULT NULL,
+        `bonus_amount` decimal(10,2) DEFAULT '0.00',
+        `usage_limit` int(11) DEFAULT '1',
+        `usage_count` int(11) DEFAULT '0',
+        `status` enum('active','inactive') DEFAULT 'active',
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `code` (`code`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    
+    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `bonus_amount` decimal(10,2) DEFAULT '0.00'");
+    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `usage_limit` int(11) DEFAULT '1'");
+    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `usage_count` int(11) DEFAULT '0'");
+    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `expires_at` timestamp NULL DEFAULT NULL");
+    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `status` enum('active','inactive') DEFAULT 'active'");
+} catch (Exception $e) {}
 
 $success = '';
 $error = '';
@@ -79,31 +103,34 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 }
 
 // Initial data load
-$stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
-$referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$referralCodes = [];
+try {
+    $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
+    if ($stmt) {
+        $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (Exception $e) {
+    // Silent catch to prevent 500
+}
 
 // Statistics - Compatible with both SQLite and MySQL
+$stats = ['total' => 0, 'active' => 0];
 try {
-    // Check if we are using SQLite
     $isSQLite = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite';
     $timeFunc = $isSQLite ? "datetime('now')" : "NOW()";
     
-    // Completely safe statistics query
-    $total = 0;
-    $active = 0;
+    // Completely safe count queries
     try {
         $stmt = $pdo->query("SELECT COUNT(*) FROM referral_codes");
-        $total = (int)$stmt->fetchColumn();
-        
-        $stmt = $pdo->query("SELECT COUNT(*) FROM referral_codes WHERE expires_at > $timeFunc");
-        $active = (int)$stmt->fetchColumn();
-    } catch (Exception $e) {
-        // Fallback if table or columns missing
-    }
+        if ($stmt) $stats['total'] = (int)$stmt->fetchColumn();
+    } catch (Exception $e) {}
     
-    $stats = ['total' => $total, 'active' => $active];
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) FROM referral_codes WHERE expires_at > $timeFunc");
+        if ($stmt) $stats['active'] = (int)$stmt->fetchColumn();
+    } catch (Exception $e) {}
 } catch (Exception $e) {
-    $stats = ['total' => 0, 'active' => 0];
+    // Silent catch
 }
 ?>
 <!DOCTYPE html>
