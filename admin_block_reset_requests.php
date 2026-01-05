@@ -495,8 +495,8 @@ try {
             </div>
 
             <?php if ($message): ?>
-                <div class=\"alert-<?php echo $messageType; ?>\">
-                    <i class=\"fas fa-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>\"></i>
+                <div class="alert-<?php echo $messageType; ?>">
+                    <i class="fas fa-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
                     <?php echo htmlspecialchars($message); ?>
                 </div>
             <?php endif; ?>
@@ -552,108 +552,6 @@ try {
 
         hamburgerBtn.onclick = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
-    </script>
-</body>
-</html>
-
-    <div class="requests-wrapper">
-        <div class="glass-card">
-            <div class="brand-section">
-                <div class="brand-icon">
-                    <i class="fas fa-ban"></i>
-                </div>
-                <h1>Requests</h1>
-                <p>Block & Reset Management</p>
-            </div>
-
-            <?php if ($message): ?>
-                <div class="alert-<?php echo $messageType; ?>">
-                    <i class="fas fa-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
-                    <?php echo htmlspecialchars($message); ?>
-                </div>
-            <?php endif; ?>
-
-            <div class="pending-count">
-                Total Pending: <strong><?php echo count($pendingRequests); ?></strong>
-            </div>
-
-            <?php if (empty($pendingRequests)): ?>
-                <div class="empty-state">
-                    <i class="fas fa-check-circle"></i>
-                    <p>No pending requests at this moment.</p>
-                </div>
-            <?php else: ?>
-                <div class="requests-list">
-                    <?php foreach ($pendingRequests as $request): ?>
-                        <div class="request-item">
-                            <div class="request-header">
-                                <span class="request-user">
-                                    <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($request['username']); ?>
-                                </span>
-                                <span class="request-type <?php echo htmlspecialchars($request['request_type']); ?>">
-                                    <?php echo strtoupper($request['request_type']); ?>
-                                </span>
-                            </div>
-                            
-                            <div class="request-details">
-                                <div><strong><?php echo htmlspecialchars($request['mod_name']); ?></strong></div>
-                                <div style="font-size: 11px; opacity: 0.7;">
-                                    <?php echo htmlspecialchars($request['duration'] . ' ' . ucfirst($request['duration_type'])); ?> • 
-                                    <?php echo formatDate($request['created_at']); ?>
-                                </div>
-                            </div>
-                            
-                            <div class="request-actions">
-                                <form method="POST" style="flex: 1;">
-                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                                    <button type="submit" name="action" value="approve" class="btn-approve" style="width: 100%;">
-                                        <i class="fas fa-check me-1"></i>Approve
-                                    </button>
-                                </form>
-                                <form method="POST" style="flex: 1;">
-                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                                    <button type="submit" name="action" value="reject" class="btn-reject" style="width: 100%;">
-                                        <i class="fas fa-times me-1"></i>Reject
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-
-            <div class="footer-text">
-                <a href="admin_dashboard.php">← Back to Dashboard</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function toggleMenu() {
-            const navMenu = document.getElementById('navMenu');
-            const menuOverlay = document.getElementById('menuOverlay');
-            navMenu.classList.toggle('show');
-            menuOverlay.classList.toggle('show');
-        }
-
-        function closeMenu() {
-            const navMenu = document.getElementById('navMenu');
-            const menuOverlay = document.getElementById('menuOverlay');
-            navMenu.classList.remove('show');
-            menuOverlay.classList.remove('show');
-        }
-
-        // Close menu when clicking on a menu item
-        document.querySelectorAll('.nav-menu-item').forEach(item => {
-            item.addEventListener('click', closeMenu);
-        });
-
-        // Close menu when pressing Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeMenu();
-            }
-        });
     </script>
 </body>
 </html>
