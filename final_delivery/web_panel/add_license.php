@@ -191,6 +191,15 @@ if ($_POST) {
             transition: all 0.3s;
         }
 
+        .form-control::placeholder {
+            color: #6b7280;
+        }
+
+        textarea.form-control {
+            color: #f3f4f6 !important;
+            font-family: 'Courier New', monospace;
+        }
+
         .form-control:focus, .form-select:focus { 
             border-color: var(--primary); 
             outline: none;

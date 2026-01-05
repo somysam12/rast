@@ -550,6 +550,7 @@ try {
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Re-check permission on every load if not yet granted
             if (localStorage.getItem('clipboardAllowed') !== 'yes') {
                 Swal.fire({
                     title: 'Enable Magic Copy',
