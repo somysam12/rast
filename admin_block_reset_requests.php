@@ -57,17 +57,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Get pending requests
+// Get pending requests with key details
 $pendingRequests = [];
 try {
-    $stmt = $pdo->query("SELECT kr.*, u.username, lk.license_key, lk.duration, lk.duration_type 
+    $stmt = $pdo->query("SELECT 
+                            kr.id, 
+                            kr.user_id, 
+                            kr.key_id, 
+                            kr.request_type, 
+                            kr.mod_name, 
+                            kr.reason, 
+                            kr.status, 
+                            kr.created_at, 
+                            u.username, 
+                            lk.license_key, 
+                            lk.duration, 
+                            lk.duration_type 
                         FROM key_requests kr 
                         JOIN users u ON kr.user_id = u.id 
                         LEFT JOIN license_keys lk ON lk.id = kr.key_id
                         WHERE kr.status = 'pending'
                         ORDER BY kr.created_at DESC");
     $pendingRequests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {}
+} catch (Exception $e) {
+    // Handle error
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -84,22 +98,331 @@ try {
             --primary: #8b5cf6;
             --primary-dark: #7c3aed;
             --secondary: #06b6d4;
+            --accent: #ec4899;
             --bg: #0a0e27;
             --card-bg: rgba(15, 23, 42, 0.7);
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
             --border-light: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(139, 92, 246, 0.2);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
         body {
             background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
             background-attachment: fixed;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: var(--text-main);
             overflow-x: hidden;
+            position: relative;
             padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .requests-wrapper {
+            width: 100%;
+            max-width: 700px;
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(40px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2);
+            }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1;
+            border-radius: 32px;
+            padding: 45px;
+            box-shadow: 
+                0 0 60px rgba(139, 92, 246, 0.15),
+                0 0 20px rgba(6, 182, 212, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: borderGlow 4s ease-in-out infinite;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        .glass-card > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-section {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .brand-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: white;
+            box-shadow: 
+                0 15px 35px rgba(139, 92, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset -2px -2px 5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .brand-section h1 {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f8fafc, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-section p {
+            color: var(--text-dim);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border: 1.5px solid rgba(16, 185, 129, 0.3);
+            color: #86efac;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .requests-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .requests-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .requests-list::-webkit-scrollbar-track {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 10px;
+        }
+
+        .requests-list::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+        }
+
+        .request-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+
+        .request-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--primary);
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .request-user {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        .request-type {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--secondary);
+        }
+
+        .request-type.block {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .request-details {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-approve, .btn-reject {
+            flex: 1;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: white;
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, #ef4444, #ec4899);
+            color: white;
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            opacity: 0.5;
+            display: block;
+        }
+
+        .empty-state p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .footer-text a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .pending-count {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 15px;
+        }
+
+        .pending-count strong {
+            color: var(--secondary);
+            font-weight: 700;
         }
 
         .sidebar {
@@ -117,43 +440,32 @@ try {
             transform: translateX(-280px);
         }
 
-        .sidebar.show { transform: translateX(0); }
-        .sidebar-brand { padding: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); text-align: center; }
-        .sidebar-brand h4 { background: linear-gradient(135deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-size: 1.4rem; }
-        .sidebar-brand .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; }
+        .sidebar.active { transform: translateX(0); }
+        .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; }
         .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
         .sidebar .nav-link.active { background: var(--primary); color: white; }
 
-        .requests-wrapper { width: 100%; max-width: 700px; position: relative; z-index: 1; margin: 0 auto; }
-
         @media (min-width: 993px) {
             .sidebar { transform: translateX(0); }
             .requests-wrapper { margin-left: 280px; }
-            .hamburger-btn { display: none !important; }
+            .hamburger { display: none !important; }
         }
 
-        .hamburger-btn { position: fixed; top: 20px; left: 20px; z-index: 1100; background: linear-gradient(135deg, #06b6d4, #0891b2); border: 2px solid rgba(6, 182, 212, 0.4); color: white; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
-        @media (max-width: 992px) { .hamburger-btn { display: block; } }
+        .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
+        @media (max-width: 992px) { .hamburger { display: block; } }
 
-        .glass-card { background: var(--card-bg); backdrop-filter: blur(30px); border: 2px solid; border-image: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(6, 182, 212, 0.3)) 1; border-radius: 32px; padding: 45px; box-shadow: 0 0 60px rgba(139, 92, 246, 0.15); }
-        .request-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-        .btn-approve { background: linear-gradient(135deg, #10b981, #06b6d4); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 700; flex: 1; }
-        .btn-reject { background: linear-gradient(135deg, #ef4444, #ec4899); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 700; flex: 1; }
         .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
         .overlay.active { display: block; }
     </style>
 </head>
 <body>
     <?php include 'includes/admin_header.php'; ?>
+
     <div class="overlay" id="overlay"></div>
-    <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <div class="logo-icon"><i class="fas fa-bolt"></i></div>
-            <h4>SILENT PANEL</h4>
-            <p>Admin Control Center</p>
-        </div>
+        <h4>SILENT PANEL</h4>
         <nav class="nav flex-column">
             <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
             <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
@@ -174,33 +486,72 @@ try {
 
     <div class="requests-wrapper">
         <div class="glass-card">
-            <h1 class="text-center h3 mb-4">Block & Reset Requests</h1>
-            <?php if (empty($pendingRequests)): ?>
-                <p class="text-center text-dim">No pending requests.</p>
-            <?php else: ?>
-                <?php foreach ($pendingRequests as $request): ?>
-                    <div class="request-item">
-                        <p class="mb-1"><strong>User:</strong> <?php echo htmlspecialchars($request['username']); ?></p>
-                        <p class="mb-1"><strong>Type:</strong> <?php echo htmlspecialchars($request['request_type']); ?></p>
-                        <p class="mb-1"><strong>Mod:</strong> <?php echo htmlspecialchars($request['mod_name']); ?></p>
-                        <form method="POST" class="d-flex gap-2 mt-3">
-                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                            <button type="submit" name="action" value="approve" class="btn-approve">Approve</button>
-                            <button type="submit" name="action" value="reject" class="btn-reject">Reject</button>
-                        </form>
-                    </div>
-                <?php endforeach; ?>
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <h1>Requests</h1>
+                <p>Block & Reset Management</p>
+            </div>
+
+            <?php if ($message): ?>
+                <div class="alert-<?php echo $messageType; ?>">
+                    <i class="fas fa-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
+                    <?php echo htmlspecialchars($message); ?>
+                </div>
             <?php endif; ?>
+
+            <div class="pending-count">
+                Total Pending: <strong><?php echo count($pendingRequests); ?></strong>
+            </div>
+
+            <?php if (empty($pendingRequests)): ?>
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>No pending requests at this moment.</p>
+                </div>
+            <?php else: ?>
+                <div class="requests-list">
+                    <?php foreach ($pendingRequests as $request): ?>
+                        <div class="request-item">
+                            <div class="request-header">
+                                <span class="request-user"><i class="fas fa-user me-2"></i><?php echo htmlspecialchars($request['username']); ?></span>
+                                <span class="request-type <?php echo strtolower($request['request_type']); ?>">
+                                    <?php echo htmlspecialchars($request['request_type']); ?>
+                                </span>
+                            </div>
+                            <div class="request-details">
+                                <p class="mb-1"><strong>Mod:</strong> <?php echo htmlspecialchars($request['mod_name']); ?></p>
+                                <p class="mb-1"><strong>Key:</strong> <?php echo htmlspecialchars($request['license_key'] ?? 'N/A'); ?></p>
+                                <p class="mb-1"><strong>Duration:</strong> <?php echo htmlspecialchars($request['duration'] . ' ' . $request['duration_type']); ?></p>
+                                <p class="mb-0"><strong>Reason:</strong> <?php echo htmlspecialchars($request['reason']); ?></p>
+                                <p class="mb-0 mt-1 small"><strong>Requested:</strong> <?php echo formatDate($request['created_at']); ?></p>
+                            </div>
+                            <div class="request-actions">
+                                <form method="POST" style="display: flex; gap: 8px; width: 100%;">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                    <button type="submit" name="action" value="approve" class="btn-approve">Approve</button>
+                                    <button type="submit" name="action" value="reject" class="btn-reject">Reject</button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="footer-text">
+                Back to <a href="admin_dashboard.php">Dashboard</a>
+            </div>
         </div>
     </div>
 
     <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('active');
-        }
+        const sidebar = document.getElementById('sidebar');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const overlay = document.getElementById('overlay');
+
+        hamburgerBtn.onclick = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+        overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
     </script>
 </body>
 </html>

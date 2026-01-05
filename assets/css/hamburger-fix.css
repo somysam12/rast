@@ -4,10 +4,8 @@
     --header-height: 70px;
 }
 
-/* Ensure ALL admin pages are visible and scrollable */
 .sidebar {
     height: 100vh !important;
-    max-height: 100vh !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     position: fixed !important;
@@ -18,18 +16,13 @@
     backdrop-filter: blur(30px) !important;
     -webkit-backdrop-filter: blur(30px) !important;
     -webkit-overflow-scrolling: touch !important;
-    display: flex !important;
-    flex-direction: column !important;
 }
 
-/* Ensure the navigation list itself allows scrolling */
-.sidebar .nav, .nav-menu {
-    flex: 1 1 auto !important;
+.nav-menu {
+    height: 100vh !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    min-height: 0 !important;
-    display: block !important;
-    padding-bottom: 30px !important;
+    -webkit-overflow-scrolling: touch !important;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -66,11 +59,10 @@
         left: 0 !important;
         width: var(--sidebar-width) !important;
         height: 100vh !important;
-        max-height: 100vh !important;
         transform: translateX(-100%) !important;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         z-index: 2001 !important;
-        display: flex !important;
+        display: block !important;
         visibility: visible !important;
         background: white !important;
         box-shadow: 10px 0 20px rgba(0,0,0,0.1) !important;
@@ -81,6 +73,8 @@
 
     .sidebar.show {
         transform: translateX(0) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
     }
     
     .sidebar .nav {
