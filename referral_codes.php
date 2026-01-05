@@ -137,10 +137,10 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
         .sidebar .nav-link.active { background: var(--primary); color: white; }
 
-        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; max-width: 1400px; margin: 0 auto; }
+        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; position: relative; z-index: 1; }
 
         @media (min-width: 993px) {
-            .sidebar { left: 0; }
+            .sidebar { left: 0; transform: none; }
             .main-content { margin-left: 280px; }
         }
 
@@ -215,8 +215,14 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                     confirmButtonColor: '#8b5cf6'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        const dummyBtn = document.createElement('button');
+                        dummyBtn.style.display = 'none';
+                        document.body.appendChild(dummyBtn);
                         navigator.clipboard.writeText('Permission Granted').then(() => {
                             localStorage.setItem('clipboardAllowed', 'yes');
+                            document.body.removeChild(dummyBtn);
+                        }).catch(() => {
+                            document.body.removeChild(dummyBtn);
                         });
                     }
                 });
