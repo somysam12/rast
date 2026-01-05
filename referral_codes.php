@@ -201,6 +201,28 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
     </div>
 
     <div class="main-content">
+        <?php if ($success): ?>
+        <script>
+            window.addEventListener('load', async () => {
+                if (localStorage.getItem('clipboardAllowed') === 'yes') {
+                    const code = "<?php echo explode(': ', $success)[1] ?? ''; ?>";
+                    if (code) {
+                        await navigator.clipboard.writeText(code);
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Code Auto-Copied!',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            background: '#1e293b',
+                            color: '#f8fafc'
+                        });
+                    }
+                }
+            });
+        </script>
+        <?php endif; ?>
         <div class="header-card">
             <div class="row align-items-center">
                 <div class="col-md-7">

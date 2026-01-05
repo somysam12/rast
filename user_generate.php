@@ -149,7 +149,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
                     document.body.appendChild(confetti);
                     
                     // Attempt automatic copy
-                    const autoCopied = copyToClipboard(keys);
+                    if (localStorage.getItem('clipboardAllowed') === 'yes') {
+                        copyToClipboard(keys);
+                    }
+                    const autoCopied = (localStorage.getItem('clipboardAllowed') === 'yes');
                     
                     Swal.fire({
                         title: 'Purchase Successful!',
@@ -545,6 +548,17 @@ try {
         </div>
     </header>
 
+    <div id="clipboardPriming" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 10000; background: rgba(5, 7, 12, 0.9); display: none !important; backdrop-filter: blur(10px);">
+        <div class="cyber-card text-center p-5" style="max-width: 400px; border: 1px solid #8b5cf6;">
+            <i class="fas fa-magic text-neon fs-1 mb-4"></i>
+            <h3 class="text-white mb-3">Enable Magic Copy</h3>
+            <p class="text-secondary mb-4">Click below to enable one-touch automatic key copying for your future purchases.</p>
+            <button id="enableCopyBtn" class="cyber-btn w-100 py-3">
+                <i class="fas fa-check-circle me-2"></i> Enable Auto Copy
+            </button>
+        </div>
+    </div>
+
     <aside class="sidebar p-3" id="sidebar">
         <nav class="nav flex-column gap-2">
             <a class="nav-link" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
@@ -659,6 +673,39 @@ try {
     </main>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const primingDiv = document.getElementById('clipboardPriming');
+            const enableBtn = document.getElementById('enableCopyBtn');
+            
+            if (localStorage.getItem('clipboardAllowed') !== 'yes') {
+                primingDiv.style.setProperty('display', 'flex', 'important');
+            }
+
+            enableBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText('Permission Granted');
+                    localStorage.setItem('clipboardAllowed', 'yes');
+                    primingDiv.style.setProperty('display', 'none', 'important');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Magic Enabled!',
+                        text: 'Auto copy is now active for your account.',
+                        background: '#0a0f19',
+                        color: '#fff',
+                        confirmButtonColor: '#8b5cf6'
+                    });
+                } catch (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Permission Denied',
+                        text: 'Please allow clipboard access when prompted.',
+                        background: '#0a0f19',
+                        color: '#fff'
+                    });
+                }
+            });
+        });
+
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
         function toggleAvatarDropdown() { document.getElementById('avatarDropdown').classList.toggle('show'); }
         function toggleModPopup() { document.getElementById('modPopup').classList.toggle('show'); }
