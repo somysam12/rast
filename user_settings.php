@@ -357,14 +357,34 @@ if (!function_exists('formatDateLocal')) {
             <div class="col-12">
                 <div class="settings-card">
                     <div class="row align-items-center">
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <h5 class="text-white mb-2"><i class="fas fa-gift text-primary me-2"></i> Referral Program</h5>
                             <p class="text-secondary small mb-md-0">Share your code with others to earn rewards when they join.</p>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="p-3 bg-dark bg-opacity-50 border border-secondary border-opacity-10 rounded-3 text-center">
                                 <div class="small text-secondary mb-1">YOUR CODE</div>
                                 <div class="h4 text-neon mb-0"><?php echo htmlspecialchars($user['referral_code'] ?: 'N/A'); ?></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-dark bg-opacity-50 border border-secondary border-opacity-10 rounded-3 text-center">
+                                <div class="small text-secondary mb-1">USED CODE</div>
+                                <div class="h4 text-neon mb-0">
+                                    <?php 
+                                        $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+                                        $stmt->execute([$user['referred_by']]);
+                                        $referrer = $stmt->fetchColumn();
+                                        
+                                        if ($referrer) {
+                                            $stmt = $pdo->prepare("SELECT referral_code FROM users WHERE username = ?");
+                                            $stmt->execute([$referrer]);
+                                            echo htmlspecialchars($stmt->fetchColumn() ?: 'ADMIN');
+                                        } else {
+                                            echo 'NONE';
+                                        }
+                                    ?>
+                                </div>
                             </div>
                         </div>
                     </div>
