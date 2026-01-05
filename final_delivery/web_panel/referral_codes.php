@@ -95,6 +95,7 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
     <style>
         :root {
             --primary: #8b5cf6;
@@ -128,20 +129,22 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
             padding: 2rem 0;
             z-index: 1000;
             transition: transform 0.3s ease;
-            left: -280px;
+            left: 0;
+            transform: translateX(-280px);
         }
 
-        .sidebar.active { transform: translateX(280px); }
+        .sidebar.active { transform: translateX(0); }
         .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; }
         .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
         .sidebar .nav-link.active { background: var(--primary); color: white; }
 
-        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; max-width: 1400px; margin: 0 auto; }
+        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; }
 
         @media (min-width: 993px) {
-            .sidebar { left: 0; }
+            .sidebar { transform: translateX(0); }
             .main-content { margin-left: 280px; }
+            .hamburger { display: none !important; }
         }
 
         .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
@@ -185,66 +188,30 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body>
+    <?php include 'includes/admin_header.php'; ?>
+
     <div class="overlay" id="overlay"></div>
     <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
     <div class="sidebar" id="sidebar">
         <h4>SILENT PANEL</h4>
         <nav class="nav flex-column">
             <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
+            <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
+            <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
+            <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload APK</a>
+            <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i>Mod List</a>
+            <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
+            <a class="nav-link" href="licence_key_list.php"><i class="fas fa-list"></i>License List</a>
+            <a class="nav-link active" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
             <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
             <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
-            <a class="nav-link active" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
-            <a class="nav-link" href="transactions.php"><i class="fas fa-exchange-alt"></i>Transactions</a>
+            <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
             <hr style="border-color: var(--border-light); margin: 1.5rem 16px;">
             <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
         </nav>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('clipboardAllowed') !== 'yes') {
-                Swal.fire({
-                    title: 'Enable Magic Copy',
-                    text: 'Enable one-touch automatic copying for your future referral codes?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Enable',
-                    cancelButtonText: 'No Thanks',
-                    background: '#0a0f19',
-                    color: '#fff',
-                    confirmButtonColor: '#8b5cf6'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        navigator.clipboard.writeText('Permission Granted').then(() => {
-                            localStorage.setItem('clipboardAllowed', 'yes');
-                        });
-                    }
-                });
-            }
-        });
-    </script>
-        <?php if ($success): ?>
-        <script>
-            window.addEventListener('load', async () => {
-                if (localStorage.getItem('clipboardAllowed') === 'yes') {
-                    const code = "<?php echo explode(': ', $success)[1] ?? ''; ?>";
-                    if (code) {
-                        await navigator.clipboard.writeText(code);
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Code Auto-Copied!',
-                            showConfirmButton: false,
-                            timer: 2000,
-                            background: '#1e293b',
-                            color: '#f8fafc'
-                        });
-                    }
-                }
-            });
-        </script>
-        <?php endif; ?>
+    <div class="main-content">
         <div class="header-card">
             <div class="row align-items-center">
                 <div class="col-md-7">
@@ -368,11 +335,37 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         const sidebar = document.getElementById('sidebar');
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const overlay = document.getElementById('overlay');
-        const selectAll = document.getElementById('selectAll');
-        const codeCheckboxes = document.querySelectorAll('.code-checkbox');
 
-        hamburgerBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
+        hamburgerBtn.onclick = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('clipboardAllowed') !== 'yes') {
+                Swal.fire({
+                    title: 'Enable Magic Copy',
+                    text: 'Enable one-touch automatic copying for your future referral codes?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Enable',
+                    cancelButtonText: 'No Thanks',
+                    background: '#0a0f19',
+                    color: '#fff',
+                    confirmButtonColor: '#8b5cf6'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const dummyBtn = document.createElement('button');
+                        dummyBtn.style.display = 'none';
+                        document.body.appendChild(dummyBtn);
+                        navigator.clipboard.writeText('Permission Granted').then(() => {
+                            localStorage.setItem('clipboardAllowed', 'yes');
+                            document.body.removeChild(dummyBtn);
+                        }).catch(() => {
+                            document.body.removeChild(dummyBtn);
+                        });
+                    }
+                });
+            }
+        });
 
         selectAll.onchange = (e) => {
             codeCheckboxes.forEach(cb => cb.checked = e.target.checked);
@@ -456,6 +449,26 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
         <?php if ($success): ?>
+        <script>
+            window.addEventListener('load', async () => {
+                if (localStorage.getItem('clipboardAllowed') === 'yes') {
+                    const code = "<?php echo explode(': ', $success)[1] ?? ''; ?>";
+                    if (code) {
+                        await navigator.clipboard.writeText(code);
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Code Auto-Copied!',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            background: '#1e293b',
+                            color: '#f8fafc'
+                        });
+                    }
+                }
+            });
+        </script>
         Swal.fire({ icon: 'success', title: 'Success!', text: '<?php echo $success; ?>', background: '#111827', color: '#ffffff' });
         <?php endif; ?>
         <?php if ($error): ?>

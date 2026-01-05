@@ -92,6 +92,7 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
     <style>
         :root {
             --primary: #8b5cf6;
@@ -424,262 +425,63 @@ try {
             font-weight: 700;
         }
 
-        .hamburger-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
-            transition: all 0.3s;
-        }
-
-        .hamburger-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
-        }
-
-        .hamburger-btn:active {
-            transform: scale(0.95);
-        }
-
-        .menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            display: none;
-            z-index: 99;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .menu-overlay.show {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .nav-menu {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: 280px;
-            height: 100vh;
+        .sidebar {
             background: var(--card-bg);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
-            border-right: 2px solid rgba(139, 92, 246, 0.3);
-            z-index: 100;
-            padding: 20px;
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
-        }
-
-        .nav-menu.show {
+            border-right: 1px solid var(--border-light);
+            min-height: 100vh;
+            position: fixed;
+            width: 280px;
+            padding: 2rem 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
             left: 0;
+            transform: translateX(-280px);
         }
 
-        .nav-menu-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        .sidebar.active { transform: translateX(0); }
+        .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; }
+        .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
+        .sidebar .nav-link.active { background: var(--primary); color: white; }
+
+        @media (min-width: 993px) {
+            .sidebar { transform: translateX(0); }
+            .requests-wrapper { margin-left: 280px; }
+            .hamburger { display: none !important; }
         }
 
-        .nav-menu-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-main);
-        }
+        .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
+        @media (max-width: 992px) { .hamburger { display: block; } }
 
-        .close-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .close-btn:hover {
-            color: var(--primary);
-            transform: rotate(90deg);
-        }
-
-        .nav-menu-items {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .nav-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            color: var(--text-dim);
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .nav-menu-item:hover {
-            background: rgba(139, 92, 246, 0.2);
-            color: var(--primary);
-            transform: translateX(5px);
-        }
-
-        .nav-menu-item i {
-            width: 20px;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        .nav-divider {
-            height: 1px;
-            background: rgba(139, 92, 246, 0.2);
-            margin: 15px 0;
-        }
-
-        .nav-menu-item.logout {
-            color: #fca5a5;
-        }
-
-        .nav-menu-item.logout:hover {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ff6b6b;
-        }
-
-        @media (max-width: 480px) {
-            .glass-card {
-                padding: 30px 20px;
-                border-radius: 20px;
-                border: 1.5px solid var(--border-light);
-            }
-            
-            .brand-section h1 {
-                font-size: 24px;
-            }
-
-            .request-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-
-            .hamburger-btn {
-                display: flex;
-            }
-        }
-
-        @media (min-width: 769px) {
-            .hamburger-btn {
-                display: none;
-            }
-        }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+        .overlay.active { display: block; }
     </style>
 </head>
 <body>
     <?php include 'includes/admin_header.php'; ?>
 
-    <!-- Hamburger Button -->
-    <button class="hamburger-btn" onclick="toggleMenu()" id="hamburgerBtn">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <!-- Menu Overlay -->
-    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
-
-    <!-- Navigation Menu -->
-    <div class="nav-menu" id="navMenu">
-        <div class="nav-menu-header">
-            <span class="nav-menu-title">Menu</span>
-            <button class="close-btn" onclick="closeMenu()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <div class="nav-menu-items">
-            <a href="admin_dashboard.php" class="nav-menu-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="add_mod.php" class="nav-menu-item">
-                <i class="fas fa-plus"></i>
-                <span>Add Mod Name</span>
-            </a>
-            <a href="manage_mods.php" class="nav-menu-item">
-                <i class="fas fa-edit"></i>
-                <span>Manage Mods</span>
-            </a>
-            <a href="upload_mod.php" class="nav-menu-item">
-                <i class="fas fa-upload"></i>
-                <span>Upload Mod APK</span>
-            </a>
-            <a href="mod_list.php" class="nav-menu-item">
-                <i class="fas fa-list"></i>
-                <span>Mod APK List</span>
-            </a>
-            <a href="add_license.php" class="nav-menu-item">
-                <i class="fas fa-key"></i>
-                <span>Add License Key</span>
-            </a>
-            <a href="licence_key_list.php" class="nav-menu-item">
-                <i class="fas fa-key"></i>
-                <span>License Key List</span>
-            </a>
-            <a href="available_keys.php" class="nav-menu-item">
-                <i class="fas fa-key"></i>
-                <span>Available Keys</span>
-            </a>
-            <a href="manage_users.php" class="nav-menu-item">
-                <i class="fas fa-users"></i>
-                <span>Manage Users</span>
-            </a>
-            <a href="add_balance.php" class="nav-menu-item">
-                <i class="fas fa-wallet"></i>
-                <span>Add Balance</span>
-            </a>
-            <a href="transactions.php" class="nav-menu-item">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Transactions</span>
-            </a>
-            <a href="referral_codes.php" class="nav-menu-item">
-                <i class="fas fa-tag"></i>
-                <span>Referral Code</span>
-            </a>
-            <a href="settings.php" class="nav-menu-item">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </a>
-
-            <div class="nav-divider"></div>
-
-            <a href="logout.php" class="nav-menu-item logout">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </a>
-        </div>
+    <div class="overlay" id="overlay"></div>
+    <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+    <div class="sidebar" id="sidebar">
+        <h4>SILENT PANEL</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
+            <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
+            <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
+            <a class="nav-link" href="upload_mod.php"><i class="fas fa-upload"></i>Upload APK</a>
+            <a class="nav-link" href="mod_list.php"><i class="fas fa-list"></i>Mod List</a>
+            <a class="nav-link" href="add_license.php"><i class="fas fa-key"></i>Add License</a>
+            <a class="nav-link" href="licence_key_list.php"><i class="fas fa-list"></i>License List</a>
+            <a class="nav-link" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
+            <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
+            <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
+            <a class="nav-link active" href="admin_block_reset_requests.php"><i class="fas fa-ban"></i>Block & Reset</a>
+            <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
+            <hr style="border-color: var(--border-light); margin: 1.5rem 16px;">
+            <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
+        </nav>
     </div>
 
     <div class="requests-wrapper">
@@ -713,34 +515,23 @@ try {
                     <?php foreach ($pendingRequests as $request): ?>
                         <div class="request-item">
                             <div class="request-header">
-                                <span class="request-user">
-                                    <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($request['username']); ?>
-                                </span>
-                                <span class="request-type <?php echo htmlspecialchars($request['request_type']); ?>">
-                                    <?php echo strtoupper($request['request_type']); ?>
+                                <span class="request-user"><i class="fas fa-user me-2"></i><?php echo htmlspecialchars($request['username']); ?></span>
+                                <span class="request-type <?php echo strtolower($request['request_type']); ?>">
+                                    <?php echo htmlspecialchars($request['request_type']); ?>
                                 </span>
                             </div>
-                            
                             <div class="request-details">
-                                <div><strong><?php echo htmlspecialchars($request['mod_name']); ?></strong></div>
-                                <div style="font-size: 11px; opacity: 0.7;">
-                                    <?php echo htmlspecialchars($request['duration'] . ' ' . ucfirst($request['duration_type'])); ?> • 
-                                    <?php echo formatDate($request['created_at']); ?>
-                                </div>
+                                <p class="mb-1"><strong>Mod:</strong> <?php echo htmlspecialchars($request['mod_name']); ?></p>
+                                <p class="mb-1"><strong>Key:</strong> <?php echo htmlspecialchars($request['license_key'] ?? 'N/A'); ?></p>
+                                <p class="mb-1"><strong>Duration:</strong> <?php echo htmlspecialchars($request['duration'] . ' ' . $request['duration_type']); ?></p>
+                                <p class="mb-0"><strong>Reason:</strong> <?php echo htmlspecialchars($request['reason']); ?></p>
+                                <p class="mb-0 mt-1 small"><strong>Requested:</strong> <?php echo formatDate($request['created_at']); ?></p>
                             </div>
-                            
                             <div class="request-actions">
-                                <form method="POST" style="flex: 1;">
+                                <form method="POST" style="display: flex; gap: 8px; width: 100%;">
                                     <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                                    <button type="submit" name="action" value="approve" class="btn-approve" style="width: 100%;">
-                                        <i class="fas fa-check me-1"></i>Approve
-                                    </button>
-                                </form>
-                                <form method="POST" style="flex: 1;">
-                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                                    <button type="submit" name="action" value="reject" class="btn-reject" style="width: 100%;">
-                                        <i class="fas fa-times me-1"></i>Reject
-                                    </button>
+                                    <button type="submit" name="action" value="approve" class="btn-approve">Approve</button>
+                                    <button type="submit" name="action" value="reject" class="btn-reject">Reject</button>
                                 </form>
                             </div>
                         </div>
@@ -749,37 +540,18 @@ try {
             <?php endif; ?>
 
             <div class="footer-text">
-                <a href="admin_dashboard.php">← Back to Dashboard</a>
+                Back to <a href="admin_dashboard.php">Dashboard</a>
             </div>
         </div>
     </div>
 
     <script>
-        function toggleMenu() {
-            const navMenu = document.getElementById('navMenu');
-            const menuOverlay = document.getElementById('menuOverlay');
-            navMenu.classList.toggle('show');
-            menuOverlay.classList.toggle('show');
-        }
+        const sidebar = document.getElementById('sidebar');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const overlay = document.getElementById('overlay');
 
-        function closeMenu() {
-            const navMenu = document.getElementById('navMenu');
-            const menuOverlay = document.getElementById('menuOverlay');
-            navMenu.classList.remove('show');
-            menuOverlay.classList.remove('show');
-        }
-
-        // Close menu when clicking on a menu item
-        document.querySelectorAll('.nav-menu-item').forEach(item => {
-            item.addEventListener('click', closeMenu);
-        });
-
-        // Close menu when pressing Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeMenu();
-            }
-        });
+        hamburgerBtn.onclick = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+        overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
     </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 modules = ["php-8.2", "web", "nodejs-20", "java-graalvm22.3"]
 [nix]
 channel = "stable-25_05"
-packages = ["unzip"]
+packages = ["unzip", "zip"]
 
 [agent]
 expertMode = true

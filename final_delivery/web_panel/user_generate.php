@@ -149,39 +149,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purchase_key'])) {
                     document.body.appendChild(confetti);
                     
                     // Attempt automatic copy
-                    if (localStorage.getItem('clipboardAllowed') === 'yes') {
-                        copyToClipboard(keys);
+                    const isAllowed = localStorage.getItem('clipboardAllowed') === 'yes';
+                    if (isAllowed) {
+                        copyToClipboard(keys).then(success => {
+                            showSuccessPopup(success);
+                        });
+                    } else {
+                        showSuccessPopup(false);
                     }
-                    const autoCopied = (localStorage.getItem('clipboardAllowed') === 'yes');
-                    
-                    Swal.fire({
-                        title: 'Purchase Successful!',
-                        html: `
-                            <div class=\"mt-3 mb-3 p-3 bg-dark text-info border border-secondary rounded\" style=\"font-family: monospace; font-size: 0.9rem; max-height: 150px; overflow-y: auto; text-align: left; word-break: break-all; white-space: pre-wrap;\">\${keys}</div>
-                            <button id=\"manualCopyBtn\" class=\"btn \${autoCopied ? 'btn-success' : 'btn-primary'} w-100\">
-                                <i class=\"fas \${autoCopied ? 'fa-check' : 'fa-copy'}\"></i> \${autoCopied ? 'Automatically Copied!' : 'Copy to Clipboard'}
-                            </button>
-                        `,
-                        icon: 'success',
-                        background: 'rgba(15, 23, 42, 0.95)',
-                        color: '#fff',
-                        showConfirmButton: true,
-                        confirmButtonText: 'Done',
-                        confirmButtonColor: '#8b5cf6',
-                        didOpen: () => {
-                            const btn = document.getElementById('manualCopyBtn');
-                            btn.onclick = () => {
-                                if(copyToClipboard(keys)) {
-                                    btn.innerHTML = '<i class=\"fas fa-check\"></i> Copied!';
-                                    btn.className = 'btn btn-success w-100';
-                                    setTimeout(() => {
-                                        btn.innerHTML = '<i class=\"fas fa-copy\"></i> Copy Again';
-                                        btn.className = 'btn btn-primary w-100';
-                                    }, 2000);
-                                }
-                            };
-                        }
-                    });
+
+                    function showSuccessPopup(autoCopied) {
+                        Swal.fire({
+                            title: 'Purchase Successful!',
+                            html: `
+                                <div class=\"mt-3 mb-3 p-3 bg-dark text-info border border-secondary rounded\" style=\"font-family: monospace; font-size: 0.9rem; max-height: 150px; overflow-y: auto; text-align: left; word-break: break-all; white-space: pre-wrap;\">\${keys}</div>
+                                <button id=\"manualCopyBtn\" class=\"btn \${autoCopied ? 'btn-success' : 'btn-primary'} w-100\">
+                                    <i class=\"fas \${autoCopied ? 'fa-check' : 'fa-copy'}\"></i> \${autoCopied ? 'Automatically Copied!' : 'Copy to Clipboard'}
+                                </button>
+                            `,
+                            icon: 'success',
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            color: '#fff',
+                            showConfirmButton: true,
+                            confirmButtonText: 'Done',
+                            confirmButtonColor: '#8b5cf6',
+                            didOpen: () => {
+                                const btn = document.getElementById('manualCopyBtn');
+                                btn.onclick = () => {
+                                    copyToClipboard(keys).then(success => {
+                                        if(success) {
+                                            btn.innerHTML = '<i class=\"fas fa-check\"></i> Copied!';
+                                            btn.className = 'btn btn-success w-100';
+                                            setTimeout(() => {
+                                                btn.innerHTML = '<i class=\"fas fa-copy\"></i> Copy Again';
+                                                btn.className = 'btn btn-primary w-100';
+                                            }, 2000);
+                                        }
+                                    });
+                                };
+                            }
+                        });
+                    }
                     
                     setTimeout(() => confetti.remove(), 3000);
                 });
@@ -566,8 +574,14 @@ try {
                     customClass: { popup: 'cyber-swal' }
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // Using a dummy button to trigger permission without browser alert showing full URL
+                        const dummyBtn = document.createElement('button');
+                        dummyBtn.style.display = 'none';
+                        document.body.appendChild(dummyBtn);
+                        
                         navigator.clipboard.writeText('Permission Granted').then(() => {
                             localStorage.setItem('clipboardAllowed', 'yes');
+                            document.body.removeChild(dummyBtn);
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Magic Enabled!',
@@ -578,6 +592,7 @@ try {
                                 showConfirmButton: false
                             });
                         }).catch(err => {
+                            document.body.removeChild(dummyBtn);
                             console.error('Permission error:', err);
                         });
                     }
@@ -727,7 +742,7 @@ try {
         }
         
         <?php if($success): ?>
-            Swal.fire({ icon: 'success', title: 'Success!', text: '<?php echo $success; ?>', background: 'rgba(15, 23, 42, 0.95)', color: '#fff' });
+            // Success alert is handled in the dynamic JS block above for auto-copy
         <?php endif; ?>
         <?php if($error): ?>
             Swal.fire({ icon: 'error', title: 'Oops...', text: '<?php echo $error; ?>', background: 'rgba(15, 23, 42, 0.95)', color: '#fff' });
