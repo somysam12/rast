@@ -200,6 +200,18 @@ function initializeDatabase() {
             FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
         )",
         
+        "CREATE TABLE IF NOT EXISTS stock_alerts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            mod_id INTEGER NOT NULL,
+            mod_name VARCHAR(255) NOT NULL,
+            username VARCHAR(255) NOT NULL,
+            status VARCHAR(50) DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (mod_id) REFERENCES mods(id) ON DELETE CASCADE
+        )",
+        
         "CREATE TABLE IF NOT EXISTS key_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
