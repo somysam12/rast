@@ -1,120 +1,89 @@
 <?php
+require_once "includes/optimization.php";
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
+ini_set('display_errors', 1);
+
+require_once 'includes/auth.php';
+require_once 'includes/functions.php';
+
+requireAdmin();
+
+$pdo = getDBConnection();
 
 $success = '';
 $error = '';
-$referralCodes = [];
-$stats = ['total' => 0, 'active' => 0];
-$pdo = null;
 
-try {
-    require_once "includes/optimization.php";
-    require_once 'includes/auth.php';
-    require_once 'includes/functions.php';
-    
-    requireAdmin();
-    $pdo = getDBConnection();
-    
-    // Handle deactivate/delete (must be before output)
-    if (isset($_GET['deactivate']) && is_numeric($_GET['deactivate'])) {
-        try {
-            $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE id = ?");
-            $stmt->execute([$_GET['deactivate']]);
-        } catch (Exception $e) {
-            error_log("Deactivate error: " . $e->getMessage());
-        }
-        header("Location: referral_codes.php");
-        exit();
-    }
-    
-    if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-        try {
-            $stmt = $pdo->prepare("DELETE FROM referral_codes WHERE id = ?");
-            $stmt->execute([$_GET['delete']]);
-        } catch (Exception $e) {
-            error_log("Delete error: " . $e->getMessage());
-        }
-        header("Location: referral_codes.php");
-        exit();
-    }
-    
-    // Handle generate referral code
-    if ($_POST && isset($_POST['generate_code'])) {
-        try {
-            $expiryOption = $_POST['expiry_option'] ?? '30d';
-            $bonusAmount = (float)($_POST['bonus_amount'] ?? 50.00);
-            $usageLimit = (int)($_POST['usage_limit'] ?? 1);
-            
-            if ($expiryOption === '1h') {
-                $duration = '+1 hour';
-            } elseif ($expiryOption === '1d') {
-                $duration = '+1 day';
-            } elseif ($expiryOption === '1w') {
-                $duration = '+7 days';
-            } else {
-                $duration = '+30 days';
-            }
-
-            if ($bonusAmount < 0) {
-                $error = 'Bonus amount cannot be negative';
-            } elseif ($usageLimit <= 0) {
-                $error = 'Usage limit must be at least 1';
-            } else {
-                $code = generateReferralCode();
-                $expiresAt = date('Y-m-d H:i:s', strtotime($duration));
-                
-                $stmt = $pdo->prepare("INSERT INTO referral_codes (code, created_by, expires_at, bonus_amount, usage_limit, usage_count) VALUES (?, ?, ?, ?, ?, 0)");
-                if ($stmt->execute([$code, $_SESSION['user_id'], $expiresAt, $bonusAmount, $usageLimit])) {
-                    $success = "Referral code generated successfully: $code";
-                } else {
-                    $error = 'Failed to generate referral code';
-                }
-            }
-        } catch (Exception $e) {
-            $error = 'Error generating referral code: ' . $e->getMessage();
-            error_log("Generate code error: " . $e->getMessage());
-        }
-    }
-
-    // Handle bulk deletion
-    if (isset($_POST['bulk_delete']) && isset($_POST['selected_codes'])) {
-        try {
-            $ids = $_POST['selected_codes'];
-            if (!empty($ids)) {
-                $placeholders = implode(',', array_fill(0, count($ids), '?'));
-                $stmt = $pdo->prepare("DELETE FROM referral_codes WHERE id IN ($placeholders)");
-                $stmt->execute($ids);
-                $success = "Selected referral codes deleted successfully.";
-            }
-        } catch (Exception $e) {
-            $error = "Error during bulk deletion: " . $e->getMessage();
-            error_log("Bulk delete error: " . $e->getMessage());
-        }
-    }
-
-    // Initial data load
+// Handle generate referral code
+if ($_POST && isset($_POST['generate_code'])) {
     try {
-        $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
-        $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $expiryOption = $_POST['expiry_option'] ?? '30d';
+        $bonusAmount = (float)($_POST['bonus_amount'] ?? 50.00);
+        $usageLimit = (int)($_POST['usage_limit'] ?? 1);
         
-        // Statistics - simple query compatible with both SQLite and MySQL
-        $total = $pdo->query("SELECT COUNT(*) as cnt FROM referral_codes")->fetch(PDO::FETCH_ASSOC);
-        $active = $pdo->query("SELECT COUNT(*) as cnt FROM referral_codes WHERE status='active'")->fetch(PDO::FETCH_ASSOC);
-        
-        $stats = [
-            'total' => (int)($total['cnt'] ?? 0),
-            'active' => (int)($active['cnt'] ?? 0)
-        ];
-    } catch (Exception $e) {
-        error_log("Data load error: " . $e->getMessage());
-    }
+        $duration = match($expiryOption) {
+            '1h' => '+1 hour',
+            '1d' => '+1 day',
+            '1w' => '+7 days',
+            '1m' => '+30 days',
+            default => '+30 days'
+        };
 
-} catch (Exception $e) {
-    error_log("Referral codes fatal error: " . $e->getMessage());
-    $error = "System error: " . $e->getMessage();
+        if ($bonusAmount < 0) {
+            $error = 'Bonus amount cannot be negative';
+        } elseif ($usageLimit <= 0) {
+            $error = 'Usage limit must be at least 1';
+        } else {
+            $code = generateReferralCode();
+            $expiresAt = date('Y-m-d H:i:s', strtotime($duration));
+            
+            $stmt = $pdo->prepare("INSERT INTO referral_codes (code, created_by, expires_at, bonus_amount, usage_limit, usage_count) VALUES (?, ?, ?, ?, ?, 0)");
+            if ($stmt->execute([$code, $_SESSION['user_id'], $expiresAt, $bonusAmount, $usageLimit])) {
+                $success = "Referral code generated successfully: $code";
+            } else {
+                $error = 'Failed to generate referral code';
+            }
+        }
+    } catch (Exception $e) {
+        $error = 'Error generating referral code: ' . $e->getMessage();
+    }
 }
+
+// Handle bulk deletion
+if (isset($_POST['bulk_delete']) && isset($_POST['selected_codes'])) {
+    try {
+        $ids = $_POST['selected_codes'];
+        if (!empty($ids)) {
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $stmt = $pdo->prepare("DELETE FROM referral_codes WHERE id IN ($placeholders)");
+            $stmt->execute($ids);
+            $success = "Selected referral codes deleted successfully.";
+        }
+    } catch (Exception $e) {
+        $error = "Error during bulk deletion: " . $e->getMessage();
+    }
+}
+
+// Handle deactivate/delete
+if (isset($_GET['deactivate']) && is_numeric($_GET['deactivate'])) {
+    $stmt = $pdo->prepare("UPDATE referral_codes SET status = 'inactive' WHERE id = ?");
+    $stmt->execute([$_GET['deactivate']]);
+    header("Location: referral_codes.php");
+    exit();
+}
+if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+    $stmt = $pdo->prepare("DELETE FROM referral_codes WHERE id = ?");
+    $stmt->execute([$_GET['delete']]);
+    header("Location: referral_codes.php");
+    exit();
+}
+
+// Initial data load
+$stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
+$referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Statistics
+$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > datetime('now')) THEN 1 END) as active FROM referral_codes");
+$stats = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -367,10 +336,17 @@ try {
 
         async function copyCode(text, el) {
             try {
-                await navigator.clipboard.writeText(text);
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
                 const btn = el.parentElement.querySelector('.copy-btn') || el;
                 btn.classList.add('copied');
-                btn.classList.replace('fa-copy', 'fa-check-circle');
+                const oldClass = btn.classList.contains('fa-copy') ? 'fa-copy' : 'fa-check-circle';
+                btn.classList.replace(oldClass, 'fa-check-circle');
                 
                 Swal.fire({
                     toast: true,

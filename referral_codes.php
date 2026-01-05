@@ -336,10 +336,17 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
         async function copyCode(text, el) {
             try {
-                await navigator.clipboard.writeText(text);
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
                 const btn = el.parentElement.querySelector('.copy-btn') || el;
                 btn.classList.add('copied');
-                btn.classList.replace('fa-copy', 'fa-check-circle');
+                const oldClass = btn.classList.contains('fa-copy') ? 'fa-copy' : 'fa-check-circle';
+                btn.classList.replace(oldClass, 'fa-check-circle');
                 
                 Swal.fire({
                     toast: true,

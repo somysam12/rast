@@ -398,22 +398,27 @@ try {
         
         let copyTimeout;
         function copyToClipboard(text, element) {
-            navigator.clipboard.writeText(text).then(() => {
-                if (element) {
-                    element.style.borderColor = '#8b5cf6';
-                    element.style.background = 'rgba(139, 92, 246, 0.2)';
-                    element.style.transform = 'scale(1.05)';
-                    setTimeout(() => {
-                        element.style.borderColor = '';
-                        element.style.background = '';
-                        element.style.transform = '';
-                    }, 400);
-                }
-                const overlay = document.getElementById('copyOverlay');
-                overlay.classList.add('show');
-                if (copyTimeout) clearTimeout(copyTimeout);
-                copyTimeout = setTimeout(() => overlay.classList.remove('show'), 1500);
-            });
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+
+            if (element) {
+                element.style.borderColor = '#8b5cf6';
+                element.style.background = 'rgba(139, 92, 246, 0.2)';
+                element.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    element.style.borderColor = '';
+                    element.style.background = '';
+                    element.style.transform = '';
+                }, 400);
+            }
+            const overlay = document.getElementById('copyOverlay');
+            overlay.classList.add('show');
+            if (copyTimeout) clearTimeout(copyTimeout);
+            copyTimeout = setTimeout(() => overlay.classList.remove('show'), 1500);
         }
         
         function showRequestModal(type, key, mod) {

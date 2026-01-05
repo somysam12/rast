@@ -326,18 +326,23 @@ $keyStats = $stmt->fetch(PDO::FETCH_ASSOC);
         });
 
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Copied!',
-                    text: 'Key copied to clipboard',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    background: '#111827',
-                    color: '#ffffff'
-                });
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Copied!',
+                text: 'Key copied to clipboard',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500,
+                background: '#111827',
+                color: '#ffffff'
             });
         }
 
