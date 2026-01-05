@@ -81,9 +81,17 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_codes rc LEFT JOIN users u ON rc.created_by = u.id ORDER BY rc.created_at DESC");
 $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Statistics - Fixed SQLite syntax (datetime('now')) to MySQL (NOW())
-$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > NOW()) THEN 1 END) as active FROM referral_codes");
-$stats = $stmt->fetch(PDO::FETCH_ASSOC);
+// Statistics - Compatible with both SQLite and MySQL
+try {
+    // Check if we are using SQLite
+    $isSQLite = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite';
+    $timeFunc = $isSQLite ? "datetime('now')" : "NOW()";
+    
+    $stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > $timeFunc) THEN 1 END) as active FROM referral_codes");
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $stats = ['total' => 0, 'active' => 0];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
