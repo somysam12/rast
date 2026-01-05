@@ -359,12 +359,14 @@ if (!function_exists('formatDateLocal')) {
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h5 class="text-white mb-2"><i class="fas fa-gift text-primary me-2"></i> Referral Program</h5>
-                            <p class="text-secondary small mb-md-0">Share your code with others to earn rewards when they join.</p>
+                            <p class="text-secondary small mb-md-0">Referral code used to create this account.</p>
                         </div>
                         <div class="col-md-4">
                             <div class="p-3 bg-dark bg-opacity-50 border border-secondary border-opacity-10 rounded-3 text-center">
-                                <div class="small text-secondary mb-1">YOUR CODE</div>
-                                <div class="h4 text-neon mb-0"><?php echo htmlspecialchars($user['referral_code'] ?: 'N/A'); ?></div>
+                                <div class="small text-secondary mb-1">USED CODE</div>
+                                <div class="h4 text-neon mb-0">
+                                    <?php echo htmlspecialchars($user['used_referral'] ?? 'NONE'); ?>
+                                </div>
                             </div>
                         </div>
                     </div>

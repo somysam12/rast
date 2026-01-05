@@ -24,20 +24,19 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (side.classList.contains('show')) {
                 document.body.style.overflow = 'hidden';
-                side.style.overflowY = 'auto';
-                side.style.overflowX = 'hidden';
-                side.style.height = '100vh';
-                side.style.maxHeight = '100vh';
-                side.style.position = 'fixed';
-                side.style.top = '0';
-                side.style.left = '0';
-                side.style.zIndex = '1050';
-                side.style.webkitOverflowScrolling = 'touch';
+                side.style.cssText += 'overflow-y: auto !important; overflow-x: hidden !important; height: 100vh !important; max-height: 100vh !important; position: fixed !important; top: 0 !important; left: 0 !important; z-index: 9999 !important; display: block !important; visibility: visible !important;';
             } else {
                 document.body.style.overflow = '';
             }
         }
     };
+
+    // Use global delegation for menu-btn
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.menu-btn') || e.target.closest('.mobile-toggle') || e.target.closest('.hamburger-menu')) {
+            window.toggleSidebar(e);
+        }
+    });
 
     // Global listener for overlay click
     if (currentOverlay) {

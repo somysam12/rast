@@ -55,8 +55,8 @@ if ($_POST) {
                     $pdo->beginTransaction();
                     
                     // Insert the user
-                    $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy]);
+                    $stmt = $pdo->prepare("INSERT INTO users (username, email, password, referral_code, referred_by, used_referral) VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$username, $email, $hashedPassword, $userReferralCode, $referredBy, $referralCode]);
                     $userId = $pdo->lastInsertId();
                     
                     // Add bonus amount if applicable

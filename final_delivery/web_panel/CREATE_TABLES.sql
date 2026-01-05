@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `status` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'active',
   `two_factor_secret` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `two_factor_enabled` boolean DEFAULT FALSE,
+  `used_referral` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `last_login` timestamp NULL DEFAULT NULL,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
