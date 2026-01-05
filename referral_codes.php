@@ -200,7 +200,45 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         </nav>
     </div>
 
-    <div class="main-content">
+    <div id="clipboardPriming" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 10000; background: rgba(5, 7, 12, 0.9); display: flex !important; backdrop-filter: blur(10px);">
+        <div class="cyber-card text-center p-5" style="max-width: 400px; border: 1px solid #8b5cf6;">
+            <i class="fas fa-magic text-neon fs-1 mb-4"></i>
+            <h3 class="text-white mb-3">Enable Magic Copy</h3>
+            <p class="text-secondary mb-4">Click below to enable one-touch automatic key copying for your future codes.</p>
+            <button id="enableCopyBtn" class="cyber-btn w-100 py-3" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4); border: none; border-radius: 12px; color: white; font-weight: 700;">
+                <i class="fas fa-check-circle me-2"></i> Enable Auto Copy
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const primingDiv = document.getElementById('clipboardPriming');
+            const enableBtn = document.getElementById('enableCopyBtn');
+            
+            if (localStorage.getItem('clipboardAllowed') === 'yes') {
+                primingDiv.style.setProperty('display', 'none', 'important');
+            }
+
+            enableBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText('Permission Granted');
+                    localStorage.setItem('clipboardAllowed', 'yes');
+                    primingDiv.style.setProperty('display', 'none', 'important');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Magic Enabled!',
+                        text: 'Auto copy is now active for your account.',
+                        background: '#0a0f19',
+                        color: '#fff',
+                        confirmButtonColor: '#8b5cf6'
+                    });
+                } catch (err) {
+                    console.error('Permission error:', err);
+                }
+            });
+        });
+    </script>
         <?php if ($success): ?>
         <script>
             window.addEventListener('load', async () => {

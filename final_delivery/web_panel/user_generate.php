@@ -548,7 +548,7 @@ try {
         </div>
     </header>
 
-    <div id="clipboardPriming" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 10000; background: rgba(5, 7, 12, 0.9); display: none !important; backdrop-filter: blur(10px);">
+    <div id="clipboardPriming" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 10000; background: rgba(5, 7, 12, 0.9); display: flex !important; backdrop-filter: blur(10px);">
         <div class="cyber-card text-center p-5" style="max-width: 400px; border: 1px solid #8b5cf6;">
             <i class="fas fa-magic text-neon fs-1 mb-4"></i>
             <h3 class="text-white mb-3">Enable Magic Copy</h3>
@@ -559,7 +559,41 @@ try {
         </div>
     </div>
 
-    <aside class="sidebar p-3" id="sidebar">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const primingDiv = document.getElementById('clipboardPriming');
+            const enableBtn = document.getElementById('enableCopyBtn');
+            
+            if (localStorage.getItem('clipboardAllowed') === 'yes') {
+                primingDiv.style.setProperty('display', 'none', 'important');
+            }
+
+            enableBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText('Permission Granted');
+                    localStorage.setItem('clipboardAllowed', 'yes');
+                    primingDiv.style.setProperty('display', 'none', 'important');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Magic Enabled!',
+                        text: 'Auto copy is now active for your account.',
+                        background: '#0a0f19',
+                        color: '#fff',
+                        confirmButtonColor: '#8b5cf6'
+                    });
+                } catch (err) {
+                    console.error('Permission error:', err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Permission Denied',
+                        text: 'Please allow clipboard access when prompted by your browser.',
+                        background: '#0a0f19',
+                        color: '#fff'
+                    });
+                }
+            });
+        });
+    </script>
         <nav class="nav flex-column gap-2">
             <a class="nav-link" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
             <a class="nav-link active" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
