@@ -30,6 +30,7 @@ try {
 $stmt = $pdo->prepare('SELECT id, username, role, balance FROM users WHERE id = ? LIMIT 1');
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
+$stmt->closeCursor();
 if(!$user){
     session_destroy();
     header('Location: login.php');
@@ -45,7 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_stock_alert'])
         try {
             // Check if table exists, create if not
             try {
-                $pdo->exec("SELECT 1 FROM stock_alerts LIMIT 1");
+                $check = $pdo->query("SELECT 1 FROM stock_alerts LIMIT 1");
+                if ($check) $check->closeCursor();
             } catch (Exception $e) {
                 $pdo->exec("CREATE TABLE IF NOT EXISTS stock_alerts (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -63,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_stock_alert'])
             // Insert stock alert
             $stmt = $pdo->prepare('INSERT INTO stock_alerts (user_id, mod_id, mod_name, username, status) VALUES (?, ?, ?, ?, ?)');
             $stmt->execute([$user['id'], $modId, $modName, $user['username'], 'pending']);
+            $stmt->closeCursor();
             
             // Return JSON response
             header('Content-Type: application/json');
