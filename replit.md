@@ -27,9 +27,11 @@
 2. **Database Auto-Repair** - `referral_codes.php` automatically adds missing columns (`bonus_amount`, `usage_limit`, etc.).
 3. **Robust Statistics** - Count queries wrapped in `try-catch` to prevent total page failure.
 4. **Final Delivery** - Updated `final_delivery/latest_delivery.zip` with all fixes.
+5. **Device Binding & Lockout** - Implemented 24-hour lockout and device fingerprinting for security.
+6. **PDO Buffering Fix** - Fixed "General error: 2014" by enabling buffered queries and adding `closeCursor()` to prevent unbuffered query conflicts on MySQL.
 
-### Files Included (33 PHP files)
-- Authentication (login, register, logout)
+### Files Included (34 PHP files)
+- Authentication (login, register, logout, reset_device)
 - Admin features (dashboards, management pages)
 - User features (balance, keys, transactions)
 - API endpoints

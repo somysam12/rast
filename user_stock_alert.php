@@ -86,6 +86,7 @@ try {
     $stmt = $pdo->prepare('SELECT id, name FROM mods WHERE status = "active" ORDER BY name');
     $stmt->execute();
     $mods = $stmt->fetchAll();
+    $stmt->closeCursor();
 } catch (Throwable $e) {}
 
 // Get user's stock alerts
@@ -94,6 +95,7 @@ try {
     $stmt = $pdo->prepare('SELECT * FROM stock_alerts WHERE user_id = ? ORDER BY created_at DESC');
     $stmt->execute([$user['id']]);
     $myAlerts = $stmt->fetchAll();
+    $stmt->closeCursor();
 } catch (Throwable $e) {}
 ?>
 <!DOCTYPE html>
