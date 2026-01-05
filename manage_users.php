@@ -35,6 +35,13 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     exit();
 }
 
+// Handle Force Logout All
+if (isset($_POST['force_logout_all'])) {
+    forceLogoutAllUsers();
+    header("Location: manage_users.php?logout_success=1");
+    exit();
+}
+
 // Initial data load
 $stmt = $pdo->query("SELECT * FROM users ORDER BY created_at DESC LIMIT 100");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -181,6 +188,13 @@ $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
                 <div class="col-md-7">
                     <h2 class="text-white mb-1" style="font-weight: 800;">User Management</h2>
                     <p class="text-white opacity-75 mb-0">Monitor and manage all user accounts</p>
+                    <div class="mt-3">
+                        <form method="POST" onsubmit="return confirmForceLogoutAll()">
+                            <button type="submit" name="force_logout_all" class="btn btn-danger btn-sm fw-bold px-3 py-2 rounded-3">
+                                <i class="fas fa-sign-out-alt me-2"></i> Force Logout All Users
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 <div class="col-md-5 mt-3 mt-md-0">
                     <div class="row g-2">
@@ -332,6 +346,20 @@ $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
                 }
             })
         }
+
+        function confirmForceLogoutAll() {
+            return confirm('Are you sure you want to force logout all users? This will invalidate all active sessions except yours.');
+        }
+
+        <?php if (isset($_GET['logout_success'])): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'All users have been forced to logout.',
+            background: '#111827',
+            color: '#fff'
+        });
+        <?php endif; ?>
     </script>
 </body>
 </html>

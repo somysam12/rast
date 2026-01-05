@@ -251,6 +251,13 @@ function resetDevice($username, $password = null, $isAdminReset = false) {
     return 'success';
 }
 
+function forceLogoutAllUsers() {
+    $pdo = getDBConnection();
+    // Delete all sessions except for the current admin
+    $stmt = $pdo->prepare("DELETE FROM user_sessions WHERE user_id != ?");
+    $stmt->execute([$_SESSION['user_id']]);
+}
+
 function getUserData($userId = null) {
     if (!$userId) {
         $userId = $_SESSION['user_id'];
