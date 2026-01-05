@@ -1,0 +1,125 @@
+ADMIN PANEL HAMBURGER MENU ISSUE – OFFICIAL FIX REQUEST
+❌ Problem Description (Admin Panel)
+
+In the Admin Panel, when clicking the hamburger (☰) menu:
+
+Only some admin pages are visible
+
+Remaining menu items are hidden / cut off
+
+Scrolling does not reveal all pages
+
+Issue occurs mainly on:
+
+Mobile devices
+
+Small height screens
+
+Zoomed desktop views
+
+This prevents admins from accessing all panel pages.
+
+🔍 Root Cause (Technical)
+
+The issue is caused by CSS layout constraints, such as:
+
+Sidebar or hamburger container using fixed height
+
+overflow: hidden applied to menu or parent container
+
+Sidebar wrapped inside another fixed or absolute positioned container
+
+Missing vertical scrolling (overflow-y not enabled)
+
+As a result, menu items overflow outside the viewport and become inaccessible.
+
+✅ Strict Fix Requirements (VERY IMPORTANT)
+
+⚠️ DO NOT:
+
+Change any existing UI design
+
+Change colors, spacing, fonts, icons
+
+Change page structure or HTML layout
+
+Change routing, permissions, or logic
+
+Remove or rename any menu items
+
+✔ ONLY:
+
+Fix hamburger/sidebar menu so ALL admin pages are visible
+
+Enable proper vertical scrolling inside the menu
+
+Keep everything else exactly the same
+
+✅ Correct Expected Behavior
+
+Hamburger menu must show ALL admin pages
+
+Menu must scroll vertically if items exceed screen height
+
+Works on:
+
+Mobile
+
+Tablet
+
+Desktop
+
+Applies only to hamburger/sidebar behavior
+
+No UI or logic changes
+
+✅ Required Technical Fix (CSS-ONLY PREFERRED)
+
+Ensure the admin sidebar / hamburger container uses:
+
+height: 100vh;
+overflow-y: auto;
+overflow-x: hidden;
+-webkit-overflow-scrolling: touch;
+
+❌ Must remove / avoid:
+overflow: hidden;
+max-height: 100vh;
+fixed height values;
+
+✅ Layout Rule (IMPORTANT)
+
+Sidebar must NOT be wrapped inside any container with:
+
+Fixed height
+
+overflow: hidden
+
+Sidebar should control its own vertical scroll
+
+✅ JavaScript Rule (If Toggle Exists)
+
+If a JS toggle is used for the hamburger:
+
+It must only open/close the sidebar
+
+It must NOT block sidebar scrolling
+
+overflow: hidden should never be applied to the sidebar itself
+
+🧪 Testing Checklist (Must Pass)
+
+✔ Admin panel on mobile
+✔ Long admin menu (many pages)
+✔ Scroll works fully
+✔ No visual change
+✔ No logic break
+✔ No routing issues
+
+🧠 FINAL COPY-PASTE PROMPT (ADMIN PANEL)
+
+Fix the hamburger/sidebar menu issue in the Admin Panel where not all admin pages are visible.
+The problem is caused by fixed height and missing vertical scrolling in the sidebar or its parent containers.
+Enable proper vertical scrolling using height: 100vh and overflow-y: auto so all menu items are accessible.
+Do NOT change any existing UI design, layout, colors, icons, or business logic.
+Only fix the hamburger menu behavior to ensure all admin pages are visible and scrollable on all screen sizes.
