@@ -38,7 +38,8 @@ if ($_POST && isset($_POST['generate_code'])) {
             
             $stmt = $pdo->prepare("INSERT INTO referral_codes (code, created_by, expires_at, bonus_amount, usage_limit, usage_count) VALUES (?, ?, ?, ?, ?, 0)");
             if ($stmt->execute([$code, $_SESSION['user_id'], $expiresAt, $bonusAmount, $usageLimit])) {
-                $success = "Referral code generated successfully: $code";
+                $success = "Referral code generated successfully!";
+                $generatedCode = $code;
             } else {
                 $error = 'Failed to generate referral code';
             }
@@ -535,6 +536,23 @@ try {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('mobile-overlay');
         const hamburgerBtn = document.getElementById('hamburgerBtn');
+
+        <?php if (isset($generatedCode)): ?>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const code = '<?php echo $generatedCode; ?>';
+            navigator.clipboard.writeText(code).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Code Generated & Copied!',
+                    text: code,
+                    timer: 2000,
+                    background: '#111827',
+                    color: '#ffffff',
+                    showConfirmButton: false
+                });
+            });
+        });
+        <?php endif; ?>
 
         function toggleSidebar() {
             sidebar.classList.toggle('show');
