@@ -82,7 +82,7 @@ $stmt = $pdo->query("SELECT rc.*, u.username as created_by_name FROM referral_co
 $referralCodes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Statistics
-$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > datetime('now')) THEN 1 END) as active FROM referral_codes");
+$stmt = $pdo->query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='active' AND (expires_at > NOW()) THEN 1 END) as active FROM referral_codes");
 $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -95,106 +95,298 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="assets/css/hamburger-fix.css" rel="stylesheet">
     <style>
         :root {
             --primary: #8b5cf6;
             --primary-dark: #7c3aed;
             --secondary: #06b6d4;
+            --accent: #ec4899;
             --bg: #0a0e27;
             --card-bg: rgba(15, 23, 42, 0.7);
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
-            --border-light: rgba(255, 255, 255, 0.1);
+            --border-light: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(139, 92, 246, 0.2);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        html, body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%) !important;
+            background-attachment: fixed !important;
+            width: 100%;
+            height: 100%;
+        }
 
         body {
-            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
             color: var(--text-main);
             overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
             background: var(--card-bg);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
-            border-right: 1px solid var(--border-light);
-            min-height: 100vh;
-            position: fixed;
-            width: 280px;
-            padding: 2rem 0;
+            border-right: 1.5px solid var(--border-light);
             z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
             transition: transform 0.3s ease;
+            padding: 1.5rem 0;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        .sidebar-brand h4 {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-size: 1.4rem;
+        }
+
+        .sidebar .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0 1rem;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-dim);
+            padding: 12px 16px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            transform: translateX(4px);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 1.5rem;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-bar {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hamburger-btn {
+            background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+            border: 2px solid rgba(6, 182, 212, 0.4) !important;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 10px 12px !important;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            border: 1.5px solid var(--border-light);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.25));
+            border: 2px solid var(--border-light);
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(20px);
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-light);
+            border-radius: 18px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: var(--secondary);
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            font-size: 1.5rem;
+        }
+
+        .stat-card p {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            margin-bottom: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-control, .form-select {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1.5px solid var(--border-light);
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.7);
+            color: white;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 700;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .table {
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        .table thead th {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+            border: none;
+            padding: 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.85rem;
+        }
+
+        .code-badge {
+            font-family: 'Courier New', monospace;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            cursor: pointer;
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
             left: 0;
-            transform: translateX(-280px);
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: none;
         }
 
-        .sidebar.active { transform: translateX(0); }
-        .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; }
-        .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
-        .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
-        .sidebar .nav-link.active { background: var(--primary); color: white; }
-
-        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; }
-
-        @media (min-width: 993px) {
-            .sidebar { transform: translateX(0); }
-            .main-content { margin-left: 280px; }
-            .hamburger { display: none !important; }
+        .mobile-overlay.show {
+            display: block;
         }
 
-        .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
-        @media (max-width: 992px) { .hamburger { display: block; } }
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
 
-        .glass-card { background: var(--card-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--border-light); border-radius: 24px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); margin-bottom: 2rem; }
+            .sidebar.show {
+                transform: translateX(0);
+            }
 
-        .header-card { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); padding: 1.5rem; border-radius: 24px; margin-bottom: 2rem; position: relative; overflow: hidden; }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
 
-        .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); border-radius: 18px; padding: 12px 8px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 80px; }
-        .stat-card h3 { color: var(--secondary); font-weight: 800; margin-bottom: 2px; font-size: 1.2rem; }
-        .stat-card p { color: var(--text-dim); font-size: 0.7rem; margin-bottom: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        .form-control, .form-select { background: rgba(15, 23, 42, 0.5); border: 1.5px solid var(--border-light); border-radius: 12px; padding: 12px; color: white; }
-        .form-control:focus, .form-select:focus { outline: none; border-color: var(--primary); background: rgba(15, 23, 42, 0.7); color: white; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
-
-        .btn-submit { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; padding: 12px 24px; color: white; font-weight: 700; transition: all 0.3s; width: 100%; }
-        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3); }
-
-        .table { color: var(--text-main); vertical-align: middle; }
-        .table thead th { background: rgba(139, 92, 246, 0.1); color: var(--primary); border: none; padding: 12px; font-size: 0.9rem; }
-        .table tbody td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.85rem; }
-        
-        .code-badge-wrapper { position: relative; display: inline-flex; align-items: center; gap: 8px; }
-        .code-badge { font-family: 'Courier New', monospace; background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; letter-spacing: 1px; border: 1px solid rgba(139, 92, 246, 0.2); cursor: pointer; position: relative; }
-        
-        .copy-btn { color: var(--primary); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
-        .copy-btn:hover { color: var(--secondary); transform: scale(1.2); }
-        .copy-btn.copied { color: #10b981; transform: scale(1.3); }
-
-        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .status-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .status-inactive { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
-        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
-        .overlay.active { display: block; }
-
-        .checkbox-custom { width: 18px; height: 18px; border: 2px solid var(--primary); border-radius: 4px; appearance: none; cursor: pointer; position: relative; transition: all 0.2s; }
-        .checkbox-custom:checked { background: var(--primary); }
-        .checkbox-custom:checked::after { content: '\f00c'; font-family: 'Font Awesome 5 Free'; font-weight: 900; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; }
+            .top-bar {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body>
-    <?php include 'includes/admin_header.php'; ?>
-
-    <div class="overlay" id="overlay"></div>
-    <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+    <div class="mobile-overlay" id="mobile-overlay"></div>
     <div class="sidebar" id="sidebar">
-        <h4>SILENT PANEL</h4>
-        <nav class="nav flex-column">
+        <div class="sidebar-brand">
+            <h4><div class="logo-icon"><i class="fas fa-shield-alt"></i></div> SILENT PANEL</h4>
+        </div>
+        <nav class="nav">
             <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
             <a class="nav-link" href="add_mod.php"><i class="fas fa-plus"></i>Add Mod</a>
             <a class="nav-link" href="manage_mods.php"><i class="fas fa-edit"></i>Manage Mods</a>
@@ -205,13 +397,20 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
             <a class="nav-link active" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
             <a class="nav-link" href="manage_users.php"><i class="fas fa-users"></i>Manage Users</a>
             <a class="nav-link" href="add_balance.php"><i class="fas fa-wallet"></i>Add Balance</a>
+            <a class="nav-link" href="admin_block_reset_requests.php"><i class="fas fa-ban"></i>Requests</a>
             <a class="nav-link" href="settings.php"><i class="fas fa-cog"></i>Settings</a>
-            <hr style="border-color: var(--border-light); margin: 1.5rem 16px;">
+            <hr style="border-color: var(--border-light); margin: 1rem 0;">
             <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
         </nav>
     </div>
 
     <div class="main-content">
+        <div class="top-bar">
+            <button class="hamburger-btn" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+            <h4 style="margin: 0; font-weight: 800; background: linear-gradient(135deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">REFERRALS</h4>
+            <div style="width: 44px;"></div>
+        </div>
+
         <div class="header-card">
             <div class="row align-items-center">
                 <div class="col-md-7">
@@ -270,7 +469,7 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                         <input type="hidden" name="bulk_delete" value="1">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="d-flex align-items-center gap-3">
-                                <input type="checkbox" id="selectAll" class="checkbox-custom">
+                                <input type="checkbox" id="selectAll" class="form-check-input" style="background-color: transparent; border: 2px solid var(--primary);">
                                 <label for="selectAll" class="text-dim small mb-0 cursor-pointer">Select All</label>
                             </div>
                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirmBulkDelete(event)">
@@ -293,13 +492,10 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                                     <?php foreach ($referralCodes as $code): ?>
                                     <tr>
                                         <td>
-                                            <input type="checkbox" name="selected_codes[]" value="<?php echo $code['id']; ?>" class="checkbox-custom code-checkbox">
+                                            <input type="checkbox" name="selected_codes[]" value="<?php echo $code['id']; ?>" class="form-check-input code-checkbox" style="background-color: transparent; border: 2px solid var(--primary);">
                                         </td>
                                         <td>
-                                            <div class="code-badge-wrapper">
-                                                <span class="code-badge" onclick="copyCode('<?php echo $code['code']; ?>', this)"><?php echo $code['code']; ?></span>
-                                                <i class="fas fa-copy copy-btn" onclick="copyCode('<?php echo $code['code']; ?>', this)"></i>
-                                            </div>
+                                            <div class="code-badge" onclick="copyCode('<?php echo $code['code']; ?>', this)"><?php echo $code['code']; ?></div>
                                         </td>
                                         <td><span class="text-success fw-bold">₹<?php echo number_format($code['bonus_amount'], 2); ?></span></td>
                                         <td><span class="text-dim"><?php echo $code['usage_count']; ?> / <?php echo $code['usage_limit']; ?></span></td>
@@ -309,14 +505,10 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                                             ?>
                                             <span class="small <?php echo $isExpired ? 'text-danger fw-bold' : 'text-dim'; ?>">
                                                 <?php echo date('M d, H:i', strtotime($code['expires_at'])); ?>
-                                                <?php if($isExpired): ?> <i class="fas fa-exclamation-circle"></i> <?php endif; ?>
                                             </span>
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <?php if ($code['status'] === 'active' && !$isExpired): ?>
-                                                    <a href="?deactivate=<?php echo $code['id']; ?>" class="btn btn-warning btn-sm" title="Deactivate"><i class="fas fa-ban"></i></a>
-                                                <?php endif; ?>
                                                 <button type="button" onclick="confirmDelete(<?php echo $code['id']; ?>)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                                             </div>
                                         </td>
@@ -331,77 +523,30 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/menu-logic.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Hamburger click handler is already in menu-logic.js
-            // This ensures the local elements are synced
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
 
-            if (hamburgerBtn) {
-                hamburgerBtn.classList.add('hamburger-menu');
-                hamburgerBtn.onclick = (e) => window.toggleSidebar(e);
-            }
-            if (overlay) overlay.id = 'mobile-overlay';
-        });
+        function toggleSidebar() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('clipboardAllowed') !== 'yes') {
-                Swal.fire({
-                    title: 'Enable Magic Copy',
-                    text: 'Enable one-touch automatic copying for your future referral codes?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Enable',
-                    cancelButtonText: 'No Thanks',
-                    background: '#0a0f19',
-                    color: '#fff',
-                    confirmButtonColor: '#8b5cf6'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const dummyBtn = document.createElement('button');
-                        dummyBtn.style.display = 'none';
-                        document.body.appendChild(dummyBtn);
-                        navigator.clipboard.writeText('Permission Granted').then(() => {
-                            localStorage.setItem('clipboardAllowed', 'yes');
-                            document.body.removeChild(dummyBtn);
-                        }).catch(() => {
-                            document.body.removeChild(dummyBtn);
-                        });
-                    }
-                });
-            }
-        });
+        if (hamburgerBtn) hamburgerBtn.onclick = toggleSidebar;
+        if (overlay) overlay.onclick = toggleSidebar;
 
-        selectAll.onchange = (e) => {
-            codeCheckboxes.forEach(cb => cb.checked = e.target.checked);
-        };
+        const selectAll = document.getElementById('selectAll');
+        const codeCheckboxes = document.querySelectorAll('.code-checkbox');
+        if (selectAll) {
+            selectAll.onchange = (e) => {
+                codeCheckboxes.forEach(cb => cb.checked = e.target.checked);
+            };
+        }
 
         async function copyCode(text, el) {
             try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(text);
-                } else {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    textArea.style.position = 'fixed';
-                    textArea.style.left = '-9999px';
-                    textArea.style.top = '0';
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-                
-                const btn = el.parentElement.querySelector('.copy-btn') || el;
-                btn.classList.add('copied');
-                const oldClass = btn.classList.contains('fa-copy') ? 'fa-copy' : 'fa-check-circle';
-                btn.classList.replace(oldClass, 'fa-check-circle');
-                
+                await navigator.clipboard.writeText(text);
                 Swal.fire({
                     toast: true,
                     position: 'top-end',
@@ -412,11 +557,6 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                     background: '#1e293b',
                     color: '#f8fafc'
                 });
-
-                setTimeout(() => {
-                    btn.classList.remove('copied');
-                    btn.classList.replace('fa-check-circle', 'fa-copy');
-                }, 2000);
             } catch (err) {
                 console.error('Failed to copy: ', err);
             }
@@ -443,7 +583,6 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                 Swal.fire({ icon: 'error', title: 'Error', text: 'No codes selected!', background: '#111827', color: '#ffffff' });
                 return false;
             }
-
             Swal.fire({
                 title: 'Bulk Delete?',
                 text: `Are you sure you want to delete ${selected} codes?`,
@@ -456,33 +595,6 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
                 color: '#ffffff'
             }).then((result) => { if (result.isConfirmed) document.getElementById('bulkDeleteForm').submit(); })
         }
-
-        <?php if ($success): ?>
-        <script>
-            window.addEventListener('load', async () => {
-                if (localStorage.getItem('clipboardAllowed') === 'yes') {
-                    const code = "<?php echo explode(': ', $success)[1] ?? ''; ?>";
-                    if (code) {
-                        await navigator.clipboard.writeText(code);
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Code Auto-Copied!',
-                            showConfirmButton: false,
-                            timer: 2000,
-                            background: '#1e293b',
-                            color: '#f8fafc'
-                        });
-                    }
-                }
-            });
-        </script>
-        Swal.fire({ icon: 'success', title: 'Success!', text: '<?php echo $success; ?>', background: '#111827', color: '#ffffff' });
-        <?php endif; ?>
-        <?php if ($error): ?>
-        Swal.fire({ icon: 'error', title: 'Error!', text: '<?php echo $error; ?>', background: '#111827', color: '#ffffff' });
-        <?php endif; ?>
     </script>
 </body>
 </html>
