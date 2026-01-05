@@ -365,21 +365,7 @@ if (!function_exists('formatDateLocal')) {
                             <div class="p-3 bg-dark bg-opacity-50 border border-secondary border-opacity-10 rounded-3 text-center">
                                 <div class="small text-secondary mb-1">USED CODE</div>
                                 <div class="h4 text-neon mb-0">
-                                    <?php 
-                                        // First check if user was referred by another user
-                                        if ($user['referred_by']) {
-                                            $stmt = $pdo->prepare("SELECT referral_code FROM users WHERE id = ?");
-                                            $stmt->execute([$user['referred_by']]);
-                                            $code = $stmt->fetchColumn();
-                                            echo htmlspecialchars($code ?: 'N/A');
-                                        } else {
-                                            // Fallback: If no direct referrer link in users table, check if account was created via an admin referral code
-                                            // This assumes the admin referral code usage is tracked or the code itself is what we want to show
-                                            // Since we don't have a direct 'used_code' column, we check the referral_codes table if applicable
-                                            // For now, if no referred_by, we show 'NONE' as per previous logic or a fallback
-                                            echo 'NONE';
-                                        }
-                                    ?>
+                                    <?php echo htmlspecialchars($user['used_referral'] ?? 'NONE'); ?>
                                 </div>
                             </div>
                         </div>
