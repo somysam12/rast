@@ -27,11 +27,12 @@ try {
         UNIQUE KEY `code` (`code`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     
-    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `bonus_amount` decimal(10,2) DEFAULT '0.00'");
-    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `usage_limit` int(11) DEFAULT '1'");
-    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `usage_count` int(11) DEFAULT '0'");
-    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `expires_at` timestamp NULL DEFAULT NULL");
-    $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN IF NOT EXISTS `status` enum('active','inactive') DEFAULT 'active'");
+    // Safely add missing columns one by one - Old style for older PHP/MySQL
+    try { $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN `bonus_amount` decimal(10,2) DEFAULT '0.00'"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN `usage_limit` int(11) DEFAULT '1'"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN `usage_count` int(11) DEFAULT '0'"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN `expires_at` timestamp NULL DEFAULT NULL"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `referral_codes` ADD COLUMN `status` enum('active','inactive') DEFAULT 'active'"); } catch (Exception $e) {}
 } catch (Exception $e) {}
 
 $success = '';
@@ -44,13 +45,16 @@ if ($_POST && isset($_POST['generate_code'])) {
         $bonusAmount = (float)($_POST['bonus_amount'] ?? 50.00);
         $usageLimit = (int)($_POST['usage_limit'] ?? 1);
         
-        $duration = match($expiryOption) {
-            '1h' => '+1 hour',
-            '1d' => '+1 day',
-            '1w' => '+7 days',
-            '1m' => '+30 days',
-            default => '+30 days'
-        };
+        $duration = '+30 days';
+        if ($expiryOption === '1h') {
+            $duration = '+1 hour';
+        } elseif ($expiryOption === '1d') {
+            $duration = '+1 day';
+        } elseif ($expiryOption === '1w') {
+            $duration = '+7 days';
+        } elseif ($expiryOption === '1m') {
+            $duration = '+30 days';
+        }
 
         if ($bonusAmount < 0) {
             $error = 'Bonus amount cannot be negative';
@@ -540,24 +544,25 @@ try {
                                     <?php foreach ($referralCodes as $code): ?>
                                     <tr>
                                         <td>
-                                            <input type="checkbox" name="selected_codes[]" value="<?php echo $code['id']; ?>" class="form-check-input code-checkbox" style="background-color: transparent; border: 2px solid var(--primary);">
+                                            <input type="checkbox" name="selected_codes[]" value="<?php echo isset($code['id']) ? $code['id'] : ''; ?>" class="form-check-input code-checkbox" style="background-color: transparent; border: 2px solid var(--primary);">
                                         </td>
                                         <td>
-                                            <div class="code-badge" onclick="copyCode('<?php echo $code['code']; ?>', this)"><?php echo $code['code']; ?></div>
+                                            <div class="code-badge" onclick="copyCode('<?php echo isset($code['code']) ? $code['code'] : ''; ?>', this)"><?php echo isset($code['code']) ? $code['code'] : 'N/A'; ?></div>
                                         </td>
-                                        <td><span class="text-success fw-bold">₹<?php echo number_format($code['bonus_amount'], 2); ?></span></td>
-                                        <td><span class="text-dim"><?php echo $code['usage_count']; ?> / <?php echo $code['usage_limit']; ?></span></td>
+                                        <td><span class="text-success fw-bold">₹<?php echo isset($code['bonus_amount']) ? number_format($code['bonus_amount'], 2) : '0.00'; ?></span></td>
+                                        <td><span class="text-dim"><?php echo isset($code['usage_count']) ? $code['usage_count'] : '0'; ?> / <?php echo isset($code['usage_limit']) ? $code['usage_limit'] : '1'; ?></span></td>
                                         <td>
                                             <?php 
-                                            $isExpired = strtotime($code['expires_at']) < time();
+                                            $expiresAt = isset($code['expires_at']) ? $code['expires_at'] : null;
+                                            $isExpired = $expiresAt ? strtotime($expiresAt) < time() : false;
                                             ?>
                                             <span class="small <?php echo $isExpired ? 'text-danger fw-bold' : 'text-dim'; ?>">
-                                                <?php echo date('M d, H:i', strtotime($code['expires_at'])); ?>
+                                                <?php echo $expiresAt ? date('M d, H:i', strtotime($expiresAt)) : 'Never'; ?>
                                             </span>
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <button type="button" onclick="confirmDelete(<?php echo $code['id']; ?>)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                                <button type="button" onclick="confirmDelete(<?php echo isset($code['id']) ? $code['id'] : 0; ?>)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                                             </div>
                                         </td>
                                     </tr>
