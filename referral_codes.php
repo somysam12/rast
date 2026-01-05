@@ -128,20 +128,22 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
             padding: 2rem 0;
             z-index: 1000;
             transition: transform 0.3s ease;
-            left: -280px;
+            left: 0;
+            transform: translateX(-280px);
         }
 
-        .sidebar.active { transform: translateX(280px); }
+        .sidebar.active { transform: translateX(0); }
         .sidebar h4 { font-weight: 800; color: var(--primary); margin-bottom: 2rem; padding: 0 20px; }
         .sidebar .nav-link { color: var(--text-dim); padding: 12px 20px; margin: 4px 16px; border-radius: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .sidebar .nav-link:hover { color: var(--text-main); background: rgba(139, 92, 246, 0.1); }
         .sidebar .nav-link.active { background: var(--primary); color: white; }
 
-        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; position: relative; z-index: 1; }
+        .main-content { margin-left: 0; padding: 1.5rem; transition: margin-left 0.3s ease; position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; }
 
         @media (min-width: 993px) {
-            .sidebar { left: 0; transform: none; }
+            .sidebar { transform: translateX(0); }
             .main-content { margin-left: 280px; }
+            .hamburger { display: none !important; }
         }
 
         .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1100; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: none; }
@@ -374,10 +376,8 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         const sidebar = document.getElementById('sidebar');
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const overlay = document.getElementById('overlay');
-        const selectAll = document.getElementById('selectAll');
-        const codeCheckboxes = document.querySelectorAll('.code-checkbox');
 
-        hamburgerBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
+        hamburgerBtn.onclick = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
 
         selectAll.onchange = (e) => {
