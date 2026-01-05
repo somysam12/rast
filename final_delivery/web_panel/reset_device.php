@@ -1,13 +1,9 @@
 <?php
 require_once 'includes/auth.php';
 
-// Redirect if already logged in
-if (isLoggedIn()) {
-    if (isAdmin()) {
-        header('Location: admin_dashboard.php');
-    } else {
-        header('Location: user_dashboard.php');
-    }
+// Redirect if already logged in (standard login check)
+if (isLoggedIn() && !isAdmin()) {
+    header('Location: user_dashboard.php');
     exit();
 }
 
@@ -37,377 +33,132 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Device - SilentMultiPanel</title>
+    <title>Reset Device - Silent Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --purple: #8b5cf6;
-            --purple-light: #a78bfa;
-            --purple-dark: #7c3aed;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-light: #e2e8f0;
-            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --bg: #0a0e27;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-light: rgba(148, 163, 184, 0.1);
         }
 
-        body {
-            background-color: var(--bg-color);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 2rem 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        html, body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1e1b4b 50%, #0a0e27 100%) !important;
+            background-attachment: fixed !important;
+            width: 100%;
+            height: 100%;
         }
-        
-        .reset-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: var(--shadow-large);
-            border: 1px solid var(--border-light);
-            overflow: hidden;
-            transition: all 0.3s ease;
+
+        body { color: var(--text-main); overflow-x: hidden; position: relative; }
+
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: 280px; height: 100vh;
+            background: var(--card-bg); backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px); border-right: 1.5px solid var(--border-light);
+            z-index: 1000; overflow-y: auto; transition: transform 0.3s ease; padding: 1.5rem 0;
         }
+
+        .sidebar-brand { padding: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); text-align: center; }
+        .sidebar-brand h4 { background: linear-gradient(135deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 1.4rem; }
         
-        .reset-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        
-        .reset-header {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            padding: 2.5rem 2rem;
-            text-align: center;
-            border-top: 4px solid #fca5a5;
-        }
-        
-        .reset-header h3 {
-            font-weight: 700;
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .reset-header p {
-            opacity: 0.9;
-            font-size: 0.9rem;
-            margin-bottom: 0;
-        }
-        
-        .reset-body {
-            padding: 2.5rem 2rem;
-            background: var(--card-bg);
-        }
-        
-        .form-control {
-            border-radius: 8px;
-            border: 2px solid var(--border-light);
-            padding: 12px 16px;
-            transition: all 0.2s ease;
-            background: var(--card-bg);
-            font-size: 0.95rem;
-            color: var(--text-primary);
-        }
-        
-        .form-control:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-            background: var(--card-bg);
-            outline: none;
-        }
-        
-        .form-control::placeholder {
-            color: var(--text-secondary);
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .btn-reset {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-            color: white;
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .btn-reset:hover {
-            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-            box-shadow: var(--shadow-large);
-            transform: translateY(-1px);
-            color: white;
-        }
-        
-        .btn-reset:active {
-            transform: translateY(0);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .login-link {
-            color: var(--purple);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-        
-        .login-link:hover {
-            color: var(--purple-dark);
-            text-decoration: underline;
-        }
-        
-        .alert {
-            border-radius: 8px;
-            border: none;
-            padding: 12px 16px;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .alert-danger {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-        }
-        
-        .alert-success {
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
-        }
-        
-        .warning-info {
-            background-color: #fef3c7;
-            border: 1px solid #fde68a;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .warning-info small {
-            color: #92400e;
-            font-size: 0.8rem;
-        }
-        
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: var(--text-secondary);
-            box-shadow: var(--shadow-medium);
-        }
-        
-            color: var(--purple);
-            box-shadow: var(--shadow-large);
-            transform: translateY(-1px);
-        }
-        
-        /* Dark theme styles */
-        [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border-light: #334155;
-        }
-        
-        [data-theme="dark"] .reset-card {
-            border-color: var(--border-light);
-        }
-        
-        [data-theme="dark"] .form-control {
-            background: var(--card-bg);
-            border-color: var(--border-light);
-            color: var(--text-primary);
-        }
-        
-        [data-theme="dark"] .form-control::placeholder {
-            color: var(--text-secondary);
-        }
-        
-        [data-theme="dark"] .warning-info {
-            background-color: #451a03;
-            border-color: #92400e;
-        }
-        
-        [data-theme="dark"] .warning-info small {
-            color: #fbbf24;
-        }
-        
-        [data-theme="dark"] .alert-danger {
-            background-color: #450a0a;
-            border-color: #7f1d1d;
-            color: #fca5a5;
-        }
-        
-        [data-theme="dark"] .alert-success {
-            background-color: #052e16;
-            border-color: #166534;
-            color: #86efac;
-        }
-        
-        @media (max-width: 768px) {
-            body {
-                padding: 1rem;
-            }
-            
-            .reset-header {
-                padding: 2rem 1.5rem;
-            }
-            
-            .reset-body {
-                padding: 2rem 1.5rem;
-            }
-            
-            .form-control {
-                padding: 10px 14px;
-                font-size: 16px; /* Prevent zoom on iOS */
-            }
-            
-            .btn-reset {
-                padding: 12px 20px;
-            }
-            
-                top: 16px;
-                right: 16px;
-                width: 40px;
-                height: 40px;
-            }
+        .sidebar .nav { display: flex; flex-direction: column; gap: 0.5rem; padding: 0 1rem; }
+        .sidebar .nav-link { color: var(--text-dim); padding: 12px 16px; border-radius: 12px; transition: all 0.3s; display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; transform: translateX(4px); }
+
+        .main-content { margin-left: 280px; padding: 1.5rem; min-height: 100vh; }
+
+        .top-bar { display: none; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .hamburger-btn { background: var(--primary); border: none; color: white; padding: 10px 12px; border-radius: 12px; }
+
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(30px); border: 1.5px solid var(--border-light); border-radius: 32px; padding: 30px; max-width: 500px; margin: 0 auto; }
+
+        .form-control { background: rgba(15, 23, 42, 0.5); border: 1.5px solid var(--border-light); border-radius: 12px; padding: 12px; color: white; }
+        .form-control:focus { outline: none; border-color: var(--primary); background: rgba(15, 23, 42, 0.7); color: white; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+
+        .btn-reset { background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 12px; padding: 12px; color: white; font-weight: 700; width: 100%; transition: all 0.3s; }
+        .btn-reset:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); }
+
+        .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+        .mobile-overlay.show { display: block; }
+
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .top-bar { display: flex; }
         }
     </style>
-    <link href="assets/css/dark-mode-button.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Theme Toggle -->
-        <i class="fas fa-moon" id="darkModeIcon"></i>
-    </button>
-    
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="reset-card">
-                    <div class="reset-header">
-                        <i class="fas fa-mobile-alt fa-3x mb-3"></i>
-                        <h3>Reset Device</h3>
-                        <p class="mb-0">Logout from all devices</p>
-                    </div>
-                    <div class="reset-body">
-                        <?php if ($error): ?>
-                            <div class="alert alert-danger" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                <?php echo htmlspecialchars($error); ?>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <?php if ($success): ?>
-                            <div class="alert alert-success" role="alert">
-                                <i class="fas fa-check-circle me-2"></i>
-                                <?php echo htmlspecialchars($success); ?>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <div class="warning-info">
-                            <small>
-                                <i class="fas fa-exclamation-triangle me-1"></i>
-                                <strong>Warning:</strong> This will logout your account from all devices. You'll need to login again on any device you want to use.
-                            </small>
-                        </div>
-                        
-                        <form method="POST">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">
-                                    <i class="fas fa-user me-2"></i>Username or Email *
-                                </label>
-                                <input type="text" class="form-control" id="username" name="username" 
-                                       value="<?php echo htmlspecialchars($username ?? ''); ?>" 
-                                       placeholder="Enter your username or email" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="password" class="form-label">
-                                    <i class="fas fa-lock me-2"></i>Password *
-                                </label>
-                                <input type="password" class="form-control" id="password" name="password" 
-                                       placeholder="Enter your password" required>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-reset w-100 mb-4">
-                                <i class="fas fa-mobile-alt me-2"></i>Reset All Devices
-                            </button>
-                        </form>
-                        
-                        <div class="text-center">
-                            <p class="mb-3">Remember your login? 
-                                <a href="login.php" class="login-link">Sign in here</a>
-                            </p>
-                            
-                            <p class="mb-0">Don't have an account? 
-                                <a href="register.php" class="login-link">Create one here</a>
-                            </p>
-                        </div>
-                    </div>
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    <?php if (isLoggedIn() && isAdmin()): ?>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand"><h4>SILENT PANEL</h4></div>
+        <nav class="nav">
+            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i>Dashboard</a>
+            <a class="nav-link" href="referral_codes.php"><i class="fas fa-tag"></i>Referral Codes</a>
+            <a class="nav-link" href="admin_block_reset_requests.php"><i class="fas fa-ban"></i>Requests</a>
+            <a class="nav-link active" href="reset_device.php"><i class="fas fa-sync"></i>Reset Device</a>
+            <a class="nav-link" href="logout.php" style="color: #ef4444;"><i class="fas fa-sign-out"></i>Logout</a>
+        </nav>
+    </div>
+    <?php endif; ?>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <button class="hamburger-btn" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+            <h4 style="margin: 0; font-weight: 800; background: linear-gradient(135deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RESET DEVICE</h4>
+            <div style="width: 44px;"></div>
+        </div>
+
+        <div class="glass-card">
+            <div class="text-center mb-4">
+                <i class="fas fa-mobile-alt fa-3x text-danger mb-3"></i>
+                <h2 style="font-weight: 800;">Reset Device</h2>
+                <p style="color: var(--text-dim);">Logout from all devices</p>
+            </div>
+
+            <?php if ($error): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+            <?php if ($success): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
+            <?php endif; ?>
+
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label text-dim">Username or Email</label>
+                    <input type="text" name="username" class="form-control" required>
                 </div>
+                <div class="mb-4">
+                    <label class="form-label text-dim">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-reset">Reset All Devices</button>
+            </form>
+
+            <div class="text-center mt-4">
+                <a href="login.php" style="color: var(--primary); text-decoration: none; font-weight: 600;">Back to Login</a>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Dark mode functionality
-            const body = document.body;
-            const icon = document.getElementById('darkModeIcon');
-            
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                icon.className = 'fas fa-sun';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-        
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            document.getElementById('darkModeIcon').className = 'fas fa-sun';
-        }
-        
-        // Auto-hide alerts
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    alert.style.opacity = '0';
-                    alert.style.transform = 'translateY(-10px)';
-                    setTimeout(() => {
-                        alert.style.display = 'none';
-                    }, 300);
-                }, 5000);
-            });
-        });
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        function toggle() { sidebar.classList.toggle('show'); overlay.classList.toggle('show'); }
+        if (hamburgerBtn) hamburgerBtn.onclick = toggle;
+        if (overlay) overlay.onclick = toggle;
     </script>
 </body>
 </html>
