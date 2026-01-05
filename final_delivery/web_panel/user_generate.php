@@ -584,6 +584,8 @@ try {
             }
         });
     </script>
+
+    <aside class="sidebar p-3" id="sidebar">
         <nav class="nav flex-column gap-2">
             <a class="nav-link" href="user_dashboard.php"><i class="fas fa-home me-2"></i> Dashboard</a>
             <a class="nav-link active" href="user_generate.php"><i class="fas fa-plus me-2"></i> Generate Key</a>
@@ -601,95 +603,87 @@ try {
 
     <main class="main-content">
         <div class="cyber-card mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="text-neon mb-1">Generate License Key</h2>
-                    <p class="text-secondary mb-0">Select a mod and duration to purchase your key.</p>
-                </div>
-            </div>
+            <h2 class="text-neon mb-2">Generate License Key</h2>
+            <p class="text-secondary mb-0">Select a mod and duration to purchase your key.</p>
         </div>
 
         <div class="search-container">
             <div class="stylish-search-wrapper">
                 <i class="fas fa-search text-primary me-3 fs-5"></i>
-                <input type="text" id="productSearch" class="product-search-input" placeholder="Search for applications or mods..." autocomplete="off">
+                <input type="text" id="modSearch" class="product-search-input" placeholder="Search for applications or mods.." onkeyup="filterMods()">
             </div>
-        </div>
-
-        <div id="noResults" class="no-results mb-4">
-            <i class="fas fa-search-minus text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
-            <h5 class="text-secondary">No products found matching your search.</h5>
         </div>
 
         <div class="mod-selector-wrapper">
-            <div class="mod-trigger-btn" onclick="toggleModPopup()">
+            <button class="mod-trigger-btn" onclick="toggleModPopup()">
                 <div class="d-flex align-items-center gap-3">
                     <i class="fas fa-th-large text-primary fs-4"></i>
-                    <div>
-                        <div class="fw-bold">
-                            <?php 
-                            $currentModName = "All Applications";
-                            foreach($mods as $m) if($m['id'] == $modId) $currentModName = $m['name'];
-                            echo htmlspecialchars($currentModName);
-                            ?>
-                        </div>
+                    <div class="text-start">
+                        <div class="fw-bold text-white fs-5" id="selectedModName">All Applications</div>
                         <div class="small text-secondary">Tap to browse available mods</div>
                     </div>
                 </div>
-                <i class="fas fa-chevron-down opacity-50"></i>
-            </div>
-            
+                <i class="fas fa-chevron-down text-secondary"></i>
+            </button>
             <div class="mod-popup-menu" id="modPopup">
-                <a href="user_generate.php" class="mod-option-item <?php echo !$modId ? 'active' : ''; ?>">
+                <a href="user_generate.php" class="mod-option-item <?php echo $modId === '' ? 'active' : ''; ?>">
                     <i class="fas fa-globe"></i>
                     <span>All Mods</span>
                 </a>
                 <?php foreach ($mods as $mod): ?>
-                    <a href="user_generate.php?mod_id=<?php echo $mod['id']; ?>" class="mod-option-item <?php echo $modId == $mod['id'] ? 'active' : ''; ?>">
-                        <i class="fas fa-cube"></i>
-                        <span><?php echo htmlspecialchars($mod['name']); ?></span>
-                    </a>
+                <a href="?mod_id=<?php echo $mod['id']; ?>" class="mod-option-item <?php echo (string)$modId === (string)$mod['id'] ? 'active' : ''; ?>">
+                    <i class="fas fa-cube"></i>
+                    <span><?php echo htmlspecialchars($mod['name']); ?></span>
+                </a>
                 <?php endforeach; ?>
             </div>
         </div>
 
-        <?php if ($error): ?>
-            <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger mb-4">
-                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
+        <div id="noResults">
+            <i class="fas fa-search text-secondary fs-1 mb-3"></i>
+            <h5 class="text-white">No mods found</h5>
+            <p class="text-secondary">Try searching for a different keyword</p>
+        </div>
 
-        <div class="results-container <?php echo !empty($keysByMod) ? 'show' : ''; ?>">
+        <div class="results-container show">
             <div class="results-inner">
                 <?php if (empty($keysByMod)): ?>
-                    <div class="text-center py-5">
-                        <i class="fas fa-key text-secondary mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
-                        <h5 class="text-secondary">No keys available for the selected mod.</h5>
-                    </div>
+                <div class="text-center py-5">
+                    <i class="fas fa-ghost text-secondary fs-1 mb-3 opacity-25"></i>
+                    <h4 class="text-secondary">No keys available for purchase at the moment.</h4>
+                </div>
                 <?php else: ?>
                     <?php foreach ($keysByMod as $modName => $keys): ?>
-                        <div class="mb-5 last-child-mb-0 mod-section" data-mod-name="<?php echo htmlspecialchars($modName); ?>">
-                            <h4 class="mb-4 text-white"><i class="fas fa-shield-alt text-primary me-2"></i> <?php echo htmlspecialchars($modName); ?></h4>
-                            <div class="row g-3">
-                                <?php foreach ($keys as $key): ?>
-                                    <div class="col-12 col-md-6 col-xl-4">
-                                        <div class="duration-item">
-                                            <div class="mb-3">
-                                                <div class="fw-bold text-white fs-5"><?php echo $key['duration'] . ' ' . ucfirst($key['duration_type']); ?></div>
-                                                <div class="text-secondary">₹<?php echo number_format($key['price'], 2); ?> | <span class="text-success"><?php echo $key['key_count']; ?> In Stock</span></div>
-                                            </div>
-                                            <form method="POST" class="d-flex align-items-center gap-2">
-                                                <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
-                                                <input type="number" name="quantity" class="form-control bg-dark border-secondary text-white text-center" value="1" min="1" max="<?php echo $key['key_count']; ?>" style="width: 70px; border-radius: 8px;">
-                                                <button type="submit" name="purchase_key" class="cyber-btn py-2 flex-grow-1">
-                                                    <i class="fas fa-shopping-cart"></i> Buy Now
-                                                </button>
-                                            </form>
+                    <div class="mod-section mb-5" data-mod-name="<?php echo htmlspecialchars($modName); ?>">
+                        <h4 class="text-neon mb-4 d-flex align-items-center gap-3">
+                            <i class="fas fa-cube"></i> <?php echo htmlspecialchars($modName); ?>
+                        </h4>
+                        <div class="row g-4">
+                            <?php foreach ($keys as $key): ?>
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="duration-item">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="duration-tag">
+                                            <span class="fs-3 fw-bold text-white"><?php echo $key['duration']; ?></span>
+                                            <span class="text-secondary"><?php echo ucfirst($key['duration_type']); ?></span>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-primary fw-bold fs-4"><?php echo formatCurrency($key['price']); ?></div>
+                                            <div class="small text-secondary"><?php echo $key['key_count']; ?> keys left</div>
                                         </div>
                                     </div>
-                                <?php endforeach; ?>
+                                    <form method="POST" class="d-flex gap-2">
+                                        <input type="hidden" name="key_id" value="<?php echo $key['min_id']; ?>">
+                                        <input type="number" name="quantity" class="form-control bg-dark border-secondary text-white w-25" value="1" min="1" max="<?php echo $key['key_count']; ?>">
+                                        <button type="submit" name="purchase_key" class="cyber-btn w-100">
+                                            <i class="fas fa-shopping-cart me-2"></i> Purchase
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
+                            <?php endforeach; ?>
                         </div>
+                    </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
@@ -697,128 +691,45 @@ try {
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const primingDiv = document.getElementById('clipboardPriming');
-            const enableBtn = document.getElementById('enableCopyBtn');
-            
-            if (localStorage.getItem('clipboardAllowed') !== 'yes') {
-                primingDiv.style.setProperty('display', 'flex', 'important');
-            }
-
-            enableBtn.addEventListener('click', async () => {
-                try {
-                    await navigator.clipboard.writeText('Permission Granted');
-                    localStorage.setItem('clipboardAllowed', 'yes');
-                    primingDiv.style.setProperty('display', 'none', 'important');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Magic Enabled!',
-                        text: 'Auto copy is now active for your account.',
-                        background: '#0a0f19',
-                        color: '#fff',
-                        confirmButtonColor: '#8b5cf6'
-                    });
-                } catch (err) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Permission Denied',
-                        text: 'Please allow clipboard access when prompted.',
-                        background: '#0a0f19',
-                        color: '#fff'
-                    });
-                }
-            });
-        });
-
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); }
         function toggleAvatarDropdown() { document.getElementById('avatarDropdown').classList.toggle('show'); }
         function toggleModPopup() { document.getElementById('modPopup').classList.toggle('show'); }
 
         window.onclick = function(event) {
-            if (!event.target.matches('.user-avatar-header')) {
-                var dropdowns = document.getElementsByClassName("avatar-dropdown");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                    }
-                }
+            if (!event.target.closest('.user-nav-wrapper')) {
+                document.getElementById('avatarDropdown').classList.remove('show');
+            }
+            if (!event.target.closest('.mod-selector-wrapper')) {
+                document.getElementById('modPopup').classList.remove('show');
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('productSearch');
+        function filterMods() {
+            const input = document.getElementById('modSearch');
+            const filter = input.value.toUpperCase();
+            const sections = document.querySelectorAll('.mod-section');
             const noResults = document.getElementById('noResults');
-            const resultsContainer = document.querySelector('.results-container');
-            const modSections = document.querySelectorAll('.mod-section');
+            let hasResults = false;
 
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const query = this.value.toLowerCase().trim();
-                    let anyVisible = false;
+            sections.forEach(section => {
+                const modName = section.getAttribute('data-mod-name').toUpperCase();
+                if (modName.indexOf(filter) > -1) {
+                    section.style.display = "";
+                    hasResults = true;
+                } else {
+                    section.style.display = "none";
+                }
+            });
 
-                    modSections.forEach(section => {
-                        const modName = section.getAttribute('data-mod-name').toLowerCase();
-                        const durationItems = section.querySelectorAll('.duration-item');
-                        let matchedCount = 0;
-
-                        durationItems.forEach(item => {
-                            const text = item.textContent.toLowerCase();
-                            if (query === '' || text.includes(query)) {
-                                item.closest('.col-12').style.display = 'block';
-                                matchedCount++;
-                            } else {
-                                item.closest('.col-12').style.display = 'none';
-                            }
-                        });
-
-                        if (query === '' || modName.includes(query) || matchedCount > 0) {
-                            section.style.display = 'block';
-                            anyVisible = true;
-                            if(modName.includes(query) && query !== '') {
-                                section.querySelectorAll('.col-12').forEach(c => c.style.display = 'block');
-                            }
-                        } else {
-                            section.style.display = 'none';
-                        }
-                    });
-
-                    if (!anyVisible && query !== '') {
-                        noResults.style.display = 'block';
-                        resultsContainer.style.display = 'none';
-                    } else {
-                        noResults.style.display = 'none';
-                        resultsContainer.style.display = 'block';
-                    }
-                });
-            }
-        });
-
-        document.addEventListener('click', function(e) {
-            const popup = document.getElementById('modPopup');
-            const trigger = document.querySelector('.mod-trigger-btn');
-            if (popup && !popup.contains(e.target) && !trigger.contains(e.target)) {
-                popup.classList.remove('show');
-            }
-        });
+            noResults.style.display = hasResults ? "none" : "block";
+            document.querySelector('.results-container').style.display = hasResults ? "block" : "none";
+        }
         
-        const createConfetti = () => {
-            const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b'];
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti-piece';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.animationDelay = Math.random() * 2 + 's';
-                confetti.style.width = Math.random() * 10 + 5 + 'px';
-                confetti.style.height = confetti.style.width;
-                document.body.appendChild(confetti);
-                setTimeout(() => confetti.remove(), 5000);
-            }
-        };
-
-        <?php if ($success): ?>
-            createConfetti();
+        <?php if($success): ?>
+            Swal.fire({ icon: 'success', title: 'Success!', text: '<?php echo $success; ?>', background: 'rgba(15, 23, 42, 0.95)', color: '#fff' });
+        <?php endif; ?>
+        <?php if($error): ?>
+            Swal.fire({ icon: 'error', title: 'Oops...', text: '<?php echo $error; ?>', background: 'rgba(15, 23, 42, 0.95)', color: '#fff' });
         <?php endif; ?>
     </script>
 </body>
