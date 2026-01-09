@@ -29,9 +29,32 @@ if (isset($_GET['ajax_search'])) {
 
 // Handle delete user
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ? AND role != 'admin'");
-    $stmt->execute([$_GET['delete']]);
-    header("Location: manage_users.php");
+    try {
+        $pdo->beginTransaction();
+        $userId = (int)$_GET['delete'];
+        
+        // Check if user is admin before deleting
+        $checkStmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+        $checkStmt->execute([$userId]);
+        $userToDelete = $checkStmt->fetch();
+        
+        if ($userToDelete && $userToDelete['role'] !== 'admin') {
+            // Delete related records first to avoid foreign key constraints (if any)
+            // Example: DELETE FROM user_keys WHERE user_id = ?
+            // For now, focusing on the users table as requested
+            
+            $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
+            $pdo->commit();
+            header("Location: manage_users.php?delete_success=1");
+        } else {
+            $pdo->rollBack();
+            header("Location: manage_users.php?delete_error=admin");
+        }
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        header("Location: manage_users.php?delete_error=1");
+    }
     exit();
 }
 
@@ -350,6 +373,26 @@ $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
         function confirmForceLogoutAll() {
             return confirm('Are you sure you want to force logout all users? This will invalidate all active sessions except yours.');
         }
+
+        <?php if (isset($_GET['delete_success'])): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Deleted',
+            text: 'User has been successfully deleted.',
+            background: '#111827',
+            color: '#fff'
+        });
+        <?php endif; ?>
+
+        <?php if (isset($_GET['delete_error'])): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '<?php echo $_GET['delete_error'] === 'admin' ? "Cannot delete admin user!" : "Failed to delete user."; ?>',
+            background: '#111827',
+            color: '#fff'
+        });
+        <?php endif; ?>
 
         <?php if (isset($_GET['logout_success'])): ?>
         Swal.fire({
