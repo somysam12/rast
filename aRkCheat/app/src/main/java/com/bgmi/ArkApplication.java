@@ -28,7 +28,7 @@ public class ArkApplication extends Application {
 
     @Override
     protected void attachBaseContext(Context base) {
-        // ── FIRST: Init crash logger before ANY BBox code runs ────────────────
+        // ── FIRST: Init crash logger before ANY BBox code runs ────────────────────
         // Crashes in MundoCore.doAttachBaseContext() were previously uncaught
         // because init() was in onCreate() which runs AFTER attachBaseContext().
         // Moving it here ensures the uncaught handler is installed immediately.
@@ -68,7 +68,7 @@ public class ArkApplication extends Application {
             ArkCrashLogger.sdkError("VirtualAndroidIdHook.registerEarlyHook", t);
         }
 
-        // ── Log device info for support detection ──────────────────────────────
+        // ── Log device info for support detection ───────────────────────────
         ArkCrashLogger.event("device", "ROM=" + android.os.Build.BRAND
             + " model=" + android.os.Build.MODEL
             + " API=" + android.os.Build.VERSION.SDK_INT
