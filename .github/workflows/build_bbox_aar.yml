@@ -38,7 +38,13 @@ jobs:
           SDKMANAGER=$(find $ANDROID_SDK/cmdline-tools -name "sdkmanager" | head -1)
           echo "sdkmanager: $SDKMANAGER"
           yes | $SDKMANAGER --licenses > /dev/null 2>&1 || true
-          $SDKMANAGER "platforms;android-34" "build-tools;34.0.4" "ndk;24.0.8215888"
+          $SDKMANAGER "platforms;android-34" "build-tools;34.0.0" "ndk;24.0.8215888"
+
+      - name: Patch buildToolsVersion in MundoCore
+        run: |
+          sed -i "s/buildToolsVersion = '34\.0\.4'/buildToolsVersion = '34.0.0'/" /tmp/bbox_build/bbox/MundoCore/build.gradle
+          echo "buildToolsVersion after patch:"
+          grep buildToolsVersion /tmp/bbox_build/bbox/MundoCore/build.gradle
 
       - name: Configure local.properties
         run: |
