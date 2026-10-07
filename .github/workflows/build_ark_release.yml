@@ -1,0 +1,65 @@
+name: Build aRkCheat Release APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Extract aRkCheat project
+        run: |
+          cd final_delivery
+          unzip -q aRkCheatSimp_Fixed.zip -d /tmp/ark_build/
+          echo "Project extracted"
+          ls /tmp/ark_build/aRkCheat/
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          build-tools: 34.0.0
+          ndk-version: 24.0.8215888
+
+      - name: Configure local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > /tmp/ark_build/aRkCheat/local.properties
+          echo "ndk.dir=$ANDROID_SDK_ROOT/ndk/24.0.8215888" >> /tmp/ark_build/aRkCheat/local.properties
+          cat /tmp/ark_build/aRkCheat/local.properties
+
+      - name: Accept Android licenses
+        run: |
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Grant gradlew execute permission
+        run: chmod +x /tmp/ark_build/aRkCheat/gradlew
+
+      - name: Build Release APK
+        run: |
+          cd /tmp/ark_build/aRkCheat
+          ./gradlew assembleRelease --no-daemon --stacktrace
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+
+      - name: Find output APK
+        run: |
+          find /tmp/ark_build/aRkCheat -name "*.apk" 2>/dev/null
+          ls /tmp/ark_build/aRkCheat/app/build/outputs/apk/release/ 2>/dev/null || true
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aRkCheat-v4.8-release
+          path: /tmp/ark_build/aRkCheat/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 7
