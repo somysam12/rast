@@ -2,6 +2,14 @@ name: Build aRkCheat Release APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - ccr-cd35b503-161pck
+    paths:
+      - 'final_delivery/aRkCheatSimp_Fixed.zip'
+      - 'final_delivery/BboxDeviceResetDirectFb_Fixed.zip'
+      - 'bbox_fixes/**'
+      - '.github/workflows/build_ark_release.yml'
 
 jobs:
   build:
@@ -17,31 +25,57 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Extract aRkCheat project
+      - name: Extract both projects
         run: |
-          cd final_delivery
-          unzip -q aRkCheatSimp_Fixed.zip -d /tmp/ark_build/
-          echo "Project extracted"
-          ls /tmp/ark_build/aRkCheat/
+          unzip -q final_delivery/BboxDeviceResetDirectFb_Fixed.zip -d /tmp/bbox_build/
+          echo "bbox extracted:" && ls /tmp/bbox_build/bbox/
+          unzip -q final_delivery/aRkCheatSimp_Fixed.zip -d /tmp/ark_build/
+          echo "aRkCheat extracted:" && ls /tmp/ark_build/aRkCheat/
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          api-level: 34
-          build-tools: 34.0.0
-          ndk-version: 24.0.8215888
-
-      - name: Configure local.properties
+      - name: Install Android SDK components
         run: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > /tmp/ark_build/aRkCheat/local.properties
-          echo "ndk.dir=$ANDROID_SDK_ROOT/ndk/24.0.8215888" >> /tmp/ark_build/aRkCheat/local.properties
-          cat /tmp/ark_build/aRkCheat/local.properties
+          ANDROID_SDK=/usr/local/lib/android/sdk
+          SDKMANAGER=$(find $ANDROID_SDK/cmdline-tools -name "sdkmanager" | head -1)
+          yes | $SDKMANAGER --licenses > /dev/null 2>&1 || true
+          $SDKMANAGER "platforms;android-34" "build-tools;34.0.0" "ndk;24.0.8215888"
 
-      - name: Accept Android licenses
+      - name: Configure local.properties for bbox
         run: |
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          ANDROID_SDK=/usr/local/lib/android/sdk
+          echo "sdk.dir=$ANDROID_SDK" > /tmp/bbox_build/bbox/local.properties
+          echo "ndk.dir=$ANDROID_SDK/ndk/24.0.8215888" >> /tmp/bbox_build/bbox/local.properties
 
-      - name: Grant gradlew execute permission
+      - name: Patch buildToolsVersion in MundoCore
+        run: |
+          sed -i "s/buildToolsVersion = '34\.0\.4'/buildToolsVersion = '34.0.0'/" /tmp/bbox_build/bbox/MundoCore/build.gradle
+          grep buildToolsVersion /tmp/bbox_build/bbox/MundoCore/build.gradle
+
+      - name: Grant gradlew execute permission (bbox)
+        run: chmod +x /tmp/bbox_build/bbox/gradlew
+
+      - name: Build bbox AAR
+        run: |
+          cd /tmp/bbox_build/bbox
+          ./gradlew :MundoCore:assembleRelease --no-daemon --stacktrace
+        env:
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+          ANDROID_HOME: /usr/local/lib/android/sdk
+
+      - name: Inject fixed AAR into aRkCheat libs
+        run: |
+          AAR=$(find /tmp/bbox_build/bbox/MundoCore/build/outputs/aar -name "*release*.aar" | head -1)
+          echo "Built AAR: $AAR"
+          cp "$AAR" /tmp/ark_build/aRkCheat/app/libs/Hcore-release.aar
+          echo "Replaced Hcore-release.aar with fixed bbox AAR"
+          ls -lh /tmp/ark_build/aRkCheat/app/libs/
+
+      - name: Configure local.properties for aRkCheat
+        run: |
+          ANDROID_SDK=/usr/local/lib/android/sdk
+          echo "sdk.dir=$ANDROID_SDK" > /tmp/ark_build/aRkCheat/local.properties
+          echo "ndk.dir=$ANDROID_SDK/ndk/24.0.8215888" >> /tmp/ark_build/aRkCheat/local.properties
+
+      - name: Grant gradlew execute permission (aRkCheat)
         run: chmod +x /tmp/ark_build/aRkCheat/gradlew
 
       - name: Build Release APK
@@ -49,17 +83,26 @@ jobs:
           cd /tmp/ark_build/aRkCheat
           ./gradlew assembleRelease --no-daemon --stacktrace
         env:
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+          ANDROID_HOME: /usr/local/lib/android/sdk
 
       - name: Find output APK
         run: |
           find /tmp/ark_build/aRkCheat -name "*.apk" 2>/dev/null
           ls /tmp/ark_build/aRkCheat/app/build/outputs/apk/release/ 2>/dev/null || true
 
+      - name: Upload fixed AAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BboxDeviceResetDirectFb-fixed-aar
+          path: /tmp/bbox_build/bbox/MundoCore/build/outputs/aar/*.aar
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: aRkCheat-v4.8-release
+          name: aRkCheat-fixed-release-apk
           path: /tmp/ark_build/aRkCheat/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
