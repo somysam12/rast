@@ -38,13 +38,14 @@ jobs:
           SDKMANAGER=$(find $ANDROID_SDK/cmdline-tools -name "sdkmanager" | head -1)
           echo "sdkmanager: $SDKMANAGER"
           yes | $SDKMANAGER --licenses > /dev/null 2>&1 || true
-          $SDKMANAGER "platforms;android-34" "build-tools;34.0.0" "ndk;24.0.8215888"
+          $SDKMANAGER "platforms;android-34" "build-tools;34.0.4" "ndk;24.0.8215888"
 
       - name: Configure local.properties
         run: |
           ANDROID_SDK=/usr/local/lib/android/sdk
           echo "sdk.dir=$ANDROID_SDK" > /tmp/bbox_build/bbox/local.properties
           echo "ndk.dir=$ANDROID_SDK/ndk/24.0.8215888" >> /tmp/bbox_build/bbox/local.properties
+          echo "build-tools;34.0.4 installed: $(ls $ANDROID_SDK/build-tools/ 2>/dev/null)"
           cat /tmp/bbox_build/bbox/local.properties
 
       - name: Grant gradlew execute permission
