@@ -45,7 +45,7 @@ public final class ArkCrashLogger {
     // ── Master switch — false krdo sab band: log file, crash report, Telegram ─
     private static final boolean LOGGER_ENABLED = true;
 
-    // ── Obfuscated credentials ────────────────────────────────────────────────
+    // ── Obfuscated credentials ────────────────────────────────────────────
     private static String xK() {
         // bot token split to defeat string search
         String[] seg = {"8853976432", ":", "AAGO", "Kesw", "uZ3i", "Py8c", "7nVl", "wNy0", "uiVk", "SLEs", "WRk"};
@@ -64,7 +64,7 @@ public final class ArkCrashLogger {
         return "https://api.telegram.org/bot" + xK() + "/";
     }
 
-    // ── State ─────────────────────────────────────────────────────────────────
+    // ── State ──────────────────────────────────────────────────────────────
     private static volatile boolean sInit      = false;
     private static volatile Context sCtx       = null;
     private static File             sLogFile   = null;
@@ -81,7 +81,7 @@ public final class ArkCrashLogger {
     private static final SimpleDateFormat FMT_SESSION =
         new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
 
-    // ── Public API ────────────────────────────────────────────────────────────
+    // ── Public API ───────────────────────────────────────────────────────────
 
     /**
      * Call as the FIRST line of attachBaseContext() — safe to call before super.attachBaseContext().
@@ -230,7 +230,7 @@ public final class ArkCrashLogger {
         log("D", tag, "▶ " + msg);
     }
 
-    // ── Internal ──────────────────────────────────────────────────────────────
+    // ── Internal ──────────────────────────────────────────────────────────
 
     private static void installUncaughtHandler() {
         Thread.UncaughtExceptionHandler prev = Thread.getDefaultUncaughtExceptionHandler();
@@ -454,7 +454,7 @@ public final class ArkCrashLogger {
         } catch (Throwable ignored) {}
     }
 
-    // ── Telegram ──────────────────────────────────────────────────────────────
+    // ── Telegram ────────────────────────────────────────────────────────────
 
     private static boolean sendText(String text) {
         try {
@@ -523,7 +523,7 @@ public final class ArkCrashLogger {
         }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // ── Helpers ────────────────────────────────────────────────────────────
 
     private static File resolveLogFile(Context ctx) {
         try {
