@@ -30,20 +30,22 @@ jobs:
           echo "Extracted:"
           ls /tmp/bbox_build/bbox/
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          api-level: 34
-          build-tools: 34.0.0
-          ndk-version: 24.0.8215888
+      - name: Install Android SDK components
+        run: |
+          ANDROID_SDK=/usr/local/lib/android/sdk
+          echo "SDK root: $ANDROID_SDK"
+          ls $ANDROID_SDK/cmdline-tools/
+          SDKMANAGER=$(find $ANDROID_SDK/cmdline-tools -name "sdkmanager" | head -1)
+          echo "sdkmanager: $SDKMANAGER"
+          yes | $SDKMANAGER --licenses > /dev/null 2>&1 || true
+          $SDKMANAGER "platforms;android-34" "build-tools;34.0.0" "ndk;24.0.8215888"
 
       - name: Configure local.properties
         run: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > /tmp/bbox_build/bbox/local.properties
-          echo "ndk.dir=$ANDROID_SDK_ROOT/ndk/24.0.8215888" >> /tmp/bbox_build/bbox/local.properties
-
-      - name: Accept Android licenses
-        run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          ANDROID_SDK=/usr/local/lib/android/sdk
+          echo "sdk.dir=$ANDROID_SDK" > /tmp/bbox_build/bbox/local.properties
+          echo "ndk.dir=$ANDROID_SDK/ndk/24.0.8215888" >> /tmp/bbox_build/bbox/local.properties
+          cat /tmp/bbox_build/bbox/local.properties
 
       - name: Grant gradlew execute permission
         run: chmod +x /tmp/bbox_build/bbox/gradlew
@@ -53,7 +55,8 @@ jobs:
           cd /tmp/bbox_build/bbox
           ./gradlew :MundoCore:assembleRelease --no-daemon --stacktrace
         env:
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+          ANDROID_HOME: /usr/local/lib/android/sdk
 
       - name: Find output AAR
         run: find /tmp/bbox_build/bbox -name "*.aar" 2>/dev/null
