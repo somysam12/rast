@@ -61,6 +61,11 @@ jobs:
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
           ANDROID_HOME: /usr/local/lib/android/sdk
 
+      - name: Patch buildToolsVersion in aRkCheat
+        run: |
+          sed -i "s/buildToolsVersion '34\.0\.4'/buildToolsVersion '34.0.0'/" /tmp/ark_build/aRkCheat/app/build.gradle
+          grep buildToolsVersion /tmp/ark_build/aRkCheat/app/build.gradle | head -1
+
       - name: Inject fixed AAR into aRkCheat libs
         run: |
           AAR=$(find /tmp/bbox_build/bbox/MundoCore/build/outputs/aar -name "*release*.aar" | head -1)
