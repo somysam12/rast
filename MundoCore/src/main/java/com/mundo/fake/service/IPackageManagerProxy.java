@@ -128,6 +128,9 @@ public class IPackageManagerProxy extends BinderInvocationStub {
     @ProxyMethod("getPackageInfo")
     public static class GetPackageInfo extends MethodHook {
         private static final int GMS_SPOOFED_VERSION = 240000000;
+        // GET_SIGNATURES (64) | GET_SIGNING_CERTIFICATES (0x8000000) — both needed so the
+        // GMS client library's certificate check finds real Google signatures in the response.
+        private static final int GMS_SIG_FLAGS = 64 | 0x8000000;
 
         private static PackageInfo spoofGmsVersion(PackageInfo pi) {
             if (pi == null) {
@@ -154,10 +157,26 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String packageName = (String) args[0];
             int flags = MethodParameterUtils.toInt(args[1]);
-            // Always spoof GMS version — AUTH_PKG_SET doesn't include GMS
+            // Always spoof GMS version — AUTH_PKG_SET doesn't include GMS.
+            // Always fetch with GET_SIGNATURES|GET_SIGNING_CERTIFICATES so the returned
+            // PackageInfo carries Google's real certificate.  Use userId=0 so the system PM
+            // can find GMS even if the virtual framework uses a different userId internally.
             if (GmsCore.GMS_PKG.equals(packageName)) {
                 PackageInfo pi = null;
-                try { pi = (PackageInfo) method.invoke(who, args); } catch (Throwable ignored) {}
+                try {
+                    Object[] sysArgs = args.clone();
+                    if (sysArgs.length >= 3) sysArgs[2] = 0; // userId=0 (system user)
+                    if (sysArgs[1] instanceof Long) {
+                        sysArgs[1] = ((Long) sysArgs[1]) | (long) GMS_SIG_FLAGS;
+                    } else {
+                        sysArgs[1] = ((Integer) sysArgs[1]) | GMS_SIG_FLAGS;
+                    }
+                    pi = (PackageInfo) method.invoke(who, sysArgs);
+                } catch (Throwable ignored) {}
+                if (pi == null) {
+                    // Fallback: original args (in case userId=0 was rejected)
+                    try { pi = (PackageInfo) method.invoke(who, args); } catch (Throwable ignored) {}
+                }
                 return spoofGmsVersion(pi);
             }
 			if (GmsCore.setGoogleAppOrService(packageName)) {
@@ -291,6 +310,26 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String packageName = (String) args[0];
             int flags = MethodParameterUtils.toInt(args[1]);
+            // Spoof GMS: return a valid ApplicationInfo so the GMS SDK's enabled-check passes.
+            // Use userId=0 so the system PM finds GMS regardless of the virtual userId.
+            if (GmsCore.GMS_PKG.equals(packageName)) {
+                ApplicationInfo ai = null;
+                try {
+                    Object[] sysArgs = args.clone();
+                    if (sysArgs.length >= 3) sysArgs[2] = 0;
+                    ai = (ApplicationInfo) method.invoke(who, sysArgs);
+                } catch (Throwable ignored) {}
+                if (ai == null) {
+                    try { ai = (ApplicationInfo) method.invoke(who, args); } catch (Throwable ignored) {}
+                }
+                if (ai == null) {
+                    ai = new ApplicationInfo();
+                    ai.packageName = GmsCore.GMS_PKG;
+                    ai.flags = android.content.pm.ApplicationInfo.FLAG_INSTALLED;
+                }
+                ai.enabled = true;
+                return ai;
+            }
             ApplicationInfo applicationInfo = MundoCore.getBPackageManager().getApplicationInfo(packageName, flags, BActivityThread.getUserId());
             if (GmsCore.isGoogleAppOrService(packageName)) {
 				return method.invoke(who, args);
