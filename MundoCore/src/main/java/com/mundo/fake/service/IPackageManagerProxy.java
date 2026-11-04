@@ -127,10 +127,44 @@ public class IPackageManagerProxy extends BinderInvocationStub {
 
     @ProxyMethod("getPackageInfo")
     public static class GetPackageInfo extends MethodHook {
-        private static final int GMS_SPOOFED_VERSION = 240000000;
-        // GET_SIGNATURES (64) | GET_SIGNING_CERTIFICATES (0x8000000) — both needed so the
-        // GMS client library's certificate check finds real Google signatures in the response.
-        private static final int GMS_SIG_FLAGS = 64 | 0x8000000;
+        private static final int GMS_SPOOFED_VERSION = 263663000;
+        private static final int GMS_SIG_FLAGS = PackageManager.GET_SIGNATURES | 0x8000000;
+        // Real Google Play Services signing certificate (DER-encoded X.509, hex).
+        // This is the well-known public cert used to sign all GMS releases.
+        // SHA-1: 38918a453d07199354f8b19af05ec6562ced5788
+        private static final String GMS_CERT_HEX =
+            "308204433082032ba003020102020900c2e08746644a308d300d06092a864886f70d01010405003074310b3009"
+            + "060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e74"
+            + "61696e205669657731143012060355040a130b476f6f676c6520496e632e3110300e060355040b1307416e64726f"
+            + "69643110300e06035504031307416e64726f6964301e170d3038303832313233313333345a170d3336303130373"
+            + "23331333334345a3074310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630"
+            + "140603550407130d4d6f756e7461696e205669657731143012060355040a130b476f6f676c6520496e632e3110"
+            + "300e060355040b1307416e64726f69643110300e06035504031307416e64726f696430820120300d06092a864886"
+            + "f70d01010105000382010d00308201080282010100ab562e00d83ba208ae0a966f124e29da11f2ab56d08f58e2cc"
+            + "a91303e9b754d372f640a71b1dcb130967624e4656a7776a92193db2e5bfb724a91e77188b0e6a47a43b33d9609"
+            + "b77183145ccdf7b2e586674c9e1565b1f4c6a5955bff251a63dabf9c55c27222252e875e4f8154a645f897168c0"
+            + "b1bfc612eabf785769bb34aa7984dc7e2ea2764cae8307d8c17154d7ee5f64a51a44a602c249054157dc02cd5f5"
+            + "c0e55fbef8519fbe327f0b1511692c5a06f19d18385f5c4dbc2d6b93f68cc2979c70e18ab93866b3bd5db899955"
+            + "2a0e3b4c99df58fb918bedc182ba35e003c1b4b10dd244a8ee24fffd333872ab5221985edab0fc0d0b145b6aa19"
+            + "2858e79020103a381d93081d6301d0603551d0e04160414c77d8cc2211756259a7fd382df6be398e4d786a53081a"
+            + "60603551d2304819e30819b8014c77d8cc2211756259a7fd382df6be398e4d786a5a178a4763074310b300906035"
+            + "5040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e"
+            + "205669657731143012060355040a130b476f6f676c6520496e632e3110300e060355040b1307416e64726f696431"
+            + "10300e06035504031307416e64726f6964820900c2e08746644a308d300c0603551d13040530030101ff300d0609"
+            + "2a864886f70d010104050003820101006dd252ceef85302c360aaace939bcff2cca904bb5d7a1661f8ae46b29942"
+            + "04d0ff4a68c7ed1a531ec4595a623ce60763b167297a7ae35712c407f208f0cb109429124d7b106219c084ca3eb3"
+            + "f9ad5fb871ef92269a8be28bf16d44c8d9a08e6cb2f005bb3fe2cb96447e868e731076ad45b33f6009ea19c161e"
+            + "62641aa99271dfd5228c5c587875ddb7f452758d661f6cc0cccb7352e424cc4365c523532f7325137593c4ae341f"
+            + "4db41edda0d0b1071a7c440f0fe9ea01cb627ca674369d084bd2fd911ff06cdbf2cfa10dc0f893ae35762919048c"
+            + "7efc64c7144178342f70581c9de573af55b390dd7fdb9418631895d5f759f30112687ff621410c069308a";
+        private static volatile Signature sGmsCertSignature;
+
+        private static Signature getGmsCertSignature() {
+            if (sGmsCertSignature == null) {
+                sGmsCertSignature = new Signature(GMS_CERT_HEX);
+            }
+            return sGmsCertSignature;
+        }
 
         private static PackageInfo spoofGmsVersion(PackageInfo pi) {
             if (pi == null) {
@@ -140,15 +174,41 @@ public class IPackageManagerProxy extends BinderInvocationStub {
                 pi.applicationInfo.packageName = GmsCore.GMS_PKG;
                 pi.applicationInfo.enabled = true;
             }
-            if (pi.versionCode < GMS_SPOOFED_VERSION) {
-                pi.versionCode = GMS_SPOOFED_VERSION;
-                if (android.os.Build.VERSION.SDK_INT >= 28) {
-                    try {
-                        java.lang.reflect.Field lvc = PackageInfo.class.getDeclaredField("longVersionCode");
-                        lvc.setAccessible(true);
-                        lvc.set(pi, (long) GMS_SPOOFED_VERSION);
-                    } catch (Throwable ignored) {}
-                }
+            pi.versionCode = GMS_SPOOFED_VERSION;
+            if (android.os.Build.VERSION.SDK_INT >= 28) {
+                try {
+                    java.lang.reflect.Field lvc = PackageInfo.class.getDeclaredField("longVersionCode");
+                    lvc.setAccessible(true);
+                    lvc.set(pi, (long) GMS_SPOOFED_VERSION);
+                } catch (Throwable ignored) {}
+            }
+            // Inject real Google cert if signatures are absent.
+            if (pi.signatures == null || pi.signatures.length == 0) {
+                pi.signatures = new Signature[]{getGmsCertSignature()};
+            }
+            // Build SigningInfo for API 28+ (required by modern GMS SDK checks).
+            if (android.os.Build.VERSION.SDK_INT >= 28 && pi.signingInfo == null) {
+                try {
+                    Signature[] sigs = pi.signatures;
+                    // Try android.content.pm.SigningDetails (Android 13+) first.
+                    Class<?> sdClass = null;
+                    try { sdClass = Class.forName("android.content.pm.SigningDetails"); }
+                    catch (ClassNotFoundException ignored) {}
+                    if (sdClass == null) {
+                        try { sdClass = Class.forName("android.content.pm.PackageParser$SigningDetails"); }
+                        catch (ClassNotFoundException ignored) {}
+                    }
+                    if (sdClass != null) {
+                        // SigningDetails(Signature[], int schemeVersion)
+                        java.lang.reflect.Constructor<?> c = sdClass.getDeclaredConstructor(Signature[].class, int.class);
+                        c.setAccessible(true);
+                        Object sd = c.newInstance(sigs, 2);
+                        // SigningInfo(SigningDetails)
+                        java.lang.reflect.Constructor<?> c2 = android.content.pm.SigningInfo.class.getDeclaredConstructor(sdClass);
+                        c2.setAccessible(true);
+                        pi.signingInfo = (android.content.pm.SigningInfo) c2.newInstance(sd);
+                    }
+                } catch (Throwable ignored) {}
             }
             return pi;
         }
@@ -157,15 +217,12 @@ public class IPackageManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String packageName = (String) args[0];
             int flags = MethodParameterUtils.toInt(args[1]);
-            // Always spoof GMS version — AUTH_PKG_SET doesn't include GMS.
-            // Always fetch with GET_SIGNATURES|GET_SIGNING_CERTIFICATES so the returned
-            // PackageInfo carries Google's real certificate.  Use userId=0 so the system PM
-            // can find GMS even if the virtual framework uses a different userId internally.
             if (GmsCore.GMS_PKG.equals(packageName)) {
+                // Try to get real GMS info from system (may succeed if GMS installed on host).
                 PackageInfo pi = null;
                 try {
                     Object[] sysArgs = args.clone();
-                    if (sysArgs.length >= 3) sysArgs[2] = 0; // userId=0 (system user)
+                    if (sysArgs.length >= 3) sysArgs[2] = 0; // userId=0
                     if (sysArgs[1] instanceof Long) {
                         sysArgs[1] = ((Long) sysArgs[1]) | (long) GMS_SIG_FLAGS;
                     } else {
@@ -173,15 +230,12 @@ public class IPackageManagerProxy extends BinderInvocationStub {
                     }
                     pi = (PackageInfo) method.invoke(who, sysArgs);
                 } catch (Throwable ignored) {}
-                if (pi == null) {
-                    // Fallback: original args (in case userId=0 was rejected)
-                    try { pi = (PackageInfo) method.invoke(who, args); } catch (Throwable ignored) {}
-                }
+                // spoofGmsVersion fills in missing cert and bumps versionCode.
                 return spoofGmsVersion(pi);
             }
-			if (GmsCore.setGoogleAppOrService(packageName)) {
-				return method.invoke(who, args);
-			}
+            if (GmsCore.setGoogleAppOrService(packageName)) {
+                return method.invoke(who, args);
+            }
             PackageInfo packageInfo = MundoCore.getBPackageManager().getPackageInfo(packageName, flags, BActivityThread.getUserId());
             if (packageInfo != null) {
                 return packageInfo;
@@ -577,5 +631,22 @@ public class IPackageManagerProxy extends BinderInvocationStub {
             return method.invoke(who, args);
         }
     }
-    
+
+    // hasSigningCertificate(String packageName, byte[] certificate, int type)
+    // GMS SDK calls this to verify its own signing certificate. We return true for GMS.
+    @ProxyMethod("hasSigningCertificate")
+    public static class HasSigningCertificate extends MethodHook {
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            if (args.length >= 1 && GmsCore.GMS_PKG.equals(args[0])) {
+                return true;
+            }
+            try {
+                return method.invoke(who, args);
+            } catch (Throwable ignored) {
+                return false;
+            }
+        }
+    }
+
 }
