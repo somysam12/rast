@@ -129,26 +129,39 @@ public class IPackageManagerProxy extends BinderInvocationStub {
     public static class GetPackageInfo extends MethodHook {
         private static final int GMS_SPOOFED_VERSION = 240000000;
 
+        private static PackageInfo spoofGmsVersion(PackageInfo pi) {
+            if (pi == null) {
+                pi = new PackageInfo();
+                pi.packageName = GmsCore.GMS_PKG;
+                pi.applicationInfo = new android.content.pm.ApplicationInfo();
+                pi.applicationInfo.packageName = GmsCore.GMS_PKG;
+                pi.applicationInfo.enabled = true;
+            }
+            if (pi.versionCode < GMS_SPOOFED_VERSION) {
+                pi.versionCode = GMS_SPOOFED_VERSION;
+                if (android.os.Build.VERSION.SDK_INT >= 28) {
+                    try {
+                        java.lang.reflect.Field lvc = PackageInfo.class.getDeclaredField("longVersionCode");
+                        lvc.setAccessible(true);
+                        lvc.set(pi, (long) GMS_SPOOFED_VERSION);
+                    } catch (Throwable ignored) {}
+                }
+            }
+            return pi;
+        }
+
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String packageName = (String) args[0];
             int flags = MethodParameterUtils.toInt(args[1]);
+            // Always spoof GMS version — AUTH_PKG_SET doesn't include GMS
+            if (GmsCore.GMS_PKG.equals(packageName)) {
+                PackageInfo pi = null;
+                try { pi = (PackageInfo) method.invoke(who, args); } catch (Throwable ignored) {}
+                return spoofGmsVersion(pi);
+            }
 			if (GmsCore.setGoogleAppOrService(packageName)) {
-				Object result = method.invoke(who, args);
-                if (result instanceof PackageInfo && GmsCore.GMS_PKG.equals(packageName)) {
-                    PackageInfo pi = (PackageInfo) result;
-                    if (pi.versionCode < GMS_SPOOFED_VERSION) {
-                        pi.versionCode = GMS_SPOOFED_VERSION;
-                        if (android.os.Build.VERSION.SDK_INT >= 28) {
-                            try {
-                                java.lang.reflect.Field lvc = PackageInfo.class.getDeclaredField("longVersionCode");
-                                lvc.setAccessible(true);
-                                lvc.set(pi, (long) GMS_SPOOFED_VERSION);
-                            } catch (Throwable ignored) {}
-                        }
-                    }
-                }
-                return result;
+				return method.invoke(who, args);
 			}
             PackageInfo packageInfo = MundoCore.getBPackageManager().getPackageInfo(packageName, flags, BActivityThread.getUserId());
             if (packageInfo != null) {
