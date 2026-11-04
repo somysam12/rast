@@ -3,6 +3,7 @@ package com.mundo.gms;
 import android.content.Context;
 import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
 import android.util.AtomicFile;
 
 import org.json.JSONObject;
@@ -39,7 +40,7 @@ public final class GmsStore {
         if (!ks.containsAlias(alias)) {
             KeyGenerator kg = KeyGenerator.getInstance("AES", "AndroidKeyStore");
             kg.init(new KeyGenParameterSpec.Builder(alias,
-                    KeyGenParameterSpec.PURPOSE_ENCRYPT | KeyGenParameterSpec.PURPOSE_DECRYPT)
+                    KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes("GCM")
                     .setEncryptionPaddings("NoPadding")
                     .build());

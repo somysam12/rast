@@ -295,12 +295,10 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                     final String guestPkg = BActivityThread.getAppPackageName();
                     args[4] = new IServiceConnection.Stub() {
                         @Override
-                        public void connected(ComponentName name, IBinder service, boolean dead)
+                        public void connected(ComponentName name, IBinder service)
                                 throws android.os.RemoteException {
-                            android.os.IBinder wrapped = !dead
-                                    ? GmsServiceBrokerProxy.wrap(service, guestPkg)
-                                    : service;
-                            try { origConn.connected(name, wrapped, dead); }
+                            android.os.IBinder wrapped = GmsServiceBrokerProxy.wrap(service, guestPkg);
+                            try { origConn.connected(name, wrapped); }
                             catch (Throwable ignored) {}
                         }
                     };

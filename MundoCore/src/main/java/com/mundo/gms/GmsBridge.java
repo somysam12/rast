@@ -149,7 +149,7 @@ public final class GmsBridge {
         intent.putExtra(EXTRA_ORIGINAL_INTENT, original);
         if (callerPkg == null || callerPkg.isEmpty()) callerPkg = BActivityThread.getAppPackageName();
         intent.putExtra(EXTRA_CALLING_PACKAGE, callerPkg);
-        intent.putExtra(EXTRA_CALLING_UID, BActivityThread.getAppUid());
+        intent.putExtra(EXTRA_CALLING_UID, BActivityThread.getUid());
         return intent;
     }
 

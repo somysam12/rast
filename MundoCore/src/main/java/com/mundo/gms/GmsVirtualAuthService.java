@@ -29,7 +29,7 @@ public final class GmsVirtualAuthService extends Binder {
         }
 
         @Override
-        public boolean onTransact(int code, Parcel data, Parcel reply, int flags) {
+        public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws android.os.RemoteException {
             if (code == 2) {
                 if (reply != null) {
                     reply.writeNoException();
@@ -177,7 +177,7 @@ public final class GmsVirtualAuthService extends Binder {
             } catch (Throwable ignored) {
                 data.setDataPosition(0);
                 data.writeInterfaceToken(DESCRIPTOR_SIGN_IN_CALLBACKS);
-                callbacks.transact(1, data, reply, 0);
+                try { callbacks.transact(1, data, reply, 0); } catch (Throwable ignored2) {}
             }
         } finally {
             try { reply.recycle(); } finally { data.recycle(); }
@@ -185,7 +185,7 @@ public final class GmsVirtualAuthService extends Binder {
     }
 
     @Override
-    public boolean onTransact(int code, Parcel data, Parcel reply, int flags) {
+    public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws android.os.RemoteException {
         if (code == 1598968902) return super.onTransact(code, data, reply, flags);
         Log.i(GmsBridge.TAG, "GmsVirtualAuthService.onTransact: serviceId=" + mServiceId + " code=" + code);
         switch (mServiceId) {
